@@ -494,9 +494,48 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           ),
           const SizedBox(height: Spacing.sm),
           Text(
-            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab\n• Kombinieren Sie niemals verschiedene Substanzen\n• Bei gesundheitlichen Problemen konsultieren Sie einen Arzt',
+            'Grundlegende Sicherheitsprinzipien:',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: DesignTokens.errorRed,
+            ),
+          ),
+          const SizedBox(height: Spacing.xs),
+          Text(
+            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab\n• Kombinieren Sie niemals verschiedene Substanzen\n• Verwenden Sie eine Feinwaage für genaue Dosierung\n• Sorgen Sie für eine sichere Umgebung und Begleitung\n• Bei gesundheitlichen Problemen konsultieren Sie einen Arzt',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
               color: Theme.of(context).textTheme.bodySmall?.color?.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: Spacing.sm),
+          Container(
+            padding: const EdgeInsets.all(Spacing.sm),
+            decoration: BoxDecoration(
+              color: DesignTokens.warningYellow.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: DesignTokens.warningYellow.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.info_outline_rounded,
+                  color: DesignTokens.warningYellow,
+                  size: Spacing.iconSm,
+                ),
+                const SizedBox(width: Spacing.xs),
+                Expanded(
+                  child: Text(
+                    'Erstellen Sie ein Benutzerprofil für präzise, gewichtsbezogene Dosierungsberechnungen.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: DesignTokens.warningYellow,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1077,6 +1116,8 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
 
   Widget _buildSafetyWarnings(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
+    final selectedDose = _getDoseForIntensity(_selectedIntensity);
+    final substanceWarning = widget.substance.getSafetyWarning(selectedDose, widget.user.weightKg);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -1109,13 +1150,60 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
             ],
           ),
           const SizedBox(height: 16),
+          
+          // Dosage-specific warning if exists
+          if (substanceWarning != null) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.red.withOpacity(0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    color: Colors.red,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      substanceWarning,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: Colors.red,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+          
+          // Substance-specific safety notes
           Text(
             widget.substance.safetyNotes,
             style: theme.textTheme.bodyMedium,
           ),
           const SizedBox(height: 16),
+          
+          // Enhanced general safety principles
           Text(
-            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab\n• Kombinieren Sie niemals verschiedene Substanzen\n• Bei Problemen sofort medizinische Hilfe suchen',
+            'Grundlegende Sicherheitsprinzipien:',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: Colors.red,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab (${widget.substance.duration})\n• Kombinieren Sie niemals verschiedene Substanzen\n• Verwenden Sie eine Feinwaage für genaue Dosierung\n• Sorgen Sie für eine sichere Umgebung und Begleitung\n• Bei Problemen sofort medizinische Hilfe suchen',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.textTheme.bodySmall?.color?.withOpacity(0.8),
             ),
