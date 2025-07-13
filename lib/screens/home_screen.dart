@@ -21,6 +21,7 @@ import 'calendar/day_detail_screen.dart';
 import 'advanced_search_screen.dart';
 import 'calendar/pattern_analysis_screen.dart';
 import 'data_export_screen.dart';
+import 'timer_dashboard_screen.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
@@ -259,6 +260,12 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToTimerDashboard,
+        backgroundColor: DesignTokens.accentPink,
+        child: const Icon(Icons.timer_rounded, color: Colors.white),
+        tooltip: 'Timer Dashboard',
       ),
     );
   }
@@ -1253,6 +1260,14 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const DataExportScreen(),
+      ),
+    );
+  }
+
+  void _navigateToTimerDashboard() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const TimerDashboardScreen(),
       ),
     );
   }

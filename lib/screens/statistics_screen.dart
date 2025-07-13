@@ -156,7 +156,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     final theme = Theme.of(context);
 
     return Container(
-      height: 120,
+      height: 140,
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -177,20 +177,43 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Statistiken',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ).animate().fadeIn(
-                duration: DesignTokens.animationSlow,
-                delay: const Duration(milliseconds: 200),
-              ).slideX(
-                begin: -0.3,
-                end: 0,
-                duration: DesignTokens.animationSlow,
-                curve: DesignTokens.curveEaseOut,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.analytics_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Statistiken & Analyse',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Detaillierte Auswertung Ihrer Daten',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),

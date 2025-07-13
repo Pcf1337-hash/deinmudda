@@ -14,6 +14,7 @@ import 'advanced_search_screen.dart';
 import 'calendar/pattern_analysis_screen.dart';
 import 'auth/security_settings_screen.dart'; // Import security settings
 import 'notifications/notification_settings_screen.dart'; // Import notification settings
+import 'timer_dashboard_screen.dart'; // Import timer dashboard
 import '../utils/performance_helper.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -67,7 +68,7 @@ class _MenuScreenState extends State<MenuScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 120,
+      height: 140,
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -88,20 +89,43 @@ class _MenuScreenState extends State<MenuScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Menü',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ).animate().fadeIn(
-                duration: DesignTokens.animationSlow,
-                delay: const Duration(milliseconds: 200),
-              ).slideX(
-                begin: -0.3,
-                end: 0,
-                duration: DesignTokens.animationSlow,
-                curve: DesignTokens.curveEaseOut,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.menu_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Menü & Einstellungen',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tools, Funktionen & Konfiguration',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -169,6 +193,17 @@ class _MenuScreenState extends State<MenuScreen> {
                 subtitle: const Text('Erkennung von Konsummustern'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToPatternAnalysis(),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: Icon(
+                  Icons.timer_rounded,
+                  color: DesignTokens.accentPink,
+                ),
+                title: const Text('Timer Dashboard'),
+                subtitle: const Text('Aktive Timer und Countdowns verwalten'),
+                trailing: const Icon(Icons.arrow_forward_ios),
+                onTap: () => _navigateToTimerDashboard(),
               ),
             ],
           ),
@@ -504,6 +539,14 @@ class _MenuScreenState extends State<MenuScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const PatternAnalysisScreen(),
+      ),
+    );
+  }
+
+  void _navigateToTimerDashboard() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const TimerDashboardScreen(),
       ),
     );
   }
