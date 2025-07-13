@@ -8,6 +8,7 @@ import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
+import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -546,6 +547,14 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
+          Wrap(
+            spacing: Spacing.md,
+            runSpacing: Spacing.md,
+            children: _popularSubstances.take(4).map((substance) {
+              return SizedBox(
+                width: (MediaQuery.of(context).size.width - (Spacing.md * 3)) / 2,
+                child: _buildImprovedSubstanceCard(context, substance),
+
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
@@ -579,6 +588,15 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       ],
     );
   }
+
+
+  Widget _buildImprovedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
+    return SubstanceQuickCard(
+      substance: substance,
+      userWeight: _currentUser?.weightKg,
+      onTap: () => _calculateDosage(substance),
+      showDosagePreview: true,
+      isCompact: false,
 
   Widget _buildSimpleSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
     final theme = Theme.of(context);
@@ -1087,16 +1105,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   Color _getSubstanceColor(String substanceName) {
-    final hash = substanceName.hashCode;
-    final colors = [
-      Colors.indigo,
-      Colors.cyan,
-      Colors.green,
-      Colors.purple,
-      Colors.orange,
-      Colors.pink,
-    ];
-    return colors[hash.abs() % colors.length];
+    final substanceColorMap = DesignTokens.getSubstanceColor(substanceName);
+    return substanceColorMap['primary'] ?? DesignTokens.primaryIndigo;
   }
 
   IconData _getSubstanceIcon(String substanceName) {
