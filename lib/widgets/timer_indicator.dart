@@ -94,7 +94,7 @@ class _TimerIndicatorState extends State<TimerIndicator>
             ),
             decoration: BoxDecoration(
               color: indicatorColor.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(Spacing.radiusSm),
+              borderRadius: BorderRadius.circular(Spacing.sm),
               border: Border.all(
                 color: indicatorColor.withOpacity(0.3),
                 width: 1,
