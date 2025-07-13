@@ -433,6 +433,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             ? DesignTokens.accentCyan
                             : theme.textTheme.bodySmall?.color,
                       ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
                     ),
                   ),
                 ),
@@ -559,6 +561,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                     ? DesignTokens.accentCyan
                                     : theme.textTheme.bodySmall?.color,
                           ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
                         Text(
                           date.day.toString(),

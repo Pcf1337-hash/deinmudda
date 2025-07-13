@@ -49,23 +49,28 @@ class _ReflectiveAppBarLogoState extends State<ReflectiveAppBarLogo>
   }
 
   void _setupGyroscopeListener() {
-    _gyroscopeSubscription = gyroscopeEventStream().listen(
-      (GyroscopeEvent event) {
-        if (mounted) {
-          setState(() {
-            // Apply gyroscope data with sensitivity and limits
-            _rotationX = (event.x * _sensitivity).clamp(-_maxRotation, _maxRotation);
-            _rotationY = (event.y * _sensitivity).clamp(-_maxRotation, _maxRotation);
-            _offsetX = (event.y * _sensitivity * 20).clamp(-_maxOffset, _maxOffset);
-            _offsetY = (event.x * _sensitivity * 20).clamp(-_maxOffset, _maxOffset);
-          });
-        }
-      },
-      onError: (error) {
-        // Handle gyroscope errors gracefully
-        debugPrint('Gyroscope error: $error');
-      },
-    );
+    try {
+      _gyroscopeSubscription = gyroscopeEventStream().listen(
+        (GyroscopeEvent event) {
+          if (mounted) {
+            setState(() {
+              // Apply gyroscope data with sensitivity and limits
+              _rotationX = (event.x * _sensitivity).clamp(-_maxRotation, _maxRotation);
+              _rotationY = (event.y * _sensitivity).clamp(-_maxRotation, _maxRotation);
+              _offsetX = (event.y * _sensitivity * 20).clamp(-_maxOffset, _maxOffset);
+              _offsetY = (event.x * _sensitivity * 20).clamp(-_maxOffset, _maxOffset);
+            });
+          }
+        },
+        onError: (error) {
+          // Handle gyroscope errors gracefully
+          debugPrint('Gyroscope error: $error');
+        },
+      );
+    } catch (e) {
+      // Handle initialization errors
+      debugPrint('Gyroscope initialization error: $e');
+    }
   }
 
   @override
