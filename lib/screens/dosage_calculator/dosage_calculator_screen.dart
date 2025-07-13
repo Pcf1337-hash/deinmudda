@@ -9,6 +9,7 @@ import '../../services/dosage_calculator_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
+import '../../widgets/dosage_calculator/enhanced_substance_card.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -91,23 +92,25 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ? _buildLoadingState()
                 : _errorMessage != null
                     ? _buildErrorCard(context, isDark)
-                    : SingleChildScrollView(
-                        padding: Spacing.paddingHorizontalMd,
-                        child: Column(
-                          children: [
-                            _buildUserProfileSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildSearchSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildPopularSubstancesSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildSafetyWarningSection(context, isDark),
-                            if (_recentCalculations.isNotEmpty) ...[
+                    : SafeArea(
+                        child: SingleChildScrollView(
+                          padding: Spacing.paddingHorizontalMd,
+                          child: Column(
+                            children: [
+                              _buildUserProfileSection(context, isDark),
                               const SizedBox(height: Spacing.lg),
-                              _buildRecentCalculationsSection(context, isDark),
+                              _buildSearchSection(context, isDark),
+                              const SizedBox(height: Spacing.lg),
+                              _buildPopularSubstancesSection(context, isDark),
+                              const SizedBox(height: Spacing.lg),
+                              _buildSafetyWarningSection(context, isDark),
+                              if (_recentCalculations.isNotEmpty) ...[
+                                const SizedBox(height: Spacing.lg),
+                                _buildRecentCalculationsSection(context, isDark),
+                              ],
+                              const SizedBox(height: 120),
                             ],
-                            const SizedBox(height: 120),
-                          ],
+                          ),
                         ),
                       ),
           ),
@@ -547,23 +550,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final availableWidth = constraints.maxWidth;
-              final itemWidth = (availableWidth - Spacing.md) / 2;
-              
-              return Wrap(
-                spacing: Spacing.md,
-                runSpacing: Spacing.md,
-                children: _popularSubstances.take(4).map((substance) {
-                  return SizedBox(
-                    width: itemWidth.clamp(160.0, 200.0),
-                    height: 220,
-                    child: _buildSimpleSubstanceCard(context, substance),
-                  );
-                }).toList(),
-              );
-            },
+          // Use the new responsive substance grid
+          ResponsiveSubstanceGrid(
+            substances: _popularSubstances.take(4).toList(),
+            userWeight: _currentUser?.weightKg,
+            onCardTap: _calculateDosage,
           )
         else
           Container(
