@@ -29,6 +29,37 @@
 
 ---
 
+## 🔄 LETZTE 5 ÄNDERUNGEN
+
+### **📅 Januar 2025**
+
+1. **🐛 Dosisrechner Crash-Fixes** (13. Januar 2025)
+   - Null-Safe fromJson() Methode für DosageCalculatorSubstance Model implementiert
+   - Robuste Fehlerbehandlung mit Try-catch Blöcken in kritischen Bereichen
+   - Sichere Behandlung von unvollständigen Datensätzen
+
+2. **🔒 Biometrische Authentifizierung** (Januar 2025)
+   - Fingerabdruck und Face ID Unterstützung implementiert
+   - PIN-Code-Sperre als Alternative zur Biometrie
+   - Automatische App-Sperre beim Wechsel in den Hintergrund
+
+3. **🔔 Benachrichtigungssystem** (Januar 2025)
+   - Konfigurierbare tägliche Erinnerungen für Einträge
+   - Wochentag-Auswahl und flexible Zeiteinstellung
+   - Test-Funktion für Benachrichtigungen
+
+4. **⚡ Performance-Optimierungen** (Januar 2025)
+   - Verbesserte Datenbankabfragen und Indizes
+   - Adaptive Animationen je nach Geräteleistung
+   - Lazy Loading für schnellere Startzeit
+
+5. **🖥️ UI-Render-Fehler Behebung** (Januar 2025)
+   - CustomScrollView/Sliver Widget-Hierarchie korrigiert
+   - Eindeutige Keys für alle Widgets implementiert
+   - Problematische flutter_animate Konflikte behoben
+
+---
+
 ## 🎯 PROJEKT ÜBERSICHT
 
 ### **Zielgruppe**
