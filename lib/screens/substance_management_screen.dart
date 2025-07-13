@@ -237,20 +237,6 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
       ),
     );
   }
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildErrorCard(BuildContext context, bool isDark) {
     return GlassCard(
