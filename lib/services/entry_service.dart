@@ -4,12 +4,10 @@ import '../models/entry.dart';
 // Import with prefix to avoid conflicts
 import '../models/substance.dart' as substance_model;
 import 'database_service.dart';
-import 'timer_service.dart';
 import '../utils/performance_helper.dart';
 
 class EntryService {
   final DatabaseService _databaseService = DatabaseService();
-  final TimerService _timerService = TimerService();
 
   // Create
   Future<String> createEntry(Entry entry) async {
@@ -32,13 +30,13 @@ class EntryService {
   }
 
   // Create entry with timer
-  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration}) async {
+  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration, required dynamic timerService}) async {
     try {
       // First create the entry
       await createEntry(entry);
       
       // Then start the timer
-      return await _timerService.startTimer(entry, customDuration: customDuration);
+      return await timerService.startTimer(entry, customDuration: customDuration);
     } catch (e) {
       throw Exception('Failed to create entry with timer: $e');
     }
