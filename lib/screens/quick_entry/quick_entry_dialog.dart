@@ -145,7 +145,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
 
       // Create entry with or without timer
       if (_startTimer && _selectedSubstance!.duration != null) {
-        await _entryService.createEntryWithTimer(entry, customDuration: _selectedSubstance!.duration);
+        await _entryService.createEntryWithTimer(entry, customDuration: _selectedSubstance!.duration, timerService: _timerService);
       } else {
         await _entryService.addEntry(entry);
       }
