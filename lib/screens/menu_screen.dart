@@ -5,6 +5,8 @@ import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/database_service.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/theme_switcher.dart';
+import '../widgets/reflective_app_bar_logo.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'substance_management_screen.dart';
@@ -86,46 +88,28 @@ class _MenuScreenState extends State<MenuScreen> {
         child: Padding(
           padding: Spacing.paddingMd,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center, // Center the content
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.menu_rounded,
-                      color: Colors.white,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Menü & Einstellungen',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tools, Funktionen & Konfiguration',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+              const ReflectiveAppBarLogo().animate().fadeIn(
+                duration: DesignTokens.animationSlow,
+                delay: const Duration(milliseconds: 200),
+              ).slideY(
+                begin: -0.3,
+                end: 0,
+                duration: DesignTokens.animationSlow,
+                curve: DesignTokens.curveEaseOut,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Menü & Einstellungen',
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  color: Colors.white.withOpacity(0.8),
+                ),
+                textAlign: TextAlign.center,
+              ).animate().fadeIn(
+                duration: DesignTokens.animationMedium,
+                delay: const Duration(milliseconds: 300),
               ),
             ],
           ),
@@ -288,30 +272,32 @@ class _MenuScreenState extends State<MenuScreen> {
           delay: const Duration(milliseconds: 450),
         ),
         Spacing.verticalSpaceMd,
-        Consumer<SettingsService>(
-          builder: (context, settingsService, child) {
-            return FutureBuilder<bool>(
-              future: settingsService.isDarkMode,
-              builder: (context, snapshot) {
-                final isDarkModeEnabled = snapshot.data ?? false;
-                
-                return GlassCard(
-                  child: SwitchListTile(
-                    title: const Text('Dark Mode'),
-                    subtitle: const Text('Dunkles Design verwenden'),
-                    value: isDarkModeEnabled,
-                    onChanged: (value) {
-                      settingsService.setDarkMode(value);
-                    },
-                    secondary: Icon(
-                      isDarkModeEnabled ? Icons.dark_mode : Icons.light_mode,
-                      color: DesignTokens.primaryIndigo,
-                    ),
+        GlassCard(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Theme Mode',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                );
-              },
-            );
-          },
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Wähle zwischen Light, Dark oder Trippy Dark Mode',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                const Center(
+                  child: ThemeSwitcher(),
+                ),
+              ],
+            ),
+          ),
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
           delay: const Duration(milliseconds: 500),

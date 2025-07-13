@@ -12,6 +12,7 @@ import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
+import '../widgets/reflective_app_bar_logo.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -312,32 +313,13 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Padding(
               padding: Spacing.paddingMd,
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center, // Center the content
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  PulsatingWidget(
-                    isEnabled: isPsychedelic,
-                    glowColor: substanceColors['primary'],
-                    intensity: 0.5,
-                    child: Text(
-                      'Konsum Tracker Pro',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: isPsychedelic 
-                            ? DesignTokens.textPsychedelicPrimary 
-                            : Colors.white,
-                        fontWeight: FontWeight.w700,
-                        shadows: isPsychedelic ? [
-                          Shadow(
-                            color: substanceColors['primary']!.withOpacity(0.3),
-                            blurRadius: 10,
-                          ),
-                        ] : null,
-                      ),
-                    ),
-                  ).animate().fadeIn(
+                  const ReflectiveAppBarLogo().animate().fadeIn(
                     duration: DesignTokens.animationSlow,
                     delay: const Duration(milliseconds: 200),
-                  ).slideX(
+                  ).slideY(
                     begin: -0.3,
                     end: 0,
                     duration: DesignTokens.animationSlow,

@@ -16,6 +16,7 @@ import 'services/auth_service.dart'; // Import the auth service
 import 'services/notification_service.dart'; // Import the notification service
 import 'services/timer_service.dart'; // Import the timer service
 import 'services/psychedelic_theme_service.dart'; // Import the psychedelic theme service
+import 'services/theme_service.dart'; // Import the new theme service
 import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
@@ -55,6 +56,10 @@ void main() async {
   // Initialize psychedelic theme service
   final psychedelicThemeService = PsychedelicThemeService();
   await psychedelicThemeService.init();
+  
+  // Initialize new theme service
+  final themeService = ThemeService();
+  await themeService.init();
     
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -68,15 +73,18 @@ void main() async {
   
   runApp(KonsumTrackerApp(
     psychedelicThemeService: psychedelicThemeService,
+    themeService: themeService,
   ));
 }
 
 class KonsumTrackerApp extends StatelessWidget {
   final PsychedelicThemeService psychedelicThemeService;
+  final ThemeService themeService;
   
   const KonsumTrackerApp({
     super.key,
     required this.psychedelicThemeService,
+    required this.themeService,
   });
 
   @override
@@ -101,6 +109,9 @@ class KonsumTrackerApp extends StatelessWidget {
         ChangeNotifierProvider<PsychedelicThemeService>.value(
           value: psychedelicThemeService,
         ),
+        ChangeNotifierProvider<ThemeService>.value(
+          value: themeService,
+        ),
         Provider<AuthService>(
           create: (_) => AuthService(),
         ),
@@ -111,46 +122,38 @@ class KonsumTrackerApp extends StatelessWidget {
           create: (_) => TimerService(),
         ),
       ],
-      child: Consumer2<SettingsService, PsychedelicThemeService>(
-        builder: (context, settingsService, psychedelicService, child) {
-          return FutureBuilder<bool>(
-            future: settingsService.isDarkMode,
-            builder: (context, snapshot) {
-              final isDarkMode = snapshot.data ?? false;
-              
-              return MaterialApp(
-                title: 'Konsum Tracker Pro',
-                debugShowCheckedModeBanner: false,
-                theme: ModernTheme.lightTheme,
-                darkTheme: psychedelicService.isPsychedelicMode 
-                    ? ModernTheme.psychedelicDarkTheme 
-                    : ModernTheme.darkTheme,
-                themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                home: FutureBuilder<bool>(
-                  future: _shouldShowAuthScreen(context),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(
-                        body: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                    
-                    final showAuth = snapshot.data ?? false;
-                    final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
-                    
-                    // Wrap with psychedelic background if enabled and in dark mode
-                    if (isDarkMode && psychedelicService.isPsychedelicMode) {
-                      return PsychedelicBackground(
-                        isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
-                        child: mainContent,
-                      );
-                    }
-                    
-                    return mainContent;
-                  },
-                ),
+      child: Consumer3<SettingsService, PsychedelicThemeService, ThemeService>(
+        builder: (context, settingsService, psychedelicService, themeService, child) {
+          return MaterialApp(
+            title: 'Konsum Tracker Pro',
+            debugShowCheckedModeBanner: false,
+            theme: themeService.getThemeData(),
+            themeMode: ThemeMode.dark, // Always use dark theme mode, let service handle switching
+            home: FutureBuilder<bool>(
+              future: _shouldShowAuthScreen(context),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                
+                final showAuth = snapshot.data ?? false;
+                final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
+                
+                // Wrap with psychedelic background if enabled and in trippy mode
+                if (themeService.isTrippyDarkMode && psychedelicService.isPsychedelicMode) {
+                  return PsychedelicBackground(
+                    isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
+                    child: mainContent,
+                  );
+                }
+                
+                return mainContent;
+              },
+            ),
                 builder: (context, child) {
                   return MediaQuery(
                     data: MediaQuery.of(context).copyWith(
@@ -159,10 +162,9 @@ class KonsumTrackerApp extends StatelessWidget {
                     child: child!,
                   );
                 },
-              );
-            },
-          );
-        },
+            );
+          },
+        ),
       ),
     );
   }

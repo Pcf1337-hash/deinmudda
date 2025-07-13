@@ -6,6 +6,7 @@ import '../models/entry.dart';
 import '../services/entry_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
+import '../widgets/reflective_app_bar_logo.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'edit_entry_screen.dart';
@@ -207,19 +208,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
         child: Padding(
           padding: Spacing.paddingMd,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center, // Center the content
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'Kalender',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
-              ).animate().fadeIn(
+              const ReflectiveAppBarLogo().animate().fadeIn(
                 duration: DesignTokens.animationSlow,
                 delay: const Duration(milliseconds: 200),
-              ).slideX(
+              ).slideY(
                 begin: -0.3,
                 end: 0,
                 duration: DesignTokens.animationSlow,
