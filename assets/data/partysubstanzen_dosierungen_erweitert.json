@@ -1,0 +1,155 @@
+[
+  {
+    "Substanz":"MDMA",
+    "Leichte Dosis (mg\/kg)":"1",
+    "Normale Dosis (mg\/kg)":"1.5",
+    "Starke Dosis (mg\/kg)":"2.5",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"4–6 h",
+    "Sicherheitshinweise":"Max. 1x\/Monat, neurotoxisch bei Überdosierung"
+  },
+  {
+    "Substanz":"LSD",
+    "Leichte Dosis (mg\/kg)":"50",
+    "Normale Dosis (mg\/kg)":"100",
+    "Starke Dosis (mg\/kg)":"150+",
+    "Einnahmeart":"oral (Blotter)",
+    "Wirkdauer":"8–12 h",
+    "Sicherheitshinweise":"Nicht gewichtsbasiert, starke Psycheffekte"
+  },
+  {
+    "Substanz":"Ketamin",
+    "Leichte Dosis (mg\/kg)":"0.3",
+    "Normale Dosis (mg\/kg)":"0.6",
+    "Starke Dosis (mg\/kg)":"1+",
+    "Einnahmeart":"nasal",
+    "Wirkdauer":"45–90 min",
+    "Sicherheitshinweise":"Dissoziativ, Ohnmacht bei Überdosierung"
+  },
+  {
+    "Substanz":"Kokain",
+    "Leichte Dosis (mg\/kg)":"30",
+    "Normale Dosis (mg\/kg)":"60",
+    "Starke Dosis (mg\/kg)":"100+",
+    "Einnahmeart":"nasal",
+    "Wirkdauer":"30–60 min",
+    "Sicherheitshinweise":"Hoher Blutdruck, Herzinfarktrisiko"
+  },
+  {
+    "Substanz":"Alkohol",
+    "Leichte Dosis (mg\/kg)":"0.3",
+    "Normale Dosis (mg\/kg)":"0.8",
+    "Starke Dosis (mg\/kg)":"1.5+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"1–3 h",
+    "Sicherheitshinweise":"Ab 2 g\/kg = >3‰ = Lebensgefahr"
+  },
+  {
+    "Substanz":"2C-B",
+    "Leichte Dosis (mg\/kg)":"8",
+    "Normale Dosis (mg\/kg)":"16",
+    "Starke Dosis (mg\/kg)":"24+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"4–6 h",
+    "Sicherheitshinweise":"Optisch, euphorisch-psychedelisch"
+  },
+  {
+    "Substanz":"Psilocybin",
+    "Leichte Dosis (mg\/kg)":"0.2",
+    "Normale Dosis (mg\/kg)":"0.5",
+    "Starke Dosis (mg\/kg)":"1+",
+    "Einnahmeart":"oral (Pilze)",
+    "Wirkdauer":"4–6 h",
+    "Sicherheitshinweise":"Individuell, lange Dauer"
+  },
+  {
+    "Substanz":"Amphetamin",
+    "Leichte Dosis (mg\/kg)":"0.5",
+    "Normale Dosis (mg\/kg)":"1",
+    "Starke Dosis (mg\/kg)":"1.5+",
+    "Einnahmeart":"nasal\/oral",
+    "Wirkdauer":"4–6 h",
+    "Sicherheitshinweise":"Herzrisiko, oft gestreckt"
+  },
+  {
+    "Substanz":"Methamphetamin",
+    "Leichte Dosis (mg\/kg)":"5",
+    "Normale Dosis (mg\/kg)":"15",
+    "Starke Dosis (mg\/kg)":"20+",
+    "Einnahmeart":"oral\/nasal",
+    "Wirkdauer":"6–12 h",
+    "Sicherheitshinweise":"Sehr suchterzeugend"
+  },
+  {
+    "Substanz":"Mephedron",
+    "Leichte Dosis (mg\/kg)":"100",
+    "Normale Dosis (mg\/kg)":"200",
+    "Starke Dosis (mg\/kg)":"250+",
+    "Einnahmeart":"nasal\/oral",
+    "Wirkdauer":"2–4 h",
+    "Sicherheitshinweise":"Crash, starker Drang zur Wiederholung"
+  },
+  {
+    "Substanz":"GHB\/GBL",
+    "Leichte Dosis (mg\/kg)":"0.5",
+    "Normale Dosis (mg\/kg)":"1.5",
+    "Starke Dosis (mg\/kg)":"2+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"1–3 h",
+    "Sicherheitshinweise":"Enge Wirkspanne, Atemstillstand möglich"
+  },
+  {
+    "Substanz":"DXM",
+    "Leichte Dosis (mg\/kg)":"1.5",
+    "Normale Dosis (mg\/kg)":"2.5",
+    "Starke Dosis (mg\/kg)":"3+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"3–6 h",
+    "Sicherheitshinweise":"Sedierend, dissoziativ"
+  },
+  {
+    "Substanz":"Lachgas",
+    "Leichte Dosis (mg\/kg)":"1",
+    "Normale Dosis (mg\/kg)":"2",
+    "Starke Dosis (mg\/kg)":"3+",
+    "Einnahmeart":"inhalativ",
+    "Wirkdauer":"1–3 min",
+    "Sicherheitshinweise":"Kurz, Ohnmachtrisiko"
+  },
+  {
+    "Substanz":"Poppers (Nitrit)",
+    "Leichte Dosis (mg\/kg)":"1",
+    "Normale Dosis (mg\/kg)":"1–2",
+    "Starke Dosis (mg\/kg)":"3+",
+    "Einnahmeart":"inhalativ",
+    "Wirkdauer":"1–3 min",
+    "Sicherheitshinweise":"Gefäßweitend, riskant bei Herzleiden"
+  },
+  {
+    "Substanz":"4-AcO-DMT",
+    "Leichte Dosis (mg\/kg)":"10",
+    "Normale Dosis (mg\/kg)":"20",
+    "Starke Dosis (mg\/kg)":"30+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"4–6 h",
+    "Sicherheitshinweise":"Ähnlich Psilocybin, psychedelisch"
+  },
+  {
+    "Substanz":"Mescalin",
+    "Leichte Dosis (mg\/kg)":"3",
+    "Normale Dosis (mg\/kg)":"5",
+    "Starke Dosis (mg\/kg)":"6+",
+    "Einnahmeart":"oral",
+    "Wirkdauer":"10–16 h",
+    "Sicherheitshinweise":"12h+ Wirkung, visuals stark"
+  },
+  {
+    "Substanz":"THC",
+    "Leichte Dosis (mg\/kg)":"5",
+    "Normale Dosis (mg\/kg)":"10–20",
+    "Starke Dosis (mg\/kg)":"30+",
+    "Einnahmeart":"oral\/rauchbar",
+    "Wirkdauer":"2–4 h",
+    "Sicherheitshinweise":"Oral = potenter, Mischkonsumproblematisch"
+  }
+]

@@ -1,0 +1,141 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'utils/performance_helper.dart';
+
+import 'screens/auth/auth_screen.dart'; // Import the auth screen
+import 'screens/main_navigation.dart';
+import 'services/database_service.dart';
+import 'services/entry_service.dart';
+import 'services/substance_service.dart';
+import 'services/settings_service.dart';
+import 'services/quick_button_service.dart';
+import 'services/auth_service.dart'; // Import the auth service
+import 'services/notification_service.dart'; // Import the notification service
+import 'theme/modern_theme.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize performance optimizations
+  PerformanceHelper.init();
+  
+  // Enable performance optimization in release mode
+  if (kReleaseMode) {
+    // Disable debug prints
+    debugPrint = (String? message, {int? wrapWidth}) {};
+    
+    // Set preferred orientations
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+  }
+  
+  // Initialize locale data for German
+  await initializeDateFormatting('de_DE', null);
+  
+  // Initialize database
+  final databaseService = DatabaseService();
+  await databaseService.database;
+  
+  // Initialize notification service
+  final notificationService = NotificationService();
+  await notificationService.init();
+    
+  // Set system UI overlay style
+  SystemChrome.setSystemUIOverlayStyle(
+    const SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
+    ),
+  );
+  
+  runApp(const KonsumTrackerApp());
+}
+
+class KonsumTrackerApp extends StatelessWidget {
+  const KonsumTrackerApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiProvider(
+      providers: [
+        Provider<DatabaseService>(
+          create: (_) => DatabaseService(),
+        ),
+        ProxyProvider<DatabaseService, EntryService>(
+          update: (_, db, __) => EntryService(),
+        ),
+        ProxyProvider<DatabaseService, SubstanceService>(
+          update: (_, db, __) => SubstanceService(),
+        ),
+        ProxyProvider<DatabaseService, QuickButtonService>(
+          update: (_, db, __) => QuickButtonService(),
+        ),
+        ChangeNotifierProvider<SettingsService>(
+          create: (_) => SettingsService(),
+        ),
+        Provider<AuthService>(
+          create: (_) => AuthService(),
+        ),
+        Provider<NotificationService>(
+          create: (_) => NotificationService(),
+        ),
+      ],
+      child: Consumer<SettingsService>(
+        builder: (context, settingsService, child) {
+          return FutureBuilder<bool>(
+            future: settingsService.isDarkMode,
+            builder: (context, snapshot) {
+              final isDarkMode = snapshot.data ?? false;
+              
+              return MaterialApp(
+                title: 'Konsum Tracker Pro',
+                debugShowCheckedModeBanner: false,
+                theme: ModernTheme.lightTheme,
+                darkTheme: ModernTheme.darkTheme,
+                themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
+                home: FutureBuilder<bool>(
+                  future: _shouldShowAuthScreen(context),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Scaffold(
+                        body: Center(
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
+                    
+                    final showAuth = snapshot.data ?? false;
+                    return showAuth ? const AuthScreen() : const MainNavigation();
+                  },
+                ),
+                builder: (context, child) {
+                  return MediaQuery(
+                    data: MediaQuery.of(context).copyWith(
+                      textScaler: TextScaler.noScaling,
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+  
+  // Determine if auth screen should be shown
+  Future<bool> _shouldShowAuthScreen(BuildContext context) async {
+    final authService = Provider.of<AuthService>(context, listen: false);
+    final isAppLockEnabled = await authService.isAppLockEnabled();
+    return isAppLockEnabled;
+  }
+  
+}

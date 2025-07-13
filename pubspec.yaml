@@ -1,0 +1,61 @@
+name: konsum_tracker_pro
+description: "Ein moderner Konsum-Tracker für Substanzen mit Glasmorphismus-Design"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # State Management
+  provider: ^6.1.1
+  
+  # Database
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  
+  # UI & Animations
+  flutter_animate: ^4.2.0+1
+  
+  # Utilities
+  uuid: ^4.1.0
+  intl: ^0.18.1
+  shared_preferences: ^2.2.2
+  path_provider: ^2.1.1
+  share_plus: ^7.2.1
+  
+  # Security
+  local_auth: ^2.1.7
+  
+  # Notifications
+  flutter_local_notifications: ^14.1.1  # Downgraded to a compatible version
+  timezone: ^0.9.2
+  
+  # Icons
+  cupertino_icons: ^1.0.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/data/
+    - assets/images/
+  
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
