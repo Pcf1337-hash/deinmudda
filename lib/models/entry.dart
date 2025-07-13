@@ -27,6 +27,12 @@ class Entry {
   final String? notes;
   final DateTime createdAt;
   final DateTime updatedAt;
+  
+  // Timer fields
+  final DateTime? timerStartTime;
+  final DateTime? timerEndTime;
+  final bool timerCompleted;
+  final bool timerNotificationSent;
 
   const Entry({
     required this.id,
@@ -39,6 +45,10 @@ class Entry {
     this.notes,
     required this.createdAt,
     required this.updatedAt,
+    this.timerStartTime,
+    this.timerEndTime,
+    this.timerCompleted = false,
+    this.timerNotificationSent = false,
   });
 
   // Factory constructor for creating new entries
@@ -50,6 +60,10 @@ class Entry {
     required DateTime dateTime,
     double cost = 0.0,
     String? notes,
+    DateTime? timerStartTime,
+    DateTime? timerEndTime,
+    bool timerCompleted = false,
+    bool timerNotificationSent = false,
   }) {
     final now = DateTime.now();
     return Entry(
@@ -63,6 +77,10 @@ class Entry {
       notes: notes,
       createdAt: now,
       updatedAt: now,
+      timerStartTime: timerStartTime,
+      timerEndTime: timerEndTime,
+      timerCompleted: timerCompleted,
+      timerNotificationSent: timerNotificationSent,
     );
   }
 
@@ -95,6 +113,46 @@ class Entry {
   DateTime get date => DateTime(dateTime.year, dateTime.month, dateTime.day);
   DateTime get time => dateTime;
 
+  // Timer-related getters
+  bool get hasTimer => timerStartTime != null && timerEndTime != null;
+  
+  bool get isTimerActive => hasTimer && !timerCompleted && DateTime.now().isBefore(timerEndTime!);
+  
+  bool get isTimerExpired => hasTimer && DateTime.now().isAfter(timerEndTime!) && !timerCompleted;
+  
+  Duration? get timerDuration => hasTimer ? timerEndTime!.difference(timerStartTime!) : null;
+  
+  Duration? get remainingTime => isTimerActive ? timerEndTime!.difference(DateTime.now()) : null;
+  
+  Duration? get elapsedTime => hasTimer ? DateTime.now().difference(timerStartTime!) : null;
+  
+  double get timerProgress {
+    if (!hasTimer) return 0.0;
+    final total = timerEndTime!.difference(timerStartTime!);
+    final elapsed = DateTime.now().difference(timerStartTime!);
+    final progress = elapsed.inMilliseconds / total.inMilliseconds;
+    return progress.clamp(0.0, 1.0);
+  }
+  
+  String get formattedRemainingTime {
+    final remaining = remainingTime;
+    if (remaining == null) return 'Timer nicht aktiv';
+    
+    if (remaining.isNegative) return 'Timer abgelaufen';
+    
+    final hours = remaining.inHours;
+    final minutes = remaining.inMinutes % 60;
+    final seconds = remaining.inSeconds % 60;
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}min';
+    } else if (minutes > 0) {
+      return '${minutes}min ${seconds}s';
+    } else {
+      return '${seconds}s';
+    }
+  }
+
   // JSON serialization
   Map<String, dynamic> toJson() {
     return {
@@ -108,6 +166,10 @@ class Entry {
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'timerStartTime': timerStartTime?.toIso8601String(),
+      'timerEndTime': timerEndTime?.toIso8601String(),
+      'timerCompleted': timerCompleted,
+      'timerNotificationSent': timerNotificationSent,
     };
   }
 
@@ -123,6 +185,10 @@ class Entry {
       notes: json['notes'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      timerStartTime: json['timerStartTime'] != null ? DateTime.parse(json['timerStartTime'] as String) : null,
+      timerEndTime: json['timerEndTime'] != null ? DateTime.parse(json['timerEndTime'] as String) : null,
+      timerCompleted: json['timerCompleted'] as bool? ?? false,
+      timerNotificationSent: json['timerNotificationSent'] as bool? ?? false,
     );
   }
 
@@ -139,6 +205,10 @@ class Entry {
       'notes': notes,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'timerStartTime': timerStartTime?.toIso8601String(),
+      'timerEndTime': timerEndTime?.toIso8601String(),
+      'timerCompleted': timerCompleted ? 1 : 0,
+      'timerNotificationSent': timerNotificationSent ? 1 : 0,
     };
   }
 
@@ -154,6 +224,10 @@ class Entry {
       notes: map['notes'] as String?,
       createdAt: DateTime.parse(map['createdAt'] as String),
       updatedAt: DateTime.parse(map['updatedAt'] as String),
+      timerStartTime: map['timerStartTime'] != null ? DateTime.parse(map['timerStartTime'] as String) : null,
+      timerEndTime: map['timerEndTime'] != null ? DateTime.parse(map['timerEndTime'] as String) : null,
+      timerCompleted: (map['timerCompleted'] as int?) == 1,
+      timerNotificationSent: (map['timerNotificationSent'] as int?) == 1,
     );
   }
 
@@ -169,6 +243,10 @@ class Entry {
     String? notes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? timerStartTime,
+    DateTime? timerEndTime,
+    bool? timerCompleted,
+    bool? timerNotificationSent,
   }) {
     return Entry(
       id: id ?? this.id,
@@ -181,6 +259,10 @@ class Entry {
       notes: notes ?? this.notes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      timerStartTime: timerStartTime ?? this.timerStartTime,
+      timerEndTime: timerEndTime ?? this.timerEndTime,
+      timerCompleted: timerCompleted ?? this.timerCompleted,
+      timerNotificationSent: timerNotificationSent ?? this.timerNotificationSent,
     );
   }
 

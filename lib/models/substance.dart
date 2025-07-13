@@ -25,6 +25,7 @@ class Substance {
   final String defaultUnit;
   final String? notes;
   final String? iconName;
+  final Duration? duration; // Timer duration for minimal effect time
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -37,6 +38,7 @@ class Substance {
     required this.defaultUnit,
     this.notes,
     this.iconName,
+    this.duration,
     DateTime? createdAt,
     DateTime? updatedAt,
   })  : createdAt = createdAt ?? DateTime.now(),
@@ -51,6 +53,7 @@ class Substance {
     required String defaultUnit,
     String? notes,
     String? iconName,
+    Duration? duration,
   }) {
     final now = DateTime.now();
     return Substance(
@@ -62,6 +65,7 @@ class Substance {
       defaultUnit: defaultUnit,
       notes: notes,
       iconName: iconName,
+      duration: duration,
       createdAt: now,
       updatedAt: now,
     );
@@ -70,6 +74,16 @@ class Substance {
   // Getters
   String get formattedPrice {
     return '${pricePerUnit.toStringAsFixed(2).replaceAll('.', ',')}€/$defaultUnit';
+  }
+
+  String get formattedDuration {
+    if (duration == null) return 'Nicht festgelegt';
+    final hours = duration!.inHours;
+    final minutes = duration!.inMinutes % 60;
+    if (hours > 0) {
+      return minutes > 0 ? '${hours}h ${minutes}min' : '${hours}h';
+    }
+    return '${minutes}min';
   }
 
   String get categoryDisplayName {
@@ -161,6 +175,7 @@ class Substance {
       'defaultUnit': defaultUnit,
       'notes': notes,
       'iconName': iconName,
+      'duration': duration?.inMinutes, // Store duration in minutes
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -176,6 +191,7 @@ class Substance {
       defaultUnit: map['defaultUnit'] as String,
       notes: map['notes'] as String?,
       iconName: map['iconName'] as String?,
+      duration: map['duration'] != null ? Duration(minutes: map['duration'] as int) : null,
       createdAt: map['created_at'] != null ? DateTime.parse(map['created_at'] as String) : DateTime.now(),
       updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at'] as String) : DateTime.now(),
     );
@@ -192,6 +208,7 @@ class Substance {
       'defaultUnit': defaultUnit,
       'notes': notes,
       'iconName': iconName,
+      'duration': duration?.inMinutes,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
     };
@@ -207,6 +224,7 @@ class Substance {
       defaultUnit: json['defaultUnit'] as String,
       notes: json['notes'] as String?,
       iconName: json['iconName'] as String?,
+      duration: json['duration'] != null ? Duration(minutes: json['duration'] as int) : null,
       createdAt: json['createdAt'] != null ? DateTime.parse(json['createdAt'] as String) : DateTime.now(),
       updatedAt: json['updatedAt'] != null ? DateTime.parse(json['updatedAt'] as String) : DateTime.now(),
     );
@@ -222,6 +240,7 @@ class Substance {
     String? defaultUnit,
     String? notes,
     String? iconName,
+    Duration? duration,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -234,6 +253,7 @@ class Substance {
       defaultUnit: defaultUnit ?? this.defaultUnit,
       notes: notes ?? this.notes,
       iconName: iconName ?? this.iconName,
+      duration: duration ?? this.duration,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
     );
@@ -264,6 +284,7 @@ class Substance {
         defaultUnit: 'mg',
         notes: 'Häufig in Kaffee, Tee und Energy-Drinks enthalten',
         iconName: 'coffee',
+        duration: const Duration(hours: 4), // 4 hours for caffeine
       ),
       Substance.create(
         name: 'Cannabis',
@@ -273,6 +294,7 @@ class Substance {
         defaultUnit: 'g',
         notes: 'THC-haltige Cannabisprodukte',
         iconName: 'leaf',
+        duration: const Duration(hours: 2), // 2 hours for cannabis
       ),
       Substance.create(
         name: 'Alkohol',
@@ -282,6 +304,7 @@ class Substance {
         defaultUnit: 'ml',
         notes: 'Ethanol in alkoholischen Getränken',
         iconName: 'wine',
+        duration: const Duration(hours: 2), // 2 hours for alcohol
       ),
       Substance.create(
         name: 'Vitamin D',
@@ -291,6 +314,7 @@ class Substance {
         defaultUnit: 'IE',
         notes: 'Wichtig für Knochengesundheit und Immunsystem',
         iconName: 'sun',
+        duration: const Duration(hours: 24), // 24 hours for vitamin D
       ),
       Substance.create(
         name: 'Ibuprofen',
@@ -300,6 +324,7 @@ class Substance {
         defaultUnit: 'mg',
         notes: 'Nichtsteroidales Antirheumatikum (NSAR)',
         iconName: 'pill',
+        duration: const Duration(hours: 6), // 6 hours for ibuprofen
       ),
       Substance.create(
         name: 'Nikotin',
@@ -309,6 +334,7 @@ class Substance {
         defaultUnit: 'mg',
         notes: 'Hauptwirkstoff in Tabakprodukten',
         iconName: 'cigarette',
+        duration: const Duration(minutes: 30), // 30 minutes for nicotine
       ),
       Substance.create(
         name: 'Melatonin',
@@ -318,6 +344,7 @@ class Substance {
         defaultUnit: 'mg',
         notes: 'Natürliches Schlafhormon',
         iconName: 'moon',
+        duration: const Duration(hours: 8), // 8 hours for melatonin
       ),
       Substance.create(
         name: 'Paracetamol',
@@ -327,6 +354,7 @@ class Substance {
         defaultUnit: 'mg',
         notes: 'Schmerzmittel und Fiebersenkend',
         iconName: 'pill',
+        duration: const Duration(hours: 4), // 4 hours for paracetamol
       ),
     ];
   }
