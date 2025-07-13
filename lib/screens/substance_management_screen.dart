@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/substance.dart';
 import '../services/substance_service.dart';
+import '../utils/unit_manager.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
 import '../theme/design_tokens.dart';
@@ -707,9 +708,11 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
   SubstanceCategory _selectedCategory = SubstanceCategory.other;
   RiskLevel _selectedRiskLevel = RiskLevel.low;
   String _selectedUnit = '';
-  List<String> _commonUnits = ['mg', 'g', 'ml', 'Stück', 'Tablette', 'Flasche', 'Bong', 'Joint'];
+  List<String> _suggestedUnits = [];
+  List<String> _recommendedUnits = [];
   bool _isSaving = false;
   bool _isDisposed = false;
+  bool _isLoadingUnits = false;
   String? _errorMessage;
 
   final SubstanceService _substanceService = SubstanceService();
@@ -720,6 +723,7 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
     if (widget.substance != null) {
       _initializeForm();
     }
+    _loadUnits();
   }
 
   @override
@@ -741,6 +745,41 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
     _notesController.text = substance.notes ?? '';
     _selectedCategory = substance.category;
     _selectedRiskLevel = substance.defaultRiskLevel;
+    
+    // Load recommended units for the category
+    _updateRecommendedUnits();
+  }
+
+  Future<void> _loadUnits() async {
+    if (_isDisposed) return;
+    
+    setState(() {
+      _isLoadingUnits = true;
+    });
+
+    try {
+      final suggestedUnits = await _substanceService.getSuggestedUnits();
+      
+      if (_isDisposed) return;
+      
+      setState(() {
+        _suggestedUnits = suggestedUnits;
+        _isLoadingUnits = false;
+      });
+    } catch (e) {
+      if (_isDisposed) return;
+      
+      setState(() {
+        _suggestedUnits = UnitManager.validUnits;
+        _isLoadingUnits = false;
+      });
+    }
+  }
+
+  void _updateRecommendedUnits() {
+    setState(() {
+      _recommendedUnits = _substanceService.getRecommendedUnitsForCategory(_selectedCategory);
+    });
   }
 
   Future<void> _saveSubstance() async {
@@ -881,6 +920,7 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
                   onChanged: (value) {
                     setState(() {
                       _selectedCategory = value!;
+                      _updateRecommendedUnits();
                     });
                   },
                 ),
@@ -949,33 +989,105 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
                   Spacing.horizontalSpaceMd,
                   Expanded(
                     child: GlassCard(
-                      child: TextFormField(
-                        controller: _unitController,
-                        readOnly: true,
-                        decoration: InputDecoration(
-                          labelText: 'Einheit',
-                          border: InputBorder.none,
-                          suffixIcon: PopupMenuButton<String>(
-                            icon: const Icon(Icons.arrow_drop_down),
-                            onSelected: (String value) {
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          TextFormField(
+                            controller: _unitController,
+                            decoration: InputDecoration(
+                              labelText: 'Einheit',
+                              border: InputBorder.none,
+                              suffixIcon: _isLoadingUnits
+                                  ? const SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(strokeWidth: 2),
+                                    )
+                                  : PopupMenuButton<String>(
+                                      icon: const Icon(Icons.arrow_drop_down),
+                                      onSelected: (String value) {
+                                        setState(() {
+                                          _selectedUnit = value;
+                                          _unitController.text = value;
+                                        });
+                                      },
+                                      itemBuilder: (BuildContext context) {
+                                        final allUnits = <String>{};
+                                        
+                                        // Add recommended units for category first
+                                        if (_recommendedUnits.isNotEmpty) {
+                                          allUnits.addAll(_recommendedUnits);
+                                        }
+                                        
+                                        // Add suggested units from database
+                                        allUnits.addAll(_suggestedUnits);
+                                        
+                                        return allUnits.map<PopupMenuItem<String>>((String value) {
+                                          final isRecommended = _recommendedUnits.contains(value);
+                                          return PopupMenuItem<String>(
+                                            value: value,
+                                            child: Row(
+                                              children: [
+                                                Text(value),
+                                                if (isRecommended) ...[
+                                                  const SizedBox(width: 8),
+                                                  Icon(
+                                                    Icons.star,
+                                                    size: 16,
+                                                    color: DesignTokens.primaryIndigo,
+                                                  ),
+                                                ],
+                                              ],
+                                            ),
+                                          );
+                                        }).toList();
+                                      },
+                                    ),
+                            ),
+                            validator: (value) {
+                              final unitValidation = _substanceService.validateUnit(value);
+                              if (unitValidation != null) {
+                                return unitValidation;
+                              }
+                              return ValidationHelper.getValidationError('unit', value ?? '');
+                            },
+                            onChanged: (value) {
                               setState(() {
                                 _selectedUnit = value;
-                                _unitController.text = value;
                               });
                             },
-                            itemBuilder: (BuildContext context) {
-                              return _commonUnits.map<PopupMenuItem<String>>((String value) {
-                                return PopupMenuItem<String>(
-                                  value: value,
-                                  child: Text(value),
-                                );
-                              }).toList();
-                            },
                           ),
-                        ),
-                        validator: (value) {
-                          return ValidationHelper.getValidationError('unit', value ?? '');
-                        },
+                          if (_recommendedUnits.isNotEmpty) ...[
+                            const SizedBox(height: 8),
+                            Text(
+                              'Empfohlene Einheiten für ${_getCategoryDisplayName(_selectedCategory.name)}',
+                              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: DesignTokens.primaryIndigo,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 4,
+                              children: _recommendedUnits.take(3).map((unit) {
+                                return ActionChip(
+                                  label: Text(unit),
+                                  onPressed: () {
+                                    setState(() {
+                                      _selectedUnit = unit;
+                                      _unitController.text = unit;
+                                    });
+                                  },
+                                  backgroundColor: DesignTokens.primaryIndigo.withOpacity(0.1),
+                                  labelStyle: TextStyle(
+                                    color: DesignTokens.primaryIndigo,
+                                    fontSize: 12,
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        ],
                       ),
                     ),
                   ),

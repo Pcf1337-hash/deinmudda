@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import '../models/substance.dart';
+import '../utils/unit_manager.dart';
 import 'database_service.dart';
 
 class SubstanceService {
@@ -202,5 +203,61 @@ class SubstanceService {
     } catch (e) {
       throw Exception('Failed to initialize default substances: $e');
     }
+  }
+
+  // Get all unique units used in substances
+  Future<List<String>> getAllUsedUnits() async {
+    try {
+      final substances = await getAllSubstances();
+      return await UnitManager.getUsedUnits(substances);
+    } catch (e) {
+      throw Exception('Failed to get used units: $e');
+    }
+  }
+
+  // Get suggested units for unit dropdown
+  Future<List<String>> getSuggestedUnits() async {
+    try {
+      final substances = await getAllSubstances();
+      return await UnitManager.getSuggestedUnits(substances);
+    } catch (e) {
+      throw Exception('Failed to get suggested units: $e');
+    }
+  }
+
+  // Check if a unit exists in the database
+  Future<bool> unitExists(String unit) async {
+    try {
+      final substances = await getAllSubstances();
+      return await UnitManager.unitExists(unit, substances);
+    } catch (e) {
+      throw Exception('Failed to check unit existence: $e');
+    }
+  }
+
+  // Get substances by unit
+  Future<List<Substance>> getSubstancesByUnit(String unit) async {
+    try {
+      final db = await _databaseService.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'substances',
+        where: 'defaultUnit = ?',
+        whereArgs: [unit],
+        orderBy: 'name ASC',
+      );
+      return maps.map((map) => Substance.fromDatabase(map)).toList();
+    } catch (e) {
+      throw Exception('Failed to get substances by unit: $e');
+    }
+  }
+
+  // Validate unit before creating/updating substance
+  String? validateUnit(String? unit) {
+    return UnitManager.validateUnit(unit);
+  }
+
+  // Get recommended units for a substance category
+  List<String> getRecommendedUnitsForCategory(SubstanceCategory category) {
+    return UnitManager.getRecommendedUnitsForCategory(category);
   }
 }
