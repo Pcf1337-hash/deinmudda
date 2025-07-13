@@ -677,6 +677,8 @@ class _DosageResultCardState extends State<DosageResultCard>
 
   Widget _buildSafetyWarnings(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
+    final selectedDose = _getDoseForIntensity(_selectedIntensity);
+    final substanceWarning = widget.substance.getSafetyWarning(selectedDose, widget.user.weightKg);
 
     return Container(
       padding: Spacing.paddingMd,
@@ -709,17 +711,72 @@ class _DosageResultCardState extends State<DosageResultCard>
             ],
           ),
           Spacing.verticalSpaceMd,
+          
+          // Dosage-specific warning if exists
+          if (substanceWarning != null) ...[
+            Container(
+              padding: Spacing.paddingMd,
+              decoration: BoxDecoration(
+                color: DesignTokens.errorRed.withOpacity(0.2),
+                borderRadius: Spacing.borderRadiusMd,
+                border: Border.all(
+                  color: DesignTokens.errorRed.withOpacity(0.4),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.error_outline_rounded,
+                    color: DesignTokens.errorRed,
+                    size: Spacing.iconMd,
+                  ),
+                  Spacing.horizontalSpaceSm,
+                  Expanded(
+                    child: Text(
+                      substanceWarning,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: DesignTokens.errorRed,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Spacing.verticalSpaceMd,
+          ],
+          
+          // Substance-specific safety notes
           Text(
             widget.substance.safetyNotes,
             style: theme.textTheme.bodyMedium,
           ),
           Spacing.verticalSpaceMd,
+          
+          // Dosage intensity specific warnings
+          _buildIntensitySpecificWarning(context, theme),
+          Spacing.verticalSpaceMd,
+          
+          // General safety principles
           Text(
-            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab\n• Kombinieren Sie niemals verschiedene Substanzen\n• Bei Problemen sofort medizinische Hilfe suchen',
+            'Grundlegende Sicherheitsprinzipien:',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: DesignTokens.errorRed,
+            ),
+          ),
+          Spacing.verticalSpaceXs,
+          Text(
+            '• Beginnen Sie immer mit der niedrigsten Dosis\n• Warten Sie die volle Wirkdauer ab (${widget.substance.duration})\n• Kombinieren Sie niemals verschiedene Substanzen\n• Verwenden Sie eine Feinwaage für genaue Dosierung\n• Sorgen Sie für eine sichere Umgebung und Begleitung\n• Bei Problemen sofort medizinische Hilfe suchen',
             style: theme.textTheme.bodySmall?.copyWith(
               color: theme.textTheme.bodySmall?.color?.withOpacity(0.8),
             ),
           ),
+          Spacing.verticalSpaceMd,
+          
+          // Additional context-specific warnings
+          _buildContextSpecificWarnings(context, theme),
         ],
       ),
     );
@@ -829,5 +886,136 @@ class _DosageResultCardState extends State<DosageResultCard>
     } else {
       return DesignTokens.errorRed;
     }
+  }
+
+  Widget _buildIntensitySpecificWarning(BuildContext context, ThemeData theme) {
+    String warning;
+    Color warningColor;
+    IconData warningIcon;
+    
+    switch (_selectedIntensity) {
+      case DosageIntensity.light:
+        warning = 'Leichte Dosierung: Ideal für Einsteiger oder wenn Sie diese Substanz zum ersten Mal verwenden.';
+        warningColor = DesignTokens.successGreen;
+        warningIcon = Icons.info_outline_rounded;
+        break;
+      case DosageIntensity.normal:
+        warning = 'Normale Dosierung: Nur für Personen mit Erfahrung empfohlen. Wirkung kann intensiv sein.';
+        warningColor = DesignTokens.warningYellow;
+        warningIcon = Icons.warning_amber_rounded;
+        break;
+      case DosageIntensity.strong:
+        warning = 'STARKE DOSIERUNG: Nur für sehr erfahrene Benutzer! Erhöhtes Risiko für Nebenwirkungen und Überdosierung.';
+        warningColor = DesignTokens.errorRed;
+        warningIcon = Icons.dangerous_rounded;
+        break;
+    }
+    
+    return Container(
+      padding: Spacing.paddingMd,
+      decoration: BoxDecoration(
+        color: warningColor.withOpacity(0.1),
+        borderRadius: Spacing.borderRadiusMd,
+        border: Border.all(
+          color: warningColor.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            warningIcon,
+            color: warningColor,
+            size: Spacing.iconMd,
+          ),
+          Spacing.horizontalSpaceSm,
+          Expanded(
+            child: Text(
+              warning,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: warningColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildContextSpecificWarnings(BuildContext context, ThemeData theme) {
+    final List<String> warnings = [];
+    
+    // BMI-specific warnings
+    final bmi = widget.user.bmi;
+    if (bmi < 18.5) {
+      warnings.add('Niedriger BMI: Möglicherweise erhöhte Sensitivität gegenüber der Substanz.');
+    } else if (bmi > 30.0) {
+      warnings.add('Hoher BMI: Berücksichtigen Sie mögliche Auswirkungen auf die Dosierung.');
+    }
+    
+    // Age-specific warnings
+    if (widget.user.ageYears < 21) {
+      warnings.add('Junge Erwachsene: Erhöhtes Risiko für negative Langzeiteffekte.');
+    } else if (widget.user.ageYears > 65) {
+      warnings.add('Ältere Erwachsene: Möglicherweise erhöhte Sensitivität und verlangsamter Abbau.');
+    }
+    
+    // Administration route specific warnings
+    switch (widget.substance.administrationRoute.toLowerCase()) {
+      case 'nasal':
+        warnings.add('Nasale Anwendung: Schnellerer Wirkungseintritt, aber kürzere Wirkdauer.');
+        break;
+      case 'oral':
+        warnings.add('Orale Anwendung: Langsamerer Wirkungseintritt (30-90 Min), aber längere Wirkdauer.');
+        break;
+      case 'intravenous':
+      case 'iv':
+        warnings.add('INTRAVENÖSE ANWENDUNG: Extrem hohes Risiko! Sofortiger Wirkungseintritt, keine Umkehr möglich.');
+        break;
+      case 'sublingual':
+        warnings.add('Sublinguale Anwendung: Mittlerer Wirkungseintritt (10-30 Min), nicht schlucken.');
+        break;
+    }
+    
+    if (warnings.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Spezifische Hinweise für Ihre Situation:',
+          style: theme.textTheme.titleSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+            color: DesignTokens.warningYellow,
+          ),
+        ),
+        Spacing.verticalSpaceXs,
+        ...warnings.map((warning) => Padding(
+          padding: const EdgeInsets.only(bottom: Spacing.xs),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.circle,
+                size: 6,
+                color: DesignTokens.warningYellow,
+              ),
+              Spacing.horizontalSpaceXs,
+              Expanded(
+                child: Text(
+                  warning,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.8),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        )),
+      ],
+    );
   }
 }
