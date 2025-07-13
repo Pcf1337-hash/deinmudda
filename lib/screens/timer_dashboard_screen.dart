@@ -98,7 +98,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddCustomTimerDialog,
         backgroundColor: DesignTokens.accentCyan,
-        child: const Icon(Icons.add_timer_rounded, color: Colors.white),
+        child: const Icon(Icons.add_rounded, color: Colors.white),
       ),
     );
   }
