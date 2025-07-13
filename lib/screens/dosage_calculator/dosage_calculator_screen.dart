@@ -580,13 +580,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.grey[800] : Colors.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: substanceColor.withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -595,9 +594,112 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         child: InkWell(
           onTap: () => _calculateDosage(substance),
           borderRadius: BorderRadius.circular(16),
-          child: Padding(
+          child: Container(
             padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isDark ? Colors.grey[800] : Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: substanceColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: substanceColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        _getSubstanceIcon(substance.name),
+                        color: substanceColor,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        substance.name,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: substanceColor,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                if (substance.description.isNotEmpty) ...[
+                  Text(
+                    substance.description,
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                const Spacer(),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Dosierung',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: substanceColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        'Berechnen',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: substanceColor,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  IconData _getSubstanceIcon(String name) {
+    final lowerName = name.toLowerCase();
+    if (lowerName.contains('mdma') || lowerName.contains('ecstasy')) {
+      return Icons.favorite_rounded;
+    } else if (lowerName.contains('lsd') || lowerName.contains('acid')) {
+      return Icons.psychology_rounded;
+    } else if (lowerName.contains('cannabis') || lowerName.contains('weed')) {
+      return Icons.grass_rounded;
+    } else if (lowerName.contains('psilocybin') || lowerName.contains('mushroom')) {
+      return Icons.forest_rounded;
+    } else if (lowerName.contains('cocaine') || lowerName.contains('amphetamine')) {
+      return Icons.flash_on_rounded;
+    } else if (lowerName.contains('alcohol')) {
+      return Icons.local_bar_rounded;
+    } else if (lowerName.contains('caffeine')) {
+      return Icons.coffee_rounded;
+    }
+    return Icons.science_rounded;
+  }
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(

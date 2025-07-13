@@ -751,17 +751,13 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   Widget _buildTimerSection(BuildContext context, bool isDark) {
-    if (_selectedSubstance?.duration == null) {
-      return const SizedBox.shrink();
-    }
-
     final theme = Theme.of(context);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Timer',
+          'Timer & Countdown',
           style: theme.textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -770,41 +766,104 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           delay: const Duration(milliseconds: 1500),
         ),
         Spacing.verticalSpaceSm,
-        GlassCard(
-          child: Padding(
-            padding: Spacing.paddingMd,
-            child: Row(
-              children: [
-                Checkbox(
-                  value: _startTimer,
-                  onChanged: (value) {
-                    setState(() {
-                      _startTimer = value ?? false;
-                    });
-                  },
-                  activeColor: DesignTokens.primaryIndigo,
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: DesignTokens.accentPink.withOpacity(0.2),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: GlassCard(
+            child: Padding(
+              padding: Spacing.paddingMd,
+              child: Column(
+                children: [
+                  Row(
                     children: [
-                      Text(
-                        'Timer starten',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: _startTimer
+                              ? DesignTokens.accentPink.withOpacity(0.2)
+                              : Colors.grey.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.timer_rounded,
+                          color: _startTimer ? DesignTokens.accentPink : Colors.grey,
+                          size: 20,
                         ),
                       ),
-                      Spacing.verticalSpaceXs,
-                      Text(
-                        'Benachrichtigung nach ${_selectedSubstance?.formattedDuration ?? 'N/A'}',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Timer automatisch starten',
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            if (_selectedSubstance?.duration != null)
+                              Text(
+                                'Benachrichtigung nach ${_selectedSubstance?.formattedDuration ?? 'N/A'}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                ),
+                              ),
+                          ],
                         ),
+                      ),
+                      Switch(
+                        value: _startTimer,
+                        onChanged: (value) {
+                          setState(() {
+                            _startTimer = value;
+                          });
+                        },
+                        activeColor: DesignTokens.accentPink,
                       ),
                     ],
                   ),
-                ),
-              ],
+                  if (_startTimer && _selectedSubstance?.duration != null) ...[
+                    const SizedBox(height: 16),
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: DesignTokens.accentPink.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: DesignTokens.accentPink.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: DesignTokens.accentPink,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Timer Dashboard zeigt alle aktiven Countdowns',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: DesignTokens.accentPink,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         ).animate().fadeIn(
