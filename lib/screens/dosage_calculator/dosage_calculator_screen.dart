@@ -9,6 +9,7 @@ import '../../services/dosage_calculator_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
+import '../../widgets/dosage_calculator/improved_substance_card.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -547,23 +548,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final availableWidth = constraints.maxWidth;
-              final itemWidth = (availableWidth - Spacing.md) / 2;
-              
-              return Wrap(
-                spacing: Spacing.md,
-                runSpacing: Spacing.md,
-                children: _popularSubstances.take(4).map((substance) {
-                  return SizedBox(
-                    width: itemWidth.clamp(160.0, 200.0),
-                    height: 220,
-                    child: _buildSimpleSubstanceCard(context, substance),
-                  );
-                }).toList(),
-              );
-            },
+          ResponsiveSubstanceCardGrid(
+            substances: _popularSubstances.take(4).toList(),
+            user: _currentUser,
+            onCardTap: (substance) => _calculateDosage(substance),
           )
         else
           Container(

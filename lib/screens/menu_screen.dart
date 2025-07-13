@@ -15,6 +15,7 @@ import 'calendar/pattern_analysis_screen.dart';
 import 'auth/security_settings_screen.dart'; // Import security settings
 import 'notifications/notification_settings_screen.dart'; // Import notification settings
 import 'timer_dashboard_screen.dart'; // Import timer dashboard
+import '../demo/improved_substance_cards_demo.dart'; // Import improved substance cards demo
 import '../utils/performance_helper.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -205,6 +206,19 @@ class _MenuScreenState extends State<MenuScreen> {
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToTimerDashboard(),
               ),
+              if (kDebugMode) ...[
+                const Divider(height: 1),
+                ListTile(
+                  leading: Icon(
+                    Icons.science_rounded,
+                    color: DesignTokens.accentEmerald,
+                  ),
+                  title: const Text('Improved Cards Demo'),
+                  subtitle: const Text('Glassmorphism substance cards with neon effects'),
+                  trailing: const Icon(Icons.arrow_forward_ios),
+                  onTap: () => _navigateToImprovedCardsDemo(),
+                ),
+              ],
             ],
           ),
         ).animate().fadeIn(
@@ -572,6 +586,14 @@ class _MenuScreenState extends State<MenuScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const NotificationSettingsScreen(),
+      ),
+    );
+  }
+
+  void _navigateToImprovedCardsDemo() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const ImprovedSubstanceCardsDemo(),
       ),
     );
   }
