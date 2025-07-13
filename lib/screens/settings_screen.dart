@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
+import '../services/psychedelic_theme_service.dart';
 import '../services/database_service.dart';
 import '../widgets/glass_card.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'substance_management_screen.dart';
+import 'psychedelic_settings_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -136,6 +138,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
           delay: const Duration(milliseconds: 400),
+        ).slideY(
+          begin: 0.3,
+          end: 0,
+          duration: DesignTokens.animationMedium,
+          curve: DesignTokens.curveEaseOut,
+        ),
+        
+        Spacing.verticalSpaceMd,
+        
+        // Psychedelic Settings Card
+        Consumer<PsychedelicThemeService>(
+          builder: (context, psychedelicService, child) {
+            return GlassCard(
+              usePsychedelicEffects: psychedelicService.isPsychedelicMode,
+              glowColor: psychedelicService.isPsychedelicMode 
+                  ? DesignTokens.neonPurple 
+                  : null,
+              child: ListTile(
+                leading: Icon(
+                  Icons.psychology_rounded,
+                  color: psychedelicService.isPsychedelicMode 
+                      ? DesignTokens.neonPurple 
+                      : DesignTokens.primaryIndigo,
+                ),
+                title: Text(
+                  'Psychedelic Mode',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: psychedelicService.isPsychedelicMode && isDark
+                        ? DesignTokens.textPsychedelicPrimary
+                        : null,
+                  ),
+                ),
+                subtitle: Text(
+                  psychedelicService.isPsychedelicMode 
+                      ? 'Aktiv - Optimiert für erweiterte Bewusstseinszustände'
+                      : 'Erweiterte Einstellungen für immersive Erfahrung',
+                  style: TextStyle(
+                    color: psychedelicService.isPsychedelicMode && isDark
+                        ? DesignTokens.textPsychedelicSecondary
+                        : null,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 16,
+                  color: psychedelicService.isPsychedelicMode && isDark
+                      ? DesignTokens.textPsychedelicSecondary
+                      : null,
+                ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const PsychedelicSettingsScreen(),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 500),
         ).slideY(
           begin: 0.3,
           end: 0,
