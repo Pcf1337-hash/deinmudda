@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
@@ -113,6 +114,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           ),
         ],
       ),
+      floatingActionButton: _buildSpeedDial(context, isDark),
     );
   }
 
@@ -162,34 +164,36 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                     icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
                   ),
                   const Spacer(),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.3),
-                        width: 1,
+                  Flexible(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 1,
+                        ),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.verified_user_rounded,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Sicher',
-                          style: TextStyle(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.verified_user_rounded,
                             color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                            size: 16,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 4),
+                          Text(
+                            'Sicher',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -550,16 +554,18 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final itemWidth = (availableWidth - Spacing.md) / 2;
+              final cardWidth = ((availableWidth - Spacing.md) / 2).clamp(160.0, 180.0);
               
               return Wrap(
                 spacing: Spacing.md,
                 runSpacing: Spacing.md,
                 children: _popularSubstances.take(4).map((substance) {
-                  return SizedBox(
-                    width: itemWidth.clamp(160.0, 200.0),
-                    height: 220,
-                    child: _buildSimpleSubstanceCard(context, substance),
+                  return RepaintBoundary(
+                    child: SizedBox(
+                      width: cardWidth,
+                      height: 240,
+                      child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                    ),
                   );
                 }).toList(),
               );
@@ -581,6 +587,236 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
+
+  Widget _buildEnhancedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance, bool isDark) {
+    final theme = Theme.of(context);
+    final substanceColor = _getSubstanceColor(substance.name);
+    final recommendedDose = _currentUser != null
+        ? (substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.light) * 0.8) // 20% reduction
+        : substance.lightDosePerKg * 70; // Default weight estimate
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: substanceColor.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+          BoxShadow(
+            color: substanceColor.withOpacity(0.1),
+            blurRadius: 40,
+            offset: const Offset(0, 16),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _calculateDosage(substance),
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: isDark
+                  ? LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.black.withOpacity(0.4),
+                        Colors.black.withOpacity(0.2),
+                        substanceColor.withOpacity(0.1),
+                      ],
+                    )
+                  : LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        Colors.white.withOpacity(0.9),
+                        Colors.white.withOpacity(0.7),
+                        substanceColor.withOpacity(0.1),
+                      ],
+                    ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: substanceColor.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header with icon and administration route
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: substanceColor.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: substanceColor.withOpacity(0.4),
+                            blurRadius: 8,
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        _getSubstanceIcon(substance.name),
+                        color: substanceColor,
+                        size: 24,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: substanceColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: substanceColor.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        substance.administrationRoute,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: substanceColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Substance name with glow effect
+                Text(
+                  substance.name,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: substanceColor,
+                    fontSize: 16,
+                    shadows: [
+                      Shadow(
+                        color: substanceColor.withOpacity(0.5),
+                        blurRadius: 4,
+                      ),
+                    ],
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                
+                const SizedBox(height: 8),
+                
+                // Duration with icon
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: isDark ? Colors.white70 : Colors.grey[600],
+                      size: 14,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        substance.duration,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark ? Colors.white70 : Colors.grey[600],
+                          fontSize: 12,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 12),
+                
+                // Recommended dose section
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: substanceColor.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: substanceColor.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Empfohlene Dosis',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: substanceColor,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 11,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${recommendedDose.toStringAsFixed(1)} mg',
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: substanceColor,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 14,
+                        ),
+                      ),
+                      Text(
+                        '(15-20% reduziert)',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: isDark ? Colors.white60 : Colors.grey[600],
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const Spacer(),
+                
+                // Action button
+                SizedBox(
+                  width: double.infinity,
+                  height: 36,
+                  child: ElevatedButton(
+                    onPressed: () => _calculateDosage(substance),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: substanceColor.withOpacity(0.2),
+                      foregroundColor: substanceColor,
+                      side: BorderSide(
+                        color: substanceColor.withOpacity(0.5),
+                        width: 1,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      elevation: 0,
+                      shadowColor: substanceColor.withOpacity(0.3),
+                    ),
+                    child: Text(
+                      'Berechnen',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildImprovedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
     return SubstanceQuickCard(
@@ -936,6 +1172,77 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         substance: substance,
         calculation: calculation,
         user: _currentUser!,
+      ),
+    );
+  }
+
+  Widget _buildSpeedDial(BuildContext context, bool isDark) {
+    return SpeedDial(
+      animatedIcon: AnimatedIcons.menu_close,
+      animatedIconTheme: IconThemeData(size: 24),
+      backgroundColor: isDark ? DesignTokens.neonPurple : DesignTokens.primaryIndigo,
+      foregroundColor: Colors.white,
+      elevation: 8.0,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(16.0)),
+      ),
+      children: [
+        SpeedDialChild(
+          child: Icon(Icons.add_rounded, color: Colors.white),
+          backgroundColor: DesignTokens.accentCyan,
+          label: 'Neuer Eintrag',
+          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
+          onTap: () => _showAddEntryDialog(context, isDark),
+        ),
+        SpeedDialChild(
+          child: Icon(Icons.timer_rounded, color: Colors.white),
+          backgroundColor: DesignTokens.accentEmerald,
+          label: 'Timer starten',
+          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
+          onTap: () => _showTimerDialog(context, isDark),
+        ),
+      ],
+    );
+  }
+
+  void _showAddEntryDialog(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AddEntryModal(
+        onSubstanceSelected: (substance) {
+          Navigator.of(context).pop();
+          _calculateDosage(substance);
+        },
+        substances: _popularSubstances,
+        isDark: isDark,
+      ),
+    );
+  }
+
+  void _showTimerDialog(BuildContext context, bool isDark) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _TimerSelectionModal(
+        substances: _popularSubstances,
+        isDark: isDark,
+        onTimerStarted: (substance, duration) {
+          Navigator.of(context).pop();
+          _startTimerForSubstance(substance, duration);
+        },
+      ),
+    );
+  }
+
+  void _startTimerForSubstance(DosageCalculatorSubstance substance, Duration duration) {
+    // TODO: Implement timer functionality
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Timer für ${substance.name} gestartet (${duration.inMinutes} Min)'),
+        backgroundColor: DesignTokens.successGreen,
       ),
     );
   }
@@ -1524,6 +1831,414 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
         return Icons.balance_rounded;
       case DosageIntensity.strong:
         return Icons.warning_rounded;
+    }
+  }
+}
+
+// Modal for adding new entry
+class _AddEntryModal extends StatelessWidget {
+  final Function(DosageCalculatorSubstance) onSubstanceSelected;
+  final List<DosageCalculatorSubstance> substances;
+  final bool isDark;
+
+  const _AddEntryModal({
+    required this.onSubstanceSelected,
+    required this.substances,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+
+    return Container(
+      height: mediaQuery.size.height * 0.7,
+      decoration: BoxDecoration(
+        color: isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          _buildModalHeader(context, 'Neuer Eintrag', Icons.add_rounded),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Substanz auswählen',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.8,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: substances.length,
+                      itemBuilder: (context, index) {
+                        final substance = substances[index];
+                        return GestureDetector(
+                          onTap: () => onSubstanceSelected(substance),
+                          child: SubstanceQuickCard(
+                            substance: substance,
+                            showDosagePreview: false,
+                            isCompact: true,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalHeader(BuildContext context, String title, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
+              : [DesignTokens.primaryIndigo, DesignTokens.primaryPurple],
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded, color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Modal for timer selection
+class _TimerSelectionModal extends StatefulWidget {
+  final List<DosageCalculatorSubstance> substances;
+  final bool isDark;
+  final Function(DosageCalculatorSubstance, Duration) onTimerStarted;
+
+  const _TimerSelectionModal({
+    required this.substances,
+    required this.isDark,
+    required this.onTimerStarted,
+  });
+
+  @override
+  State<_TimerSelectionModal> createState() => _TimerSelectionModalState();
+}
+
+class _TimerSelectionModalState extends State<_TimerSelectionModal> {
+  DosageCalculatorSubstance? selectedSubstance;
+  int selectedMinutes = 30;
+  final List<int> timerOptions = [15, 30, 45, 60, 90, 120, 180, 240, 360];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+
+    return Container(
+      height: mediaQuery.size.height * 0.8,
+      decoration: BoxDecoration(
+        color: widget.isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          _buildModalHeader(context, 'Timer starten', Icons.timer_rounded),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Substanz auswählen',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    height: 120,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.substances.length,
+                      itemBuilder: (context, index) {
+                        final substance = widget.substances[index];
+                        final isSelected = selectedSubstance == substance;
+                        final color = _getSubstanceColor(substance.name);
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedSubstance = substance;
+                            });
+                          },
+                          child: Container(
+                            width: 100,
+                            margin: const EdgeInsets.only(right: 12),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? color.withOpacity(0.1)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? color : Colors.grey,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  _getSubstanceIcon(substance.name),
+                                  color: isSelected ? color : Colors.grey,
+                                  size: 24,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  substance.name,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isSelected ? color : null,
+                                    fontWeight: isSelected ? FontWeight.w600 : null,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  Text(
+                    'Timer-Dauer',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Expanded(
+                    child: GridView.builder(
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 3,
+                        childAspectRatio: 2.5,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: timerOptions.length,
+                      itemBuilder: (context, index) {
+                        final minutes = timerOptions[index];
+                        final isSelected = selectedMinutes == minutes;
+                        final color = DesignTokens.accentEmerald;
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              selectedMinutes = minutes;
+                            });
+                          },
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? color.withOpacity(0.1)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: isSelected ? color : Colors.grey,
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Center(
+                              child: Text(
+                                '${minutes} Min',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isSelected ? color : null,
+                                  fontWeight: isSelected ? FontWeight.w600 : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: selectedSubstance != null
+                          ? () {
+                              widget.onTimerStarted(
+                                selectedSubstance!,
+                                Duration(minutes: selectedMinutes),
+                              );
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: DesignTokens.accentEmerald,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Timer starten',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalHeader(BuildContext context, String title, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: widget.isDark
+              ? [const Color(0xFF1A1A2E), const Color(0xFF16213E)]
+              : [DesignTokens.primaryIndigo, DesignTokens.primaryPurple],
+        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: Colors.white, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close_rounded, color: Colors.white),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getSubstanceColor(String substanceName) {
+    final substanceColorMap = DesignTokens.getSubstanceColor(substanceName);
+    return substanceColorMap['primary'] ?? DesignTokens.primaryIndigo;
+  }
+
+  IconData _getSubstanceIcon(String substanceName) {
+    final name = substanceName.toLowerCase();
+    
+    if (name.contains('mdma') || name.contains('ecstasy')) {
+      return Icons.favorite_rounded;
+    } else if (name.contains('lsd') || name.contains('acid')) {
+      return Icons.psychology_rounded;
+    } else if (name.contains('ketamin') || name.contains('ketamine')) {
+      return Icons.medical_services_rounded;
+    } else if (name.contains('kokain') || name.contains('cocaine')) {
+      return Icons.bolt_rounded;
+    } else if (name.contains('alkohol') || name.contains('alcohol')) {
+      return Icons.local_bar_rounded;
+    } else if (name.contains('cannabis') || name.contains('thc')) {
+      return Icons.local_florist_rounded;
+    } else if (name.contains('psilocybin') || name.contains('mushroom')) {
+      return Icons.forest_rounded;
+    } else if (name.contains('2c-b')) {
+      return Icons.auto_awesome_rounded;
+    } else if (name.contains('amphetamin') || name.contains('speed')) {
+      return Icons.flash_on_rounded;
+    } else {
+      return Icons.science_rounded;
     }
   }
 }
