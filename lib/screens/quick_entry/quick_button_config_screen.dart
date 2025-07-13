@@ -38,7 +38,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   List<Substance> _substances = [];
   String _selectedUnit = ''; // Selected unit from dropdown
   double _calculatedCost = 0.0;
-  bool _autoCalculateCost = false;
+  bool _autoCalculateCost = true;
   List<String> _commonUnits = ['mg', 'g', 'ml', 'Stück', 'Tablette', 'Flasche', 'Bong', 'Joint'];
   bool _isLoading = false;
   bool _isSaving = false;
@@ -84,6 +84,10 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       _dosageController.text = config.dosage.toString().replaceAll('.', ',');
       _selectedUnit = config.unit;
       _unitController.text = _selectedUnit;
+      // Trigger cost calculation after form is initialized
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateCalculatedCost();
+      });
     }
   }
 
@@ -123,6 +127,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           );
           if (_selectedSubstance != null) {
             _unitController.text = _selectedSubstance!.defaultUnit;
+            _updateCalculatedCost(); // Update cost when editing
           }
         }
         
@@ -510,6 +515,9 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
                   ],
+                  onChanged: (value) {
+                    _updateCalculatedCost();
+                  },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Bitte geben Sie eine Dosierung ein';
@@ -592,6 +600,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
 
     final dosage = double.tryParse(_dosageController.text.replaceAll(',', '.')) ?? 0.0;
     final formattedDosage = '${dosage.toString().replaceAll('.', ',')} ${_unitController.text}';
+    final formattedCost = _selectedSubstance!.formatCostForAmount(dosage, _unitController.text);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -609,7 +618,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         Center(
           child: Container(
             width: 80,
-            height: 100,
+            height: 120, // Increased height to accommodate cost display
             decoration: BoxDecoration(
               gradient: isDark
                   ? DesignTokens.glassGradientDark
@@ -665,6 +674,27 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                     textAlign: TextAlign.center,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
+                  ),
+                  Spacing.verticalSpaceXs,
+                  // Add cost display
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: Spacing.xs,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.green.withOpacity(0.1),
+                      borderRadius: Spacing.borderRadiusXs,
+                    ),
+                    child: Text(
+                      formattedCost,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 8,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
                 ],
               ),
