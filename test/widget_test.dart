@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/widgets/dosage_calculator/substance_card.dart';
-import '../lib/models/dosage_calculator_substance.dart';
+import 'package:konsum_tracker_pro/widgets/dosage_calculator/substance_card.dart';
+import 'package:konsum_tracker_pro/models/dosage_calculator_substance.dart';
 
 void main() {
   group('SubstanceCard Overflow Tests', () {
