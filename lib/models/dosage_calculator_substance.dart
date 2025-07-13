@@ -24,6 +24,9 @@ class DosageCalculatorSubstance {
   }) : createdAt = createdAt ?? DateTime.now(),
        updatedAt = updatedAt ?? DateTime.now();
 
+  // Computed property for description
+  String get description => administrationRouteDisplayName;
+
   // Factory constructor
   factory DosageCalculatorSubstance.create({
     required String name,

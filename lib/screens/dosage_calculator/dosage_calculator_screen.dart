@@ -8,6 +8,7 @@ import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
+import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -552,8 +553,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             children: _popularSubstances.take(4).map((substance) {
               return SizedBox(
                 width: (MediaQuery.of(context).size.width - (Spacing.md * 3)) / 2,
-                height: 200,
-                child: _buildSimpleSubstanceCard(context, substance),
+                child: _buildImprovedSubstanceCard(context, substance),
               );
             }).toList(),
           )
@@ -573,227 +573,13 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildSimpleSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final substanceColor = _getSubstanceColor(substance.name);
-
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: substanceColor.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _calculateDosage(substance),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.grey[800] : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: substanceColor.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: substanceColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Icon(
-                        _getSubstanceIcon(substance.name),
-                        color: substanceColor,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        substance.name,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          color: substanceColor,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (substance.description.isNotEmpty) ...[
-                  Text(
-                    substance.description,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 12),
-                ],
-                const Spacer(),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Dosierung',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                      ),
-                    ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: substanceColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        'Berechnen',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  IconData _getSubstanceIcon(String name) {
-    final lowerName = name.toLowerCase();
-    if (lowerName.contains('mdma') || lowerName.contains('ecstasy')) {
-      return Icons.favorite_rounded;
-    } else if (lowerName.contains('lsd') || lowerName.contains('acid')) {
-      return Icons.psychology_rounded;
-    } else if (lowerName.contains('cannabis') || lowerName.contains('weed')) {
-      return Icons.grass_rounded;
-    } else if (lowerName.contains('psilocybin') || lowerName.contains('mushroom')) {
-      return Icons.forest_rounded;
-    } else if (lowerName.contains('cocaine') || lowerName.contains('amphetamine')) {
-      return Icons.flash_on_rounded;
-    } else if (lowerName.contains('alcohol')) {
-      return Icons.local_bar_rounded;
-    } else if (lowerName.contains('caffeine')) {
-      return Icons.coffee_rounded;
-    }
-    return Icons.science_rounded;
-  }
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: substanceColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    _getSubstanceIcon(substance.name),
-                    color: substanceColor,
-                    size: 24,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  substance.name,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: substanceColor,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  substance.administrationRouteDisplayName,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
-                // Add recommended dose display if user exists
-                if (_currentUser != null) ...[
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.amberAccent.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.amberAccent.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Empfohlene Dosis',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: Colors.amberAccent,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
-                          ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          substance.getFormattedDosage(_currentUser!.weightKg, DosageIntensity.normal),
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: Colors.amberAccent,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-                const Spacer(),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 8),
-                  decoration: BoxDecoration(
-                    color: substanceColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Berechnen',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: substanceColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+  Widget _buildImprovedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
+    return SubstanceQuickCard(
+      substance: substance,
+      userWeight: _currentUser?.weightKg,
+      onTap: () => _calculateDosage(substance),
+      showDosagePreview: true,
+      isCompact: false,
     );
   }
 
@@ -1018,16 +804,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   Color _getSubstanceColor(String substanceName) {
-    final hash = substanceName.hashCode;
-    final colors = [
-      Colors.indigo,
-      Colors.cyan,
-      Colors.green,
-      Colors.purple,
-      Colors.orange,
-      Colors.pink,
-    ];
-    return colors[hash.abs() % colors.length];
+    final substanceColorMap = DesignTokens.getSubstanceColor(substanceName);
+    return substanceColorMap['primary'] ?? DesignTokens.primaryIndigo;
   }
 
   IconData _getSubstanceIcon(String substanceName) {
