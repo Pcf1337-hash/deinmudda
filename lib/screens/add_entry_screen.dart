@@ -10,6 +10,7 @@ import '../services/substance_service.dart';
 import '../services/timer_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
+import '../widgets/unit_dropdown.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/validation_helper.dart';
@@ -464,20 +465,16 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
             ),
             Spacing.horizontalSpaceMd,
             Expanded(
-              child: GlassCard(
-                child: TextFormField(
-                  controller: _unitController,
-                  decoration: const InputDecoration(
-                    labelText: 'Einheit',
-                    border: InputBorder.none,
-                  ),
-                  validator: (value) {
-                    if (value == null || value.trim().isEmpty) {
-                      return 'Bitte geben Sie eine Einheit ein';
-                    }
-                    return null;
-                  },
-                ),
+              child: UnitDropdown(
+                controller: _unitController,
+                substances: _substances,
+                selectedCategory: _selectedSubstance?.category,
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Bitte wählen Sie eine Einheit';
+                  }
+                  return null;
+                },
               ).animate().fadeIn(
                 duration: DesignTokens.animationMedium,
                 delay: const Duration(milliseconds: 700),

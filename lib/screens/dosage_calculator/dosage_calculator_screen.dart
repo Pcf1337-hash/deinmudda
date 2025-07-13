@@ -82,38 +82,174 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Dosisrechner'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.of(context).pop(),
+      body: Column(
+        children: [
+          _buildModernAppBar(context, isDark),
+          Expanded(
+            child: _isLoading 
+                ? _buildLoadingState()
+                : _errorMessage != null
+                    ? _buildErrorCard(context, isDark)
+                    : SingleChildScrollView(
+                        padding: Spacing.paddingHorizontalMd,
+                        child: Column(
+                          children: [
+                            _buildUserProfileSection(context, isDark),
+                            const SizedBox(height: Spacing.lg),
+                            _buildSearchSection(context, isDark),
+                            const SizedBox(height: Spacing.lg),
+                            _buildPopularSubstancesSection(context, isDark),
+                            const SizedBox(height: Spacing.lg),
+                            _buildSafetyWarningSection(context, isDark),
+                            if (_recentCalculations.isNotEmpty) ...[
+                              const SizedBox(height: Spacing.lg),
+                              _buildRecentCalculationsSection(context, isDark),
+                            ],
+                            const SizedBox(height: 120),
+                          ],
+                        ),
+                      ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModernAppBar(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+
+    return Container(
+      height: 160,
+      decoration: BoxDecoration(
+        gradient: isDark
+            ? const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF1A1A2E),
+                  Color(0xFF16213E),
+                  Color(0xFF0F3460),
+                  Color(0xFF533483),
+                ],
+              )
+            : LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  DesignTokens.accentCyan,
+                  DesignTokens.accentPurple,
+                  DesignTokens.accentPink,
+                ],
+              ),
+        boxShadow: [
+          BoxShadow(
+            color: DesignTokens.accentCyan.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: Spacing.paddingMd,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_user_rounded,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sicher',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.white.withOpacity(0.2),
+                          blurRadius: 10,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.calculate_rounded,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Dosisrechner Pro',
+                          style: theme.textTheme.headlineMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            shadows: [
+                              Shadow(
+                                color: DesignTokens.accentCyan.withOpacity(0.5),
+                                blurRadius: 10,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Präzise Dosierungsempfehlungen',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
-      body: _isLoading 
-          ? _buildLoadingState()
-          : _errorMessage != null
-              ? _buildErrorCard(context, isDark)
-              : SingleChildScrollView(
-                  padding: Spacing.paddingHorizontalMd,
-                  child: Column(
-                    children: [
-                      _buildUserProfileSection(context, isDark),
-                      const SizedBox(height: Spacing.lg),
-                      _buildSearchSection(context, isDark),
-                      const SizedBox(height: Spacing.lg),
-                      _buildPopularSubstancesSection(context, isDark),
-                      const SizedBox(height: Spacing.lg),
-                      _buildSafetyWarningSection(context, isDark),
-                      if (_recentCalculations.isNotEmpty) ...[
-                        const SizedBox(height: Spacing.lg),
-                        _buildRecentCalculationsSection(context, isDark),
-                      ],
-                      const SizedBox(height: 120),
-                    ],
-                  ),
-                ),
     );
   }
 
@@ -303,30 +439,86 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           ),
         ),
         const SizedBox(height: Spacing.md),
-        GlassCard(
-          onTap: () => _navigateToSubstanceSearch(),
-          child: Row(
-            children: [
-              Icon(
-                Icons.search_rounded,
-                color: DesignTokens.primaryIndigo,
-                size: Spacing.iconMd,
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: Text(
-                  'Substanz für Dosierungsberechnung suchen...',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: Spacing.iconSm,
-                color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: DesignTokens.accentCyan.withOpacity(0.3),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
               ),
             ],
+          ),
+          child: GlassCard(
+            onTap: () => _navigateToSubstanceSearch(),
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: DesignTokens.accentCyan.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: DesignTokens.accentCyan.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: DesignTokens.accentCyan.withOpacity(0.4),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      Icons.search_rounded,
+                      color: DesignTokens.accentCyan,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Substanz suchen',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: DesignTokens.accentCyan,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Dosierungsberechnung starten',
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                            color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 16,
+                      color: DesignTokens.accentCyan,
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ],

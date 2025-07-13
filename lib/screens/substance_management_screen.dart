@@ -143,7 +143,7 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 120,
+      height: 140,
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -175,13 +175,38 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
                   padding: const EdgeInsets.only(left: 56.0),
                   child: Row(
                     children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Icon(
+                          Icons.science_rounded,
+                          color: Colors.white,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
                       Expanded(
-                        child: Text(
-                          'Substanzen verwalten',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Substanzen verwalten',
+                              style: theme.textTheme.headlineMedium?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Eigene Substanzen erstellen & bearbeiten',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: Colors.white.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       if (_filteredSubstances.isNotEmpty)
@@ -198,6 +223,20 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
                             '${_filteredSubstances.length}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
                               fontWeight: FontWeight.w600,
                             ),
                           ),
