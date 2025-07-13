@@ -104,6 +104,13 @@ class TimerService {
   // Start timer for entry
   Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
     try {
+      // Stop any existing active timer first (only one timer allowed)
+      if (_activeTimers.isNotEmpty) {
+        for (final activeTimer in List.from(_activeTimers)) {
+          await stopTimer(activeTimer);
+        }
+      }
+
       Duration? duration = customDuration;
       
       // If no custom duration, try to get duration from substance
@@ -178,6 +185,12 @@ class TimerService {
 
   // Get all active timers
   List<Entry> get activeTimers => List.unmodifiable(_activeTimers);
+
+  // Get current active timer (since only one is allowed)
+  Entry? get currentActiveTimer => _activeTimers.isNotEmpty ? _activeTimers.first : null;
+
+  // Check if there's any active timer
+  bool get hasAnyActiveTimer => _activeTimers.isNotEmpty;
 
   // Check if entry has active timer
   bool hasActiveTimer(String entryId) {
