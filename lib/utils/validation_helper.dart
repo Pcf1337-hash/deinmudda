@@ -1,3 +1,5 @@
+import '../utils/unit_manager.dart';
+
 class ValidationHelper {
   // Email validation
   static bool isValidEmail(String email) {
@@ -54,9 +56,8 @@ class ValidationHelper {
     if (unit.trim().isEmpty) return false;
     if (unit.trim().length > 20) return false;
     
-    // Only allow letters and common unit symbols
-    final unitRegex = RegExp(r'^[a-zA-ZäöüÄÖÜß%°µ]+$');
-    return unitRegex.hasMatch(unit.trim());
+    // Use UnitManager for more comprehensive validation
+    return UnitManager.isValidUnit(unit.trim());
   }
 
   // Cost validation
@@ -218,7 +219,7 @@ class ValidationHelper {
       case 'unit':
       case 'einheit':
         if (!isValidUnit(value)) {
-          return 'Einheit darf maximal 20 Zeichen lang sein';
+          return 'Ungültige Einheit. Erlaubte Einheiten: ${UnitManager.validUnits.join(', ')}';
         }
         break;
       case 'cost':

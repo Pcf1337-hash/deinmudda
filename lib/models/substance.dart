@@ -309,6 +309,15 @@ class Substance {
         notes: 'Schmerzmittel und Fiebersenkend',
         iconName: 'pill',
       ),
+      Substance.create(
+        name: 'Multivitamin',
+        category: SubstanceCategory.supplement,
+        defaultRiskLevel: RiskLevel.low,
+        pricePerUnit: 0.25,
+        defaultUnit: 'Stück',
+        notes: 'Tägliche Vitamin- und Mineralstoffergänzung',
+        iconName: 'pill',
+      ),
     ];
   }
 }

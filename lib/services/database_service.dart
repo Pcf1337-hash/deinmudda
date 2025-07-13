@@ -212,6 +212,18 @@ class DatabaseService {
           'createdAt': DateTime.now().toIso8601String(),
           'updatedAt': DateTime.now().toIso8601String(),
         },
+        {
+          'id': 'default_multivitamin',
+          'name': 'Multivitamin',
+          'category': 3, // supplement
+          'defaultRiskLevel': 0, // low
+          'pricePerUnit': 0.25,
+          'defaultUnit': 'Stück',
+          'notes': 'Tägliche Vitamin- und Mineralstoffergänzung',
+          'iconName': 'pill',
+          'createdAt': DateTime.now().toIso8601String(),
+          'updatedAt': DateTime.now().toIso8601String(),
+        },
       ];
 
       for (final substance in defaultSubstances) {
