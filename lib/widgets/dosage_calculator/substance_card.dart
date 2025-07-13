@@ -10,6 +10,7 @@ class SubstanceCard extends StatefulWidget {
   final bool showDosagePreview;
   final bool isCompact;
   final bool showRiskLevel;
+  final double? userWeight; // Add user weight parameter
 
   const SubstanceCard({
     super.key,
@@ -18,6 +19,7 @@ class SubstanceCard extends StatefulWidget {
     this.showDosagePreview = true,
     this.isCompact = false,
     this.showRiskLevel = true,
+    this.userWeight, // Add user weight parameter
   });
 
   @override
@@ -359,6 +361,27 @@ class _SubstanceCardState extends State<SubstanceCard>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Add recommended dose display if user weight is available
+          if (widget.userWeight != null) ...[
+            Text(
+              'Empfohlene Dosis',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: substanceColor,
+                fontSize: 13,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.substance.getFormattedDosage(widget.userWeight!, DosageIntensity.normal),
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+                color: Colors.amberAccent,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
           Text(
             'Dosierungsbereich (pro kg)',
             style: theme.textTheme.titleSmall?.copyWith(
@@ -483,12 +506,14 @@ class PopularSubstanceCard extends StatelessWidget {
   final DosageCalculatorSubstance substance;
   final VoidCallback? onTap;
   final bool showPopularBadge;
+  final double? userWeight;
 
   const PopularSubstanceCard({
     super.key,
     required this.substance,
     this.onTap,
     this.showPopularBadge = true,
+    this.userWeight,
   });
 
   @override
@@ -501,6 +526,7 @@ class PopularSubstanceCard extends StatelessWidget {
           showDosagePreview: true,
           isCompact: false,
           showRiskLevel: true,
+          userWeight: userWeight,
         ),
         if (showPopularBadge)
           Positioned(
@@ -533,11 +559,13 @@ class PopularSubstanceCard extends StatelessWidget {
 class CompactSubstanceCard extends StatelessWidget {
   final DosageCalculatorSubstance substance;
   final VoidCallback? onTap;
+  final double? userWeight;
 
   const CompactSubstanceCard({
     super.key,
     required this.substance,
     this.onTap,
+    this.userWeight,
   });
 
   @override
@@ -548,6 +576,7 @@ class CompactSubstanceCard extends StatelessWidget {
       showDosagePreview: false,
       isCompact: true,
       showRiskLevel: true,
+      userWeight: userWeight,
     );
   }
 }
