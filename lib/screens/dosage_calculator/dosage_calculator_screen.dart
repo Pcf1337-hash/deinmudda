@@ -439,6 +439,45 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
+                const SizedBox(height: 8),
+                // Add recommended dose display if user exists
+                if (_currentUser != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    decoration: BoxDecoration(
+                      color: Colors.amberAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: Colors.amberAccent.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Empfohlene Dosis',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: Colors.amberAccent,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          substance.getFormattedDosage(_currentUser!.weightKg, DosageIntensity.normal),
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: Colors.amberAccent,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
                 const Spacer(),
                 Container(
                   width: double.infinity,

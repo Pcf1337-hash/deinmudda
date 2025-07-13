@@ -451,6 +451,53 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
                 
                 const SizedBox(height: 16),
                 
+                // Add recommended dose display if user exists
+                if (_currentUser != null) ...[
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.amberAccent.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: Colors.amberAccent.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.star_rounded,
+                          color: Colors.amberAccent,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Empfohlene Dosis',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: Colors.amberAccent,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            Text(
+                              substance.getFormattedDosage(_currentUser!.weightKg, DosageIntensity.normal),
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: Colors.amberAccent,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+                
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
