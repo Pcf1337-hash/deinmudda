@@ -9,7 +9,9 @@ import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../../widgets/glass_card.dart';
+import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
@@ -132,7 +134,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 100, // Further reduced to approach 64px target
+      height: 90, // Further reduced to approach 64px target
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -691,6 +693,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 runSpacing: 16,
                 children: _popularSubstances.take(4).map((substance) {
                   return RepaintBoundary(
+                    key: ValueKey(substance.name), // Add key for better performance
                     child: AnimatedContainer(
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
@@ -914,33 +917,48 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 const Spacer(),
                 
-                // Action button
-                SizedBox(
-                  width: double.infinity,
-                  height: 36,
-                  child: ElevatedButton(
-                    onPressed: () => _calculateDosage(substance),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: substanceColor.withOpacity(0.2),
-                      foregroundColor: substanceColor,
-                      side: BorderSide(
-                        color: substanceColor.withOpacity(0.5),
-                        width: 1,
+                // Action button with pulsating effect in trippy mode
+                Consumer<service.PsychedelicThemeService>(
+                  builder: (context, themeService, child) {
+                    final button = SizedBox(
+                      width: double.infinity,
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: () => _calculateDosage(substance),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: substanceColor.withOpacity(0.2),
+                          foregroundColor: substanceColor,
+                          side: BorderSide(
+                            color: substanceColor.withOpacity(0.5),
+                            width: 1,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0,
+                          shadowColor: substanceColor.withOpacity(0.3),
+                        ),
+                        child: Text(
+                          'Berechnen',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0,
-                      shadowColor: substanceColor.withOpacity(0.3),
-                    ),
-                    child: Text(
-                      'Berechnen',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
+                    );
+
+                    // Add pulsating effect in trippy mode
+                    if (themeService.isPsychedelicMode) {
+                      return PulsatingWidget(
+                        isEnabled: true,
+                        glowColor: substanceColor,
+                        child: button,
+                      );
+                    }
+
+                    return button;
+                  },
                 ),
               ],
             ),
@@ -1186,6 +1204,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           itemBuilder: (context, index) {
             final calculation = _recentCalculations[index];
             return RepaintBoundary(
+              key: ValueKey(calculation['id'] ?? index), // Add key for better performance
               child: GlassCard(
                 child: ListTile(
                   leading: Container(

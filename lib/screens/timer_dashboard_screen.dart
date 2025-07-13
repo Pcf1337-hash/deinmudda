@@ -115,7 +115,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 100, // Consistent with dosage calculator
+      height: 90, // Consistent with dosage calculator
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
