@@ -17,7 +17,7 @@ class DatabaseService {
 
   static Database? _database;
   static const String _databaseName = 'konsum_tracker.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   Future<Database> get database async {
     _database ??= await _initDatabase();
@@ -64,7 +64,11 @@ class DatabaseService {
         cost REAL NOT NULL DEFAULT 0.0,
         notes TEXT,
         createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL
+        updatedAt TEXT NOT NULL,
+        timerStartTime TEXT,
+        timerEndTime TEXT,
+        timerCompleted INTEGER NOT NULL DEFAULT 0,
+        timerNotificationSent INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -79,6 +83,7 @@ class DatabaseService {
         defaultUnit TEXT NOT NULL,
         notes TEXT,
         iconName TEXT,
+        duration INTEGER,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL
       )
@@ -143,8 +148,74 @@ class DatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database migrations here
-    if (oldVersion < newVersion) {
-      // Add migration logic for future versions
+    if (oldVersion < 2) {
+      // Add timer fields to entries table
+      await db.execute('''
+        ALTER TABLE entries ADD COLUMN timerStartTime TEXT;
+      ''');
+      await db.execute('''
+        ALTER TABLE entries ADD COLUMN timerEndTime TEXT;
+      ''');
+      await db.execute('''
+        ALTER TABLE entries ADD COLUMN timerCompleted INTEGER NOT NULL DEFAULT 0;
+      ''');
+      await db.execute('''
+        ALTER TABLE entries ADD COLUMN timerNotificationSent INTEGER NOT NULL DEFAULT 0;
+      ''');
+      
+      // Add duration field to substances table
+      await db.execute('''
+        ALTER TABLE substances ADD COLUMN duration INTEGER;
+      ''');
+      
+      // Update existing substances with default durations
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 240 
+        WHERE name = 'Koffein';
+      '''); // 4 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 120 
+        WHERE name = 'Cannabis';
+      '''); // 2 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 120 
+        WHERE name = 'Alkohol';
+      '''); // 2 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 1440 
+        WHERE name = 'Vitamin D';
+      '''); // 24 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 360 
+        WHERE name = 'Ibuprofen';
+      '''); // 6 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 30 
+        WHERE name = 'Nikotin';
+      '''); // 30 minutes
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 480 
+        WHERE name = 'Melatonin';
+      '''); // 8 hours
+      
+      await db.execute('''
+        UPDATE substances 
+        SET duration = 240 
+        WHERE name = 'Paracetamol';
+      '''); // 4 hours
     }
   }
 
@@ -161,8 +232,9 @@ class DatabaseService {
           'defaultUnit': 'mg',
           'notes': 'Häufig in Kaffee, Tee und Energy-Drinks enthalten',
           'iconName': 'coffee',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 240, // 4 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
         {
           'id': 'default_cannabis',
@@ -173,8 +245,9 @@ class DatabaseService {
           'defaultUnit': 'g',
           'notes': 'THC-haltige Cannabisprodukte',
           'iconName': 'leaf',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 120, // 2 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
         {
           'id': 'default_alcohol',
@@ -185,8 +258,9 @@ class DatabaseService {
           'defaultUnit': 'ml',
           'notes': 'Ethanol in alkoholischen Getränken',
           'iconName': 'wine',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 120, // 2 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
         {
           'id': 'default_vitamin_d',
@@ -197,8 +271,9 @@ class DatabaseService {
           'defaultUnit': 'IE',
           'notes': 'Wichtig für Knochengesundheit und Immunsystem',
           'iconName': 'sun',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 1440, // 24 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
         {
           'id': 'default_ibuprofen',
@@ -209,8 +284,48 @@ class DatabaseService {
           'defaultUnit': 'mg',
           'notes': 'Nichtsteroidales Antirheumatikum (NSAR)',
           'iconName': 'pill',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 360, // 6 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        {
+          'id': 'default_nicotine',
+          'name': 'Nikotin',
+          'category': 1, // stimulant
+          'defaultRiskLevel': 2, // high
+          'pricePerUnit': 0.5,
+          'defaultUnit': 'mg',
+          'notes': 'Hauptwirkstoff in Tabakprodukten',
+          'iconName': 'cigarette',
+          'duration': 30, // 30 minutes
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        {
+          'id': 'default_melatonin',
+          'name': 'Melatonin',
+          'category': 3, // supplement
+          'defaultRiskLevel': 0, // low
+          'pricePerUnit': 0.3,
+          'defaultUnit': 'mg',
+          'notes': 'Natürliches Schlafhormon',
+          'iconName': 'moon',
+          'duration': 480, // 8 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
+        },
+        {
+          'id': 'default_paracetamol',
+          'name': 'Paracetamol',
+          'category': 0, // medication
+          'defaultRiskLevel': 0, // low
+          'pricePerUnit': 0.01,
+          'defaultUnit': 'mg',
+          'notes': 'Schmerzmittel und Fiebersenkend',
+          'iconName': 'pill',
+          'duration': 240, // 4 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
       ];
 

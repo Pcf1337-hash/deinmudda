@@ -136,6 +136,66 @@ class NotificationService {
     await _flutterLocalNotificationsPlugin.cancelAll();
   }
 
+  // Show timer expired notification
+  Future<void> showTimerExpiredNotification({
+    required String substanceName,
+    required String entryId,
+  }) async {
+    final notificationId = entryId.hashCode;
+    
+    await showNotification(
+      id: notificationId,
+      title: 'Timer abgelaufen',
+      body: 'Die Wirkdauer von $substanceName ist vorüber.',
+    );
+  }
+
+  // Schedule timer notification
+  Future<void> scheduleTimerNotification({
+    required String substanceName,
+    required String entryId,
+    required DateTime scheduledTime,
+  }) async {
+    final notificationId = entryId.hashCode;
+    
+    final scheduledDate = tz.TZDateTime.from(scheduledTime, tz.local);
+    
+    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
+      'timer_notifications',
+      'Timer Benachrichtigungen',
+      channelDescription: 'Benachrichtigungen für abgelaufene Substanz-Timer',
+      importance: Importance.high,
+      priority: Priority.high,
+      showWhen: true,
+    );
+    
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    );
+    
+    await _flutterLocalNotificationsPlugin.zonedSchedule(
+      notificationId,
+      'Timer abgelaufen',
+      'Die Wirkdauer von $substanceName ist vorüber.',
+      scheduledDate,
+      notificationDetails,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  // Cancel timer notification
+  Future<void> cancelTimerNotification(String entryId) async {
+    final notificationId = entryId.hashCode;
+    await _flutterLocalNotificationsPlugin.cancel(notificationId);
+  }
+
   // Show immediate notification
   Future<void> showNotification({
     required String title,

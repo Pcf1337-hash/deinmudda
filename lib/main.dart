@@ -14,6 +14,7 @@ import 'services/settings_service.dart';
 import 'services/quick_button_service.dart';
 import 'services/auth_service.dart'; // Import the auth service
 import 'services/notification_service.dart'; // Import the notification service
+import 'services/timer_service.dart'; // Import the timer service
 import 'theme/modern_theme.dart';
 
 void main() async {
@@ -44,6 +45,10 @@ void main() async {
   // Initialize notification service
   final notificationService = NotificationService();
   await notificationService.init();
+  
+  // Initialize timer service
+  final timerService = TimerService();
+  await timerService.init();
     
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -85,6 +90,9 @@ class KonsumTrackerApp extends StatelessWidget {
         ),
         Provider<NotificationService>(
           create: (_) => NotificationService(),
+        ),
+        Provider<TimerService>(
+          create: (_) => TimerService(),
         ),
       ],
       child: Consumer<SettingsService>(

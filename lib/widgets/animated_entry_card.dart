@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
 import '../models/entry.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/timer_indicator.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
@@ -169,6 +170,10 @@ class _AnimatedEntryCardState extends State<AnimatedEntryCard>
                         ),
                     ],
                   ),
+                  if (widget.entry.hasTimer) ...[
+                    Spacing.verticalSpaceXs,
+                    TimerIndicator(entry: widget.entry),
+                  ],
                 ],
               ),
             ),
@@ -365,6 +370,18 @@ class _AnimatedEntryCardState extends State<AnimatedEntryCard>
                     fontStyle: FontStyle.italic,
                   ),
                 ),
+              ),
+            ],
+            
+            if (widget.entry.hasTimer) ...[
+              Spacing.verticalSpaceMd,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TimerIndicator(entry: widget.entry),
+                  Spacing.verticalSpaceXs,
+                  TimerProgressBar(entry: widget.entry),
+                ],
               ),
             ],
           ],

@@ -5,6 +5,7 @@ import '../../models/entry.dart';
 import '../../models/substance.dart';
 import '../../services/entry_service.dart';
 import '../../services/substance_service.dart';
+import '../../services/timer_service.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
@@ -39,10 +40,12 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
   bool _isLoading = false;
   bool _isSaving = false;
   String? _errorMessage;
+  bool _startTimer = true; // Default to starting timer
 
   // Services
   final EntryService _entryService = EntryService();
   final SubstanceService _substanceService = SubstanceService();
+  final TimerService _timerService = TimerService();
 
   // Animation
   late AnimationController _animationController;
@@ -140,7 +143,12 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
         dateTime: DateTime.now(),
       );
 
-      await _entryService.addEntry(entry);
+      // Create entry with or without timer
+      if (_startTimer && _selectedSubstance!.duration != null) {
+        await _entryService.createEntryWithTimer(entry, customDuration: _selectedSubstance!.duration);
+      } else {
+        await _entryService.addEntry(entry);
+      }
       
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -353,6 +361,43 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
                               ),
                             ],
                           ),
+                          
+                          Spacing.verticalSpaceMd,
+                          
+                          // Timer option
+                          if (_selectedSubstance?.duration != null)
+                            Row(
+                              children: [
+                                Checkbox(
+                                  value: _startTimer,
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _startTimer = value ?? false;
+                                    });
+                                  },
+                                  activeColor: DesignTokens.primaryIndigo,
+                                ),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Timer starten',
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      Text(
+                                        'Benachrichtigung nach ${_selectedSubstance?.formattedDuration}',
+                                        style: theme.textTheme.bodySmall?.copyWith(
+                                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                     ),
