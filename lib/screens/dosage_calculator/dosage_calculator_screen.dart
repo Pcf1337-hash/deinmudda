@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
@@ -131,7 +132,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 120,
+      height: 100, // Further reduced to approach 64px target
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -227,10 +228,35 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.calculate_rounded,
-                      color: Colors.white,
-                      size: 28,
+                    child: TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 2000),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Transform.rotate(
+                          angle: value * 6.28, // Full rotation
+                          child: ShaderMask(
+                            shaderCallback: (bounds) {
+                              return LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white,
+                                  Colors.white.withOpacity(0.8),
+                                  Colors.cyan.withOpacity(0.6),
+                                  Colors.white,
+                                ],
+                                stops: [0.0, 0.3, 0.7, 1.0],
+                                transform: GradientRotation(value * 3.14),
+                              ).createShader(bounds);
+                            },
+                            child: const Icon(
+                              Icons.calculate_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -665,9 +691,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 runSpacing: 16,
                 children: _popularSubstances.take(4).map((substance) {
                   return RepaintBoundary(
-                    child: SizedBox(
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       width: cardWidth,
-                      height: 220, // Reduced height from 240 to 220
+                      height: 220,
                       child: _buildEnhancedSubstanceCard(context, substance, isDark),
                     ),
                   );
@@ -1287,63 +1315,86 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   Widget _buildSpeedDial(BuildContext context, bool isDark) {
     return SpeedDial(
       animatedIcon: AnimatedIcons.menu_close,
-      animatedIconTheme: IconThemeData(size: 24),
-      backgroundColor: isDark ? DesignTokens.neonPurple : DesignTokens.primaryIndigo,
+      animatedIconTheme: const IconThemeData(size: 24, color: Colors.white),
+      backgroundColor: isDark ? DesignTokens.accentCyan : DesignTokens.primaryIndigo,
       foregroundColor: Colors.white,
-      elevation: 8.0,
+      elevation: 12.0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16.0)),
       ),
+      overlayColor: Colors.black,
+      overlayOpacity: 0.4,
+      spaceBetweenChildren: 12,
       children: [
         SpeedDialChild(
-          child: Icon(Icons.add_rounded, color: Colors.white),
+          child: const Icon(Icons.add_rounded, color: Colors.white),
           backgroundColor: DesignTokens.accentCyan,
           label: 'Neuer Eintrag',
-          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-          onTap: () => _showAddEntryDialog(context, isDark),
+          labelStyle: const TextStyle(
+            fontSize: 16.0, 
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          labelBackgroundColor: DesignTokens.accentCyan.withOpacity(0.9),
+          onTap: () => _showAddEntryDialogWithBlur(context, isDark),
         ),
         SpeedDialChild(
-          child: Icon(Icons.timer_rounded, color: Colors.white),
-          backgroundColor: DesignTokens.accentEmerald,
+          child: const Icon(Icons.timer_rounded, color: Colors.white),
+          backgroundColor: DesignTokens.accentPurple,
           label: 'Timer starten',
-          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-          onTap: () => _showTimerDialog(context, isDark),
+          labelStyle: const TextStyle(
+            fontSize: 16.0, 
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
+          onTap: () => _showTimerDialogWithBlur(context, isDark),
         ),
       ],
     );
   }
 
-  void _showAddEntryDialog(BuildContext context, bool isDark) {
+  void _showAddEntryDialogWithBlur(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AddEntryModal(
-        onSubstanceSelected: (substance) {
-          Navigator.of(context).pop();
-          _calculateDosage(substance);
-        },
-        substances: _popularSubstances,
-        isDark: isDark,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: _AddEntryModal(
+          onSubstanceSelected: (substance) {
+            Navigator.of(context).pop();
+            _calculateDosage(substance);
+          },
+          substances: _popularSubstances,
+          isDark: isDark,
+        ),
       ),
     );
   }
 
-  void _showTimerDialog(BuildContext context, bool isDark) {
+  void _showTimerDialogWithBlur(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _TimerSelectionModal(
-        substances: _popularSubstances,
-        isDark: isDark,
-        onTimerStarted: (substance, duration) {
-          Navigator.of(context).pop();
-          _startTimerForSubstance(substance, duration);
-        },
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: _TimerSelectionModal(
+          substances: _popularSubstances,
+          isDark: isDark,
+          onTimerStarted: (substance, duration) {
+            Navigator.of(context).pop();
+            _startTimerForSubstance(substance, duration);
+          },
+        ),
       ),
     );
   }
+
+
 
   void _startTimerForSubstance(DosageCalculatorSubstance substance, Duration duration) {
     setState(() {

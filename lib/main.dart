@@ -113,52 +113,41 @@ class KonsumTrackerApp extends StatelessWidget {
       ],
       child: Consumer2<SettingsService, PsychedelicThemeService>(
         builder: (context, settingsService, psychedelicService, child) {
-          return FutureBuilder<bool>(
-            future: settingsService.isDarkMode,
-            builder: (context, snapshot) {
-              final isDarkMode = snapshot.data ?? false;
-              
-              return MaterialApp(
-                title: 'Konsum Tracker Pro',
-                debugShowCheckedModeBanner: false,
-                theme: ModernTheme.lightTheme,
-                darkTheme: psychedelicService.isPsychedelicMode 
-                    ? ModernTheme.psychedelicDarkTheme 
-                    : ModernTheme.darkTheme,
-                themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
-                home: FutureBuilder<bool>(
-                  future: _shouldShowAuthScreen(context),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Scaffold(
-                        body: Center(
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                    
-                    final showAuth = snapshot.data ?? false;
-                    final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
-                    
-                    // Wrap with psychedelic background if enabled and in dark mode
-                    if (isDarkMode && psychedelicService.isPsychedelicMode) {
-                      return PsychedelicBackground(
-                        isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
-                        child: mainContent,
-                      );
-                    }
-                    
-                    return mainContent;
-                  },
-                ),
-                builder: (context, child) {
-                  return MediaQuery(
-                    data: MediaQuery.of(context).copyWith(
-                      textScaler: TextScaler.noScaling,
+          return MaterialApp(
+            title: 'Konsum Tracker Pro',
+            debugShowCheckedModeBanner: false,
+            theme: psychedelicService.getTheme(),
+            home: FutureBuilder<bool>(
+              future: _shouldShowAuthScreen(context),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Scaffold(
+                    body: Center(
+                      child: CircularProgressIndicator(),
                     ),
-                    child: child!,
                   );
-                },
+                }
+                
+                final showAuth = snapshot.data ?? false;
+                final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
+                
+                // Wrap with psychedelic background if enabled and in trippy mode
+                if (psychedelicService.isPsychedelicMode) {
+                  return PsychedelicBackground(
+                    isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
+                    child: mainContent,
+                  );
+                }
+                
+                return mainContent;
+              },
+            ),
+            builder: (context, child) {
+              return MediaQuery(
+                data: MediaQuery.of(context).copyWith(
+                  textScaler: TextScaler.noScaling,
+                ),
+                child: child!,
               );
             },
           );
