@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
@@ -33,6 +34,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   bool _isDisposed = false;
   String? _errorMessage;
 
+  // Timer state
+  Timer? _activeTimer;
+  DosageCalculatorSubstance? _timerSubstance;
+  Duration _timerDuration = Duration.zero;
+  Duration _remainingTime = Duration.zero;
+
   @override
   void initState() {
     super.initState();
@@ -43,6 +50,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   void dispose() {
     _isDisposed = true;
     _searchController.dispose();
+    _activeTimer?.cancel();
     super.dispose();
   }
 
@@ -92,24 +100,28 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ? _buildLoadingState()
                 : _errorMessage != null
                     ? _buildErrorCard(context, isDark)
-                    : SingleChildScrollView(
-                        padding: Spacing.paddingHorizontalMd,
-                        child: Column(
-                          children: [
-                            _buildUserProfileSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildSearchSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildPopularSubstancesSection(context, isDark),
-                            const SizedBox(height: Spacing.lg),
-                            _buildSafetyWarningSection(context, isDark),
-                            if (_recentCalculations.isNotEmpty) ...[
-                              const SizedBox(height: Spacing.lg),
-                              _buildRecentCalculationsSection(context, isDark),
-                            ],
-                            const SizedBox(height: 120),
-                          ],
-                        ),
+                    : CustomScrollView(
+                        slivers: [
+                          SliverPadding(
+                            padding: Spacing.paddingHorizontalMd,
+                            sliver: SliverList(
+                              delegate: SliverChildListDelegate([
+                                _buildUserProfileSection(context, isDark),
+                                const SizedBox(height: Spacing.lg),
+                                _buildSearchSection(context, isDark),
+                                const SizedBox(height: Spacing.lg),
+                                _buildPopularSubstancesSection(context, isDark),
+                                const SizedBox(height: Spacing.lg),
+                                _buildSafetyWarningSection(context, isDark),
+                                if (_recentCalculations.isNotEmpty) ...[
+                                  const SizedBox(height: Spacing.lg),
+                                  _buildRecentCalculationsSection(context, isDark),
+                                ],
+                                const SizedBox(height: 120),
+                              ]),
+                            ),
+                          ),
+                        ],
                       ),
           ),
         ],
@@ -152,11 +164,15 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           ),
         ],
       ),
-      child: SafeArea(
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Column(
-            children: [
+      child: Column(
+        children: [
+          // Timer banner if active
+          if (_activeTimer != null) _buildTimerBanner(context, isDark),
+          SafeArea(
+            child: Padding(
+              padding: Spacing.paddingMd,
+              child: Column(
+                children: [
               Row(
                 children: [
                   IconButton(
@@ -256,6 +272,95 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
       ),
     );
+  }
+
+  Widget _buildTimerBanner(BuildContext context, bool isDark) {
+    if (_timerSubstance == null) return const SizedBox.shrink();
+    
+    final progress = _timerDuration.inMilliseconds > 0
+        ? ((_timerDuration.inMilliseconds - _remainingTime.inMilliseconds) / _timerDuration.inMilliseconds)
+        : 0.0;
+    
+    final substanceColor = _getSubstanceColor(_timerSubstance!.name);
+    
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      decoration: BoxDecoration(
+        color: substanceColor.withOpacity(0.1),
+        border: Border(
+          bottom: BorderSide(
+            color: substanceColor.withOpacity(0.3),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.timer_rounded,
+            color: substanceColor,
+            size: 20,
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${_timerSubstance!.name} Timer',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: substanceColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    Expanded(
+                      child: LinearProgressIndicator(
+                        value: progress.clamp(0.0, 1.0),
+                        backgroundColor: substanceColor.withOpacity(0.2),
+                        valueColor: AlwaysStoppedAnimation<Color>(substanceColor),
+                        minHeight: 4,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      _formatDuration(_remainingTime),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: substanceColor,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            onPressed: _stopTimer,
+            icon: Icon(
+              Icons.stop_rounded,
+              color: substanceColor,
+              size: 20,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    final seconds = duration.inSeconds.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
+    } else {
+      return '${minutes}:${seconds.toString().padLeft(2, '0')}';
+    }
   }
 
   Widget _buildErrorCard(BuildContext context, bool isDark) {
@@ -1238,13 +1343,44 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   void _startTimerForSubstance(DosageCalculatorSubstance substance, Duration duration) {
-    // TODO: Implement timer functionality
+    setState(() {
+      _timerSubstance = substance;
+      _timerDuration = duration;
+      _remainingTime = duration;
+    });
+    
+    _activeTimer?.cancel();
+    _activeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_isDisposed) {
+        timer.cancel();
+        return;
+      }
+      
+      setState(() {
+        _remainingTime = _remainingTime - const Duration(seconds: 1);
+        
+        if (_remainingTime.inSeconds <= 0) {
+          _stopTimer();
+        }
+      });
+    });
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Timer für ${substance.name} gestartet (${duration.inMinutes} Min)'),
+        content: Text('Timer für ${substance.name} gestartet (${_formatDuration(duration)})'),
         backgroundColor: DesignTokens.successGreen,
       ),
     );
+  }
+
+  void _stopTimer() {
+    _activeTimer?.cancel();
+    setState(() {
+      _activeTimer = null;
+      _timerSubstance = null;
+      _timerDuration = Duration.zero;
+      _remainingTime = Duration.zero;
+    });
   }
 
   Color _getSubstanceColor(String substanceName) {
