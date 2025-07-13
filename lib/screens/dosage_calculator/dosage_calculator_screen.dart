@@ -267,9 +267,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   ),
                 ],
               ),
-            ],
+              ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -2282,15 +2284,13 @@ class _TimerSelectionModalState extends State<_TimerSelectionModal> {
                         ),
                       ),
                     ),
-                    ),
                   ),
-                  ],
                 ],
+                ),
               ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 
