@@ -7,6 +7,7 @@ import '../models/entry.dart';
 import '../models/substance.dart';
 import '../services/entry_service.dart';
 import '../services/substance_service.dart';
+import '../services/timer_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
 import '../theme/design_tokens.dart';
@@ -41,10 +42,12 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   String? _errorMessage;
   double _calculatedCost = 0.0;
   bool _autoCalculateCost = true;
+  bool _startTimer = true; // Default to starting timer
 
   // Services
   final EntryService _entryService = EntryService();
   final SubstanceService _substanceService = SubstanceService();
+  final TimerService _timerService = TimerService();
 
   @override
   void initState() {
@@ -125,13 +128,20 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
 
-      await _entryService.addEntry(entry);
+      // Create entry with or without timer
+      if (_startTimer && _selectedSubstance?.duration != null) {
+        await _entryService.createEntryWithTimer(entry, customDuration: _selectedSubstance!.duration);
+      } else {
+        await _entryService.addEntry(entry);
+      }
       
       if (mounted) {
         Navigator.of(context).pop(true);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Eintrag erfolgreich gespeichert'),
+          SnackBar(
+            content: Text(_startTimer && _selectedSubstance?.duration != null 
+                ? 'Eintrag mit Timer erfolgreich gespeichert' 
+                : 'Eintrag erfolgreich gespeichert'),
             backgroundColor: Colors.green,
           ),
         );
@@ -285,6 +295,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
           _buildCostSection(context, isDark),
           Spacing.verticalSpaceLg,
           _buildNotesSection(context, isDark),
+          Spacing.verticalSpaceLg,
+          _buildTimerSection(context, isDark),
         ],
       ),
     );
@@ -339,6 +351,8 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                         _substanceController.text = substance.name;
                         _unitController.text = substance.defaultUnit;
                         _updateCalculatedCost();
+                        // Enable timer by default if substance has duration
+                        _startTimer = substance.duration != null;
                       } else {
                         _substanceController.clear();
                         _unitController.clear();
@@ -729,6 +743,76 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
           delay: const Duration(milliseconds: 1400),
+        ).slideY(
+          begin: 0.3,
+          end: 0,
+          duration: DesignTokens.animationMedium,
+          curve: DesignTokens.curveEaseOut,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimerSection(BuildContext context, bool isDark) {
+    if (_selectedSubstance?.duration == null) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Timer',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 1500),
+        ),
+        Spacing.verticalSpaceSm,
+        GlassCard(
+          child: Padding(
+            padding: Spacing.paddingMd,
+            child: Row(
+              children: [
+                Checkbox(
+                  value: _startTimer,
+                  onChanged: (value) {
+                    setState(() {
+                      _startTimer = value ?? false;
+                    });
+                  },
+                  activeColor: DesignTokens.primaryIndigo,
+                ),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Timer starten',
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Spacing.verticalSpaceXs,
+                      Text(
+                        'Benachrichtigung nach ${_selectedSubstance?.formattedDuration ?? 'N/A'}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 1600),
         ).slideY(
           begin: 0.3,
           end: 0,
