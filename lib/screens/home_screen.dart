@@ -7,11 +7,15 @@ import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../services/entry_service.dart';
 import '../services/quick_button_service.dart';
+import '../services/timer_service.dart';
+import '../services/substance_service.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
+import '../widgets/active_timer_bar.dart';
+import '../widgets/speed_dial.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -41,16 +45,22 @@ class _HomeScreenState extends State<HomeScreen> {
   // Services
   final EntryService _entryService = EntryService();
   final QuickButtonService _quickButtonService = QuickButtonService();
+  final TimerService _timerService = TimerService();
+  final SubstanceService _substanceService = SubstanceService();
 
   // Quick Entry State
   List<QuickButtonConfig> _quickButtons = [];
   bool _isLoadingQuickButtons = true;
+  
+  // Timer State
+  Entry? _activeTimer;
 
   @override
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
     _loadQuickButtons();
+    _loadActiveTimer();
   }
 
   @override
@@ -66,6 +76,21 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _isScrolled = isScrolled;
       });
+    }
+  }
+
+  Future<void> _loadActiveTimer() async {
+    try {
+      final activeTimer = _timerService.currentActiveTimer;
+      if (mounted) {
+        setState(() {
+          _activeTimer = activeTimer;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error loading active timer: $e');
+      }
     }
   }
 
@@ -96,10 +121,27 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await _entryService.addEntry(entry);
       
+      // Get substance to determine timer duration
+      final substance = await _substanceService.getSubstanceById(config.substanceId);
+      final fallbackDuration = const Duration(hours: 4); // Default fallback duration
+      final timerDuration = substance?.duration ?? fallbackDuration;
+      
+      // Start timer automatically
+      final entryWithTimer = await _timerService.startTimer(entry, customDuration: timerDuration);
+      
+      // Update active timer state using addPostFrameCallback to avoid setState during build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _activeTimer = entryWithTimer;
+          });
+        }
+      });
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${config.substanceName} (${config.formattedDosage}) hinzugefügt'),
+            content: Text('${config.substanceName} (${config.formattedDosage}) hinzugefügt - Timer gestartet'),
             backgroundColor: DesignTokens.successGreen,
             action: SnackBarAction(
               label: 'Bearbeiten',
@@ -107,7 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => EditEntryScreen(entry: entry),
+                    builder: (context) => EditEntryScreen(entry: entryWithTimer),
                   ),
                 );
               },
@@ -123,6 +165,41 @@ class _HomeScreenState extends State<HomeScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fehler beim Hinzufügen: $e'),
+            backgroundColor: DesignTokens.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _stopActiveTimer() async {
+    if (_activeTimer == null) return;
+    
+    try {
+      await _timerService.stopTimer(_activeTimer!);
+      
+      // Update state using addPostFrameCallback
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _activeTimer = null;
+          });
+        }
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Timer für ${_activeTimer!.substanceName} gestoppt'),
+            backgroundColor: DesignTokens.warningYellow,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Stoppen des Timers: $e'),
             backgroundColor: DesignTokens.errorRed,
           ),
         );
@@ -198,6 +275,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: Spacing.paddingHorizontalMd,
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
+                    // Active Timer Bar (only shown when timer is active)
+                    if (_activeTimer != null)
+                      ActiveTimerBar(
+                        timer: _activeTimer!,
+                        onTap: () => _navigateToTimerDashboard(),
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 200),
+                      ).slideY(
+                        begin: -0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
+                    
                     Spacing.verticalSpaceLg,
                     
                     // Quick Entry Bar
@@ -222,11 +314,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         duration: DesignTokens.animationMedium,
                         curve: DesignTokens.curveEaseOut,
                       ),
-                    
-                    Spacing.verticalSpaceLg,
-                    _buildQuickActionsSection(context, isDark, psychedelicService),
-                    Spacing.verticalSpaceLg,
-                    _buildAdvancedFeaturesSection(context, isDark, psychedelicService),
                     
                     // Use FutureBuilder for data-dependent sections to improve loading performance
                     FutureBuilder<List<Entry>>(
@@ -261,11 +348,27 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToTimerDashboard,
+      floatingActionButton: SpeedDial(
+        tooltip: 'Aktionen',
         backgroundColor: DesignTokens.accentPink,
-        child: const Icon(Icons.timer_rounded, color: Colors.white),
-        tooltip: 'Timer Dashboard',
+        actions: [
+          SpeedDialAction(
+            child: const Icon(Icons.add_rounded),
+            label: 'Neuer Eintrag',
+            tooltip: 'Neuen Eintrag hinzufügen',
+            backgroundColor: DesignTokens.primaryIndigo,
+            onTap: () => _navigateToAddEntry(),
+          ),
+          if (_activeTimer != null)
+            SpeedDialAction(
+              child: const Icon(Icons.timer_off_rounded),
+              label: 'Timer stoppen',
+              tooltip: 'Aktiven Timer stoppen',
+              backgroundColor: DesignTokens.warningYellow,
+              onTap: () => _stopActiveTimer(),
+            ),
+        ],
+        child: const Icon(Icons.speed_rounded),
       ),
     );
       }, // End of Consumer builder
@@ -368,275 +471,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
-  }
-
-  Widget _buildQuickActionsSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
-    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Schnellaktionen',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 600),
-        ),
-        Spacing.verticalSpaceMd,
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                isDark,
-                'Neuer Eintrag',
-                Icons.add_circle_outline_rounded,
-                isPsychedelic ? DesignTokens.neonPurple : DesignTokens.primaryIndigo,
-                () => _navigateToAddEntry(),
-                psychedelicService,
-              ).animate().fadeIn(
-                duration: DesignTokens.animationMedium,
-                delay: const Duration(milliseconds: 700),
-              ).slideY(
-                begin: 0.3,
-                end: 0,
-                duration: DesignTokens.animationMedium,
-                curve: DesignTokens.curveEaseOut,
-              ),
-            ),
-            Spacing.horizontalSpaceMd,
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                isDark,
-                'Quick Buttons verwalten',
-                Icons.flash_on_rounded,
-                isPsychedelic ? DesignTokens.neonCyan : DesignTokens.accentCyan,
-                () => _navigateToQuickEntryManagement(),
-                psychedelicService,
-              ).animate().fadeIn(
-                duration: DesignTokens.animationMedium,
-                delay: const Duration(milliseconds: 800),
-              ).slideY(
-                begin: 0.3,
-                end: 0,
-                duration: DesignTokens.animationMedium,
-                curve: DesignTokens.curveEaseOut,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAdvancedFeaturesSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
-    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Erweiterte Funktionen',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.w600,
-            color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 850),
-        ),
-        Spacing.verticalSpaceMd,
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                isDark,
-                'Erweiterte Suche',
-                Icons.search_rounded,
-                isPsychedelic ? DesignTokens.acidGreen : DesignTokens.accentPurple,
-                () => _navigateToAdvancedSearch(),
-                psychedelicService,
-              ).animate().fadeIn(
-                duration: DesignTokens.animationMedium,
-                delay: const Duration(milliseconds: 900),
-              ).slideY(
-                begin: 0.3,
-                end: 0,
-                duration: DesignTokens.animationMedium,
-                curve: DesignTokens.curveEaseOut,
-              ),
-            ),
-            Spacing.horizontalSpaceMd,
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                isDark,
-                'Muster-Analyse',
-                Icons.insights_rounded,
-                isPsychedelic ? DesignTokens.neonMagenta : DesignTokens.warningYellow,
-                () => _navigateToPatternAnalysis(),
-                psychedelicService,
-              ).animate().fadeIn(
-                duration: DesignTokens.animationMedium,
-                delay: const Duration(milliseconds: 950),
-              ).slideY(
-                begin: 0.3,
-                end: 0,
-                duration: DesignTokens.animationMedium,
-                curve: DesignTokens.curveEaseOut,
-              ),
-            ),
-          ],
-        ),
-        Spacing.verticalSpaceMd,
-        _buildQuickActionCard(
-          context,
-          isDark,
-          'Daten-Export & Import',
-          Icons.import_export_rounded,
-          isPsychedelic ? DesignTokens.neonCyan : DesignTokens.accentEmerald,
-          () => _navigateToDataExport(),
-          psychedelicService,
-          isWide: true,
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 1000),
-        ).slideY(
-          begin: 0.3,
-          end: 0,
-          duration: DesignTokens.animationMedium,
-          curve: DesignTokens.curveEaseOut,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildQuickActionCard(
-    BuildContext context,
-    bool isDark,
-    String title,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-    PsychedelicThemeService psychedelicService, {
-    bool isWide = false,
-  }) {
-    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
-    
-    Widget card = GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: Spacing.paddingMd,
-        decoration: BoxDecoration(
-          gradient: isPsychedelic
-              ? DesignTokens.psychedelicGlassGradient
-              : isDark
-                  ? DesignTokens.glassGradientDark
-                  : DesignTokens.glassGradientLight,
-          borderRadius: Spacing.borderRadiusLg,
-          border: Border.all(
-            color: isPsychedelic
-                ? DesignTokens.psychedelicGlassBorder
-                : isDark
-                    ? DesignTokens.glassBorderDark
-                    : DesignTokens.glassBorderLight,
-            width: 1,
-          ),
-          boxShadow: isPsychedelic
-              ? psychedelicService.getMultipleGlowEffects(color)
-              : [
-                  BoxShadow(
-                    color: isDark
-                        ? DesignTokens.shadowDark.withOpacity(0.2)
-                        : DesignTokens.shadowLight.withOpacity(0.1),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-        ),
-        child: isWide
-            ? Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(Spacing.sm),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(isPsychedelic ? 0.2 : 0.1),
-                      borderRadius: Spacing.borderRadiusMd,
-                    ),
-                    child: PulsatingIcon(
-                      icon: icon,
-                      size: Spacing.iconLg,
-                      color: color,
-                      isEnabled: isPsychedelic && psychedelicService.isPulsingButtonsEnabled,
-                      glowColor: color,
-                    ),
-                  ),
-                  Spacing.horizontalSpaceMd,
-                  Expanded(
-                    child: Text(
-                      title,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
-                      ),
-                    ),
-                  ),
-                  Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    size: Spacing.iconSm,
-                    color: isPsychedelic
-                        ? DesignTokens.textPsychedelicSecondary.withOpacity(0.5)
-                        : Theme.of(context).iconTheme.color?.withOpacity(0.5),
-                  ),
-                ],
-              )
-            : Column(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(Spacing.sm),
-                    decoration: BoxDecoration(
-                      color: color.withOpacity(isPsychedelic ? 0.2 : 0.1),
-                      borderRadius: Spacing.borderRadiusMd,
-                    ),
-                    child: PulsatingIcon(
-                      icon: icon,
-                      size: Spacing.iconXl,
-                      color: color,
-                      isEnabled: isPsychedelic && psychedelicService.isPulsingButtonsEnabled,
-                      glowColor: color,
-                    ),
-                  ),
-                  Spacing.verticalSpaceSm,
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-      ),
-    );
-    
-    // Wrap with pulsating effect if psychedelic mode is enabled
-    if (isPsychedelic && psychedelicService.isPulsingButtonsEnabled) {
-      return PulsatingWidget(
-        isEnabled: true,
-        glowColor: color,
-        intensity: 0.6,
-        child: card,
-      );
-    }
-    
-    return card;
   }
 
   Widget _buildRecentEntriesSection(BuildContext context, bool isDark, List<Entry>? entries) {
