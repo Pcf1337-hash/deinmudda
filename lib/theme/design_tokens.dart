@@ -26,6 +26,7 @@ class DesignTokens {
   static const Color accentCyan = Color(0xFF06B6D4);
   static const Color accentEmerald = Color(0xFF10B981);
   static const Color accentPurple = Color(0xFF8B5CF6);
+  static const Color accentPink = Color(0xFFFF10F0);
   
   // Neutral Colors - Light Theme
   static const Color neutral50 = Color(0xFFFAFAFA);

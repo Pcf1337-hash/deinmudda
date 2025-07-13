@@ -268,6 +268,8 @@ class _HomeScreenState extends State<HomeScreen> {
         tooltip: 'Timer Dashboard',
       ),
     );
+      }, // End of Consumer builder
+    );
   }
 
   Widget _buildSliverAppBar(BuildContext context, bool isDark, String dateText, PsychedelicThemeService psychedelicService) {

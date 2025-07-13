@@ -878,11 +878,6 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       ),
     );
   }
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildSafetyWarningSection(BuildContext context, bool isDark) {
     return GlassCard(
