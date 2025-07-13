@@ -207,10 +207,13 @@ class _SubstanceCardState extends State<SubstanceCard>
     final theme = Theme.of(context);
 
     return Container(
-      height: 240,
+      constraints: const BoxConstraints(
+        minHeight: 220,
+        maxHeight: 280,
+      ),
       padding: Spacing.paddingMd,
       child: SingleChildScrollView(
-        physics: const NeverScrollableScrollPhysics(),
+        physics: const ClampingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -271,15 +274,17 @@ class _SubstanceCardState extends State<SubstanceCard>
             Spacing.verticalSpaceMd,
             
             // Substance name
-            Text(
-              widget.substance.name,
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: substanceColor,
-                fontSize: 22,
+            Flexible(
+              child: Text(
+                widget.substance.name,
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w800,
+                  color: substanceColor,
+                  fontSize: 22,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
             ),
             
             Spacing.verticalSpaceXs,
@@ -350,7 +355,6 @@ class _SubstanceCardState extends State<SubstanceCard>
   Widget _buildDosagePreview(BuildContext context, Color substanceColor) {
     final theme = Theme.of(context);
 
-    // Responsive Zeile: Werte und Labels immer in einer Zeile, Schrift kleiner, flexible!
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
@@ -360,37 +364,49 @@ class _SubstanceCardState extends State<SubstanceCard>
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           // Add recommended dose display if user weight is available
           if (widget.userWeight != null) ...[
-            Text(
-              'Empfohlene Dosis',
+            Flexible(
+              child: Text(
+                'Empfohlene Dosis',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: substanceColor,
+                  fontSize: 13,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  widget.substance.getFormattedDosage(widget.userWeight!, DosageIntensity.normal),
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: Colors.amberAccent,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+          ],
+          Flexible(
+            child: Text(
+              'Dosierungsbereich (pro kg)',
               style: theme.textTheme.titleSmall?.copyWith(
                 fontWeight: FontWeight.w700,
                 color: substanceColor,
                 fontSize: 13,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 4),
-            Text(
-              widget.substance.getFormattedDosage(widget.userWeight!, DosageIntensity.normal),
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w800,
-                color: Colors.amberAccent,
-                fontSize: 16,
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Text(
-            'Dosierungsbereich (pro kg)',
-            style: theme.textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: substanceColor,
-              fontSize: 13,
-            ),
-            maxLines: 2, // darf umbrechen, aber kein overflow!
-            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 2),
           Row(

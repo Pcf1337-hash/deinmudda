@@ -406,70 +406,87 @@ class _DosageResultCardState extends State<DosageResultCard>
           ),
         ),
         Spacing.verticalSpaceMd,
-        Wrap(
-          spacing: Spacing.sm,
-          runSpacing: Spacing.md,
-          children: DosageIntensity.values.map((intensity) {
-            final isSelected = intensity == _selectedIntensity;
-            final color = _getDosageColor(intensity);
-            final dose = _getDoseForIntensity(intensity);
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final availableWidth = constraints.maxWidth;
+            final itemWidth = (availableWidth - (Spacing.sm * 2)) / 3;
+            
+            return Wrap(
+              spacing: Spacing.sm,
+              runSpacing: Spacing.md,
+              children: DosageIntensity.values.map((intensity) {
+                final isSelected = intensity == _selectedIntensity;
+                final color = _getDosageColor(intensity);
+                final dose = _getDoseForIntensity(intensity);
 
-            return SizedBox(
-              width: 100,
-              child: Container(
-                padding: Spacing.paddingSm,
-                child: GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedIntensity = intensity;
-                    });
-                  },
-                  child: AnimatedContainer(
-                    duration: DesignTokens.animationFast,
-                    padding: Spacing.paddingMd,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? color.withOpacity(0.1)
-                          : Colors.transparent,
-                      borderRadius: Spacing.borderRadiusMd,
-                      border: Border.all(
-                        color: isSelected
-                            ? color
-                            : (isDark
-                                ? DesignTokens.glassBorderDark
-                                : DesignTokens.glassBorderLight),
-                        width: isSelected ? 2 : 1,
+                return SizedBox(
+                  width: itemWidth.clamp(80.0, 120.0),
+                  child: Container(
+                    padding: Spacing.paddingSm,
+                    child: GestureDetector(
+                      onTap: () {
+                        setState(() {
+                          _selectedIntensity = intensity;
+                        });
+                      },
+                      child: AnimatedContainer(
+                        duration: DesignTokens.animationFast,
+                        padding: Spacing.paddingMd,
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? color.withOpacity(0.1)
+                              : Colors.transparent,
+                          borderRadius: Spacing.borderRadiusMd,
+                          border: Border.all(
+                            color: isSelected
+                                ? color
+                                : (isDark
+                                    ? DesignTokens.glassBorderDark
+                                    : DesignTokens.glassBorderLight),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Icon(
+                              _getDosageIcon(intensity),
+                              color: isSelected ? color : theme.iconTheme.color?.withOpacity(0.7),
+                              size: Spacing.iconMd,
+                            ),
+                            Spacing.verticalSpaceXs,
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                intensity.displayName,
+                                style: theme.textTheme.titleSmall?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: isSelected ? color : null,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            FittedBox(
+                              fit: BoxFit.scaleDown,
+                              child: Text(
+                                '${dose.toStringAsFixed(1)} mg',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isSelected ? color : theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    child: Column(
-                      children: [
-                        Icon(
-                          _getDosageIcon(intensity),
-                          color: isSelected ? color : theme.iconTheme.color?.withOpacity(0.7),
-                          size: Spacing.iconMd,
-                        ),
-                        Spacing.verticalSpaceXs,
-                        Text(
-                          intensity.displayName,
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? color : null,
-                          ),
-                        ),
-                        Text(
-                          '${dose.toStringAsFixed(1)} mg',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: isSelected ? color : theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
-                ),
-              ),
+                );
+              }).toList(),
             );
-          }).toList(),
+          },
         ),
       ],
     );
