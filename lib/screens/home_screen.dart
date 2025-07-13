@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../services/entry_service.dart';
 import '../services/quick_button_service.dart';
+import '../services/psychedelic_theme_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
@@ -183,48 +186,50 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     final dateFormat = DateFormat('d. MMMM yyyy', 'de_DE');
 
-    return Scaffold(
-      body: CustomScrollView(
-        controller: _scrollController,
-        slivers: [
-          _buildSliverAppBar(context, isDark, dateFormat.format(now)),
-          SliverPadding(
-            padding: Spacing.paddingHorizontalMd,
-            sliver: SliverList(
-              delegate: SliverChildListDelegate([
-                Spacing.verticalSpaceLg,
-                
-                // Quick Entry Bar
-                if (!_isLoadingQuickButtons)
-                  QuickEntryBar(
-                    quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
-                    onQuickEntry: _handleQuickEntry,
-                    onAddButton: _navigateToQuickButtonConfig,
-                    onEditMode: () {
-                      setState(() {
-                        _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                      });
-                    },
-                    isEditing: _isQuickEntryEditMode,
-                    onReorder: _reorderQuickButtons,
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationMedium,
-                    delay: const Duration(milliseconds: 400),
-                  ).slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: DesignTokens.animationMedium,
-                    curve: DesignTokens.curveEaseOut,
-                  ),
-                
-                Spacing.verticalSpaceLg,
-                _buildQuickActionsSection(context, isDark),
-                Spacing.verticalSpaceLg,
-                _buildAdvancedFeaturesSection(context, isDark),
-                
-                // Use FutureBuilder for data-dependent sections to improve loading performance
-                FutureBuilder<List<Entry>>(
-                  future: _entryService.getAllEntries(),
+    return Consumer<PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        return Scaffold(
+          body: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
+              SliverPadding(
+                padding: Spacing.paddingHorizontalMd,
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate([
+                    Spacing.verticalSpaceLg,
+                    
+                    // Quick Entry Bar
+                    if (!_isLoadingQuickButtons)
+                      QuickEntryBar(
+                        quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
+                        onQuickEntry: _handleQuickEntry,
+                        onAddButton: _navigateToQuickButtonConfig,
+                        onEditMode: () {
+                          setState(() {
+                            _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                          });
+                        },
+                        isEditing: _isQuickEntryEditMode,
+                        onReorder: _reorderQuickButtons,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 400),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
+                    
+                    Spacing.verticalSpaceLg,
+                    _buildQuickActionsSection(context, isDark, psychedelicService),
+                    Spacing.verticalSpaceLg,
+                    _buildAdvancedFeaturesSection(context, isDark, psychedelicService),
+                    
+                    // Use FutureBuilder for data-dependent sections to improve loading performance
+                    FutureBuilder<List<Entry>>(
+                      future: _entryService.getAllEntries(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(
@@ -258,8 +263,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSliverAppBar(BuildContext context, bool isDark, String dateText) {
+  Widget _buildSliverAppBar(BuildContext context, bool isDark, String dateText, PsychedelicThemeService psychedelicService) {
     final theme = Theme.of(context);
+    final substanceColors = psychedelicService.getCurrentSubstanceColors();
+    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
 
     return SliverAppBar(
       expandedHeight: 150,
@@ -270,17 +277,27 @@ class _HomeScreenState extends State<HomeScreen> {
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
-            gradient: isDark
-                ? const LinearGradient(
+            gradient: isPsychedelic
+                ? LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0xFF1A1A2E),
-                      Color(0xFF16213E),
-                      Color(0xFF0F3460),
+                      DesignTokens.psychedelicBackground,
+                      substanceColors['primary']!.withOpacity(0.1),
+                      DesignTokens.psychedelicBackground,
                     ],
                   )
-                : DesignTokens.primaryGradient,
+                : isDark
+                    ? const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Color(0xFF1A1A2E),
+                          Color(0xFF16213E),
+                          Color(0xFF0F3460),
+                        ],
+                      )
+                    : DesignTokens.primaryGradient,
           ),
           child: SafeArea(
             child: Padding(
@@ -289,11 +306,24 @@ class _HomeScreenState extends State<HomeScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    'Konsum Tracker Pro',
-                    style: theme.textTheme.headlineMedium?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
+                  PulsatingWidget(
+                    isEnabled: isPsychedelic,
+                    glowColor: substanceColors['primary'],
+                    intensity: 0.5,
+                    child: Text(
+                      'Konsum Tracker Pro',
+                      style: theme.textTheme.headlineMedium?.copyWith(
+                        color: isPsychedelic 
+                            ? DesignTokens.textPsychedelicPrimary 
+                            : Colors.white,
+                        fontWeight: FontWeight.w700,
+                        shadows: isPsychedelic ? [
+                          Shadow(
+                            color: substanceColors['primary']!.withOpacity(0.3),
+                            blurRadius: 10,
+                          ),
+                        ] : null,
+                      ),
                     ),
                   ).animate().fadeIn(
                     duration: DesignTokens.animationSlow,
@@ -308,7 +338,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text(
                     dateText,
                     style: theme.textTheme.bodyLarge?.copyWith(
-                      color: Colors.white.withOpacity(0.9),
+                      color: isPsychedelic 
+                          ? DesignTokens.textPsychedelicSecondary 
+                          : Colors.white.withOpacity(0.9),
                       fontWeight: FontWeight.w400,
                     ),
                   ).animate().fadeIn(
@@ -329,7 +361,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildQuickActionsSection(BuildContext context, bool isDark) {
+  Widget _buildQuickActionsSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
+    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -337,6 +371,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'Schnellaktionen',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
           ),
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
@@ -351,8 +386,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDark,
                 'Neuer Eintrag',
                 Icons.add_circle_outline_rounded,
-                DesignTokens.primaryIndigo,
+                isPsychedelic ? DesignTokens.neonPurple : DesignTokens.primaryIndigo,
                 () => _navigateToAddEntry(),
+                psychedelicService,
               ).animate().fadeIn(
                 duration: DesignTokens.animationMedium,
                 delay: const Duration(milliseconds: 700),
@@ -370,8 +406,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDark,
                 'Quick Buttons verwalten',
                 Icons.flash_on_rounded,
-                DesignTokens.accentCyan,
+                isPsychedelic ? DesignTokens.neonCyan : DesignTokens.accentCyan,
                 () => _navigateToQuickEntryManagement(),
+                psychedelicService,
               ).animate().fadeIn(
                 duration: DesignTokens.animationMedium,
                 delay: const Duration(milliseconds: 800),
@@ -388,7 +425,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAdvancedFeaturesSection(BuildContext context, bool isDark) {
+  Widget _buildAdvancedFeaturesSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
+    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -396,6 +435,7 @@ class _HomeScreenState extends State<HomeScreen> {
           'Erweiterte Funktionen',
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
+            color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
           ),
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
@@ -410,8 +450,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDark,
                 'Erweiterte Suche',
                 Icons.search_rounded,
-                DesignTokens.accentPurple,
+                isPsychedelic ? DesignTokens.acidGreen : DesignTokens.accentPurple,
                 () => _navigateToAdvancedSearch(),
+                psychedelicService,
               ).animate().fadeIn(
                 duration: DesignTokens.animationMedium,
                 delay: const Duration(milliseconds: 900),
@@ -429,8 +470,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 isDark,
                 'Muster-Analyse',
                 Icons.insights_rounded,
-                DesignTokens.warningYellow,
+                isPsychedelic ? DesignTokens.neonMagenta : DesignTokens.warningYellow,
                 () => _navigateToPatternAnalysis(),
+                psychedelicService,
               ).animate().fadeIn(
                 duration: DesignTokens.animationMedium,
                 delay: const Duration(milliseconds: 950),
@@ -449,8 +491,9 @@ class _HomeScreenState extends State<HomeScreen> {
           isDark,
           'Daten-Export & Import',
           Icons.import_export_rounded,
-          DesignTokens.accentEmerald,
+          isPsychedelic ? DesignTokens.neonCyan : DesignTokens.accentEmerald,
           () => _navigateToDataExport(),
+          psychedelicService,
           isWide: true,
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
@@ -471,33 +514,42 @@ class _HomeScreenState extends State<HomeScreen> {
     String title,
     IconData icon,
     Color color,
-    VoidCallback onTap, {
+    VoidCallback onTap,
+    PsychedelicThemeService psychedelicService, {
     bool isWide = false,
   }) {
-    return GestureDetector(
+    final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
+    
+    Widget card = GestureDetector(
       onTap: onTap,
       child: Container(
         padding: Spacing.paddingMd,
         decoration: BoxDecoration(
-          gradient: isDark
-              ? DesignTokens.glassGradientDark
-              : DesignTokens.glassGradientLight,
+          gradient: isPsychedelic
+              ? DesignTokens.psychedelicGlassGradient
+              : isDark
+                  ? DesignTokens.glassGradientDark
+                  : DesignTokens.glassGradientLight,
           borderRadius: Spacing.borderRadiusLg,
           border: Border.all(
-            color: isDark
-                ? DesignTokens.glassBorderDark
-                : DesignTokens.glassBorderLight,
+            color: isPsychedelic
+                ? DesignTokens.psychedelicGlassBorder
+                : isDark
+                    ? DesignTokens.glassBorderDark
+                    : DesignTokens.glassBorderLight,
             width: 1,
           ),
-          boxShadow: [
-            BoxShadow(
-              color: isDark
-                  ? DesignTokens.shadowDark.withOpacity(0.2)
-                  : DesignTokens.shadowLight.withOpacity(0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          boxShadow: isPsychedelic
+              ? psychedelicService.getMultipleGlowEffects(color)
+              : [
+                  BoxShadow(
+                    color: isDark
+                        ? DesignTokens.shadowDark.withOpacity(0.2)
+                        : DesignTokens.shadowLight.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
         ),
         child: isWide
             ? Row(
@@ -505,13 +557,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(Spacing.sm),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withOpacity(isPsychedelic ? 0.2 : 0.1),
                       borderRadius: Spacing.borderRadiusMd,
                     ),
-                    child: Icon(
-                      icon,
+                    child: PulsatingIcon(
+                      icon: icon,
                       size: Spacing.iconLg,
                       color: color,
+                      isEnabled: isPsychedelic && psychedelicService.isPulsingButtonsEnabled,
+                      glowColor: color,
                     ),
                   ),
                   Spacing.horizontalSpaceMd,
@@ -520,13 +574,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       title,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
+                        color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
                       ),
                     ),
                   ),
                   Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: Spacing.iconSm,
-                    color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+                    color: isPsychedelic
+                        ? DesignTokens.textPsychedelicSecondary.withOpacity(0.5)
+                        : Theme.of(context).iconTheme.color?.withOpacity(0.5),
                   ),
                 ],
               )
@@ -535,13 +592,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(Spacing.sm),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.1),
+                      color: color.withOpacity(isPsychedelic ? 0.2 : 0.1),
                       borderRadius: Spacing.borderRadiusMd,
                     ),
-                    child: Icon(
-                      icon,
+                    child: PulsatingIcon(
+                      icon: icon,
                       size: Spacing.iconXl,
                       color: color,
+                      isEnabled: isPsychedelic && psychedelicService.isPulsingButtonsEnabled,
+                      glowColor: color,
                     ),
                   ),
                   Spacing.verticalSpaceSm,
@@ -549,6 +608,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
+                      color: isPsychedelic ? DesignTokens.textPsychedelicPrimary : null,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -556,6 +616,18 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
       ),
     );
+    
+    // Wrap with pulsating effect if psychedelic mode is enabled
+    if (isPsychedelic && psychedelicService.isPulsingButtonsEnabled) {
+      return PulsatingWidget(
+        isEnabled: true,
+        glowColor: color,
+        intensity: 0.6,
+        child: card,
+      );
+    }
+    
+    return card;
   }
 
   Widget _buildRecentEntriesSection(BuildContext context, bool isDark, List<Entry>? entries) {
