@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import '../utils/unit_manager.dart';
 
 enum SubstanceCategory {
   medication,
@@ -114,28 +115,8 @@ class Substance {
 
   // Convert unit to standard unit for calculation
   double convertToStandardUnit(double amount, String fromUnit) {
-    // This is a simple implementation - in a real app, you would have more complex conversion logic
-    if (fromUnit == defaultUnit) {
-      return amount;
-    }
-    
-    // Handle common conversions
-    if (defaultUnit == "g" && fromUnit == "mg") {
-      return amount / 1000;
-    }
-    if (defaultUnit == "mg" && fromUnit == "g") {
-      return amount * 1000;
-    }
-    if (defaultUnit == "ml" && fromUnit == "l") {
-      return amount * 1000;
-    }
-    if (defaultUnit == "l" && fromUnit == "ml") {
-      return amount / 1000;
-    }
-    
-    // For custom units like "Bong", "Flasche", etc., you would need specific conversion factors
-    // For now, we'll just return the original amount
-    return amount;
+    // Use UnitManager for conversion
+    return UnitManager.convertAmount(amount, fromUnit, defaultUnit);
   }
 
   // Calculate cost for a specific amount in any unit
