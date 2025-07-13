@@ -100,29 +100,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ? _buildLoadingState()
                 : _errorMessage != null
                     ? _buildErrorCard(context, isDark)
-                    : CustomScrollView(
-                        slivers: [
-                          SliverPadding(
-                            padding: Spacing.paddingHorizontalMd,
-                            sliver: SliverList(
-                              delegate: SliverChildListDelegate([
-                                _buildUserProfileSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildSearchSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildPopularSubstancesSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildSafetyWarningSection(context, isDark),
-                                if (_recentCalculations.isNotEmpty) ...[
-                                  const SizedBox(height: Spacing.lg),
-                                  _buildRecentCalculationsSection(context, isDark),
-                                ],
-                                const SizedBox(height: 120),
-                              ]),
-                            ),
-                          ),
+                    : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        _buildUserProfileSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildSearchSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildPopularSubstancesSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildSafetyWarningSection(context, isDark),
+                        if (_recentCalculations.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          _buildRecentCalculationsSection(context, isDark),
                         ],
-                      ),
+                        const SizedBox(height: 120), // Space for FAB
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
@@ -134,7 +131,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 160,
+      height: 120,
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -661,16 +658,16 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - Spacing.md) / 2).clamp(160.0, 180.0);
+              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 170.0); // Made 5-10% smaller
               
               return Wrap(
-                spacing: Spacing.md,
-                runSpacing: Spacing.md,
+                spacing: 16, // Increased spacing from 12 to 16
+                runSpacing: 16,
                 children: _popularSubstances.take(4).map((substance) {
                   return RepaintBoundary(
                     child: SizedBox(
                       width: cardWidth,
-                      height: 240,
+                      height: 220, // Reduced height from 240 to 220
                       child: _buildEnhancedSubstanceCard(context, substance, isDark),
                     ),
                   );
@@ -1152,23 +1149,27 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: Spacing.md),
-        Column(
-          children: _recentCalculations.map((calculation) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: Spacing.sm),
+        const SizedBox(height: 16),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _recentCalculations.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final calculation = _recentCalculations[index];
+            return RepaintBoundary(
               child: GlassCard(
                 child: ListTile(
                   leading: Container(
-                    padding: const EdgeInsets.all(Spacing.xs),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: DesignTokens.accentCyan.withOpacity(0.1),
-                      borderRadius: Spacing.borderRadiusSm,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.history_rounded,
                       color: DesignTokens.accentCyan,
-                      size: Spacing.iconMd,
+                      size: 20,
                     ),
                   ),
                   title: Text(calculation['substance'] ?? 'Unbekannt'),
@@ -1180,7 +1181,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ),
               ),
             );
-          }).toList(),
+          },
         ),
       ],
     );

@@ -2,14 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 
+enum ThemeMode { light, dark, trippy }
+
 class PsychedelicThemeService extends ChangeNotifier {
-  static const String _psychedelicModeKey = 'psychedelic_mode';
+  static const String _themeModeKey = 'theme_mode';
   static const String _animatedBackgroundKey = 'animated_background';
   static const String _pulsingButtonsKey = 'pulsing_buttons';
   static const String _glowIntensityKey = 'glow_intensity';
   static const String _currentSubstanceKey = 'current_substance';
   
-  bool _isPsychedelicMode = false;
+  ThemeMode _currentThemeMode = ThemeMode.light;
   bool _isAnimatedBackgroundEnabled = true;
   bool _isPulsingButtonsEnabled = true;
   double _glowIntensity = 1.0;
@@ -17,7 +19,10 @@ class PsychedelicThemeService extends ChangeNotifier {
   
   SharedPreferences? _prefs;
   
-  bool get isPsychedelicMode => _isPsychedelicMode;
+  ThemeMode get currentThemeMode => _currentThemeMode;
+  bool get isPsychedelicMode => _currentThemeMode == ThemeMode.trippy;
+  bool get isDarkMode => _currentThemeMode == ThemeMode.dark;
+  bool get isLightMode => _currentThemeMode == ThemeMode.light;
   bool get isAnimatedBackgroundEnabled => _isAnimatedBackgroundEnabled;
   bool get isPulsingButtonsEnabled => _isPulsingButtonsEnabled;
   double get glowIntensity => _glowIntensity;
@@ -29,7 +34,8 @@ class PsychedelicThemeService extends ChangeNotifier {
   }
   
   Future<void> _loadSettings() async {
-    _isPsychedelicMode = _prefs?.getBool(_psychedelicModeKey) ?? false;
+    final themeModeIndex = _prefs?.getInt(_themeModeKey) ?? 0;
+    _currentThemeMode = ThemeMode.values[themeModeIndex];
     _isAnimatedBackgroundEnabled = _prefs?.getBool(_animatedBackgroundKey) ?? true;
     _isPulsingButtonsEnabled = _prefs?.getBool(_pulsingButtonsKey) ?? true;
     _glowIntensity = _prefs?.getDouble(_glowIntensityKey) ?? 1.0;
@@ -37,10 +43,23 @@ class PsychedelicThemeService extends ChangeNotifier {
     notifyListeners();
   }
   
-  Future<void> togglePsychedelicMode() async {
-    _isPsychedelicMode = !_isPsychedelicMode;
-    await _prefs?.setBool(_psychedelicModeKey, _isPsychedelicMode);
+  Future<void> setThemeMode(ThemeMode mode) async {
+    _currentThemeMode = mode;
+    await _prefs?.setInt(_themeModeKey, mode.index);
     notifyListeners();
+  }
+  
+  Future<void> cycleThemeMode() async {
+    final nextIndex = (_currentThemeMode.index + 1) % ThemeMode.values.length;
+    await setThemeMode(ThemeMode.values[nextIndex]);
+  }
+  
+  Future<void> togglePsychedelicMode() async {
+    if (_currentThemeMode == ThemeMode.trippy) {
+      await setThemeMode(ThemeMode.dark);
+    } else {
+      await setThemeMode(ThemeMode.trippy);
+    }
   }
   
   Future<void> setAnimatedBackground(bool enabled) async {
@@ -73,21 +92,50 @@ class PsychedelicThemeService extends ChangeNotifier {
   }
   
   // Get appropriate theme based on settings
-  ThemeData getTheme(bool isDark) {
-    if (!isDark) {
-      return ThemeData.light(); // Return light theme for light mode
+  ThemeData getTheme() {
+    switch (_currentThemeMode) {
+      case ThemeMode.light:
+        return _buildLightTheme();
+      case ThemeMode.dark:
+        return _buildDarkTheme();
+      case ThemeMode.trippy:
+        return _buildTrippyTheme();
     }
-    
-    if (_isPsychedelicMode) {
-      return _buildPsychedelicTheme();
-    }
-    
-    return ThemeData.dark(); // Return regular dark theme
   }
   
-  ThemeData _buildPsychedelicTheme() {
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.light,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: DesignTokens.primaryIndigo,
+        brightness: Brightness.light,
+      ),
+      textTheme: _buildStandardTextTheme(false),
+      elevatedButtonTheme: _buildStandardElevatedButtonTheme(DesignTokens.primaryIndigo),
+      floatingActionButtonTheme: _buildStandardFABTheme(DesignTokens.primaryIndigo),
+      appBarTheme: _buildStandardAppBarTheme(false),
+    );
+  }
+  
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: true,
+      brightness: Brightness.dark,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: DesignTokens.primaryIndigo,
+        brightness: Brightness.dark,
+      ),
+      textTheme: _buildStandardTextTheme(true),
+      elevatedButtonTheme: _buildStandardElevatedButtonTheme(DesignTokens.primaryIndigo),
+      floatingActionButtonTheme: _buildStandardFABTheme(DesignTokens.primaryIndigo),
+      appBarTheme: _buildStandardAppBarTheme(true),
+    );
+  }
+  
+  ThemeData _buildTrippyTheme() {
     final substanceColors = getCurrentSubstanceColors();
-    final primaryColor = substanceColors['primary'] ?? DesignTokens.neonPurple;
+    final primaryColor = substanceColors['primary'] ?? const Color(0xFFff00ff); // Neon magenta
     
     return ThemeData(
       useMaterial3: true,
@@ -95,132 +143,171 @@ class PsychedelicThemeService extends ChangeNotifier {
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.dark,
-        background: DesignTokens.psychedelicBackground,
-        surface: DesignTokens.psychedelicSurface,
-        surfaceVariant: DesignTokens.psychedelicSurfaceVariant,
+        background: const Color(0xFF2c2c2c), // Trippy background color
+        surface: const Color(0xFF2c2c2c).withOpacity(0.8),
+        surfaceVariant: const Color(0xFF2c2c2c).withOpacity(0.6),
         primary: primaryColor,
-        secondary: DesignTokens.neonCyan,
-        tertiary: DesignTokens.acidGreen,
-        onBackground: DesignTokens.textPsychedelicPrimary,
-        onSurface: DesignTokens.textPsychedelicPrimary,
+        secondary: const Color(0xFF00f7ff), // Neon cyan
+        tertiary: const Color(0xFFff00ff), // Neon magenta
+        onBackground: Colors.white,
+        onSurface: Colors.white,
         onPrimary: Colors.black,
         onSecondary: Colors.black,
         onTertiary: Colors.black,
-        outline: DesignTokens.psychedelicGlassBorder,
+        outline: const Color(0xFF00f7ff).withOpacity(0.3),
       ),
-      scaffoldBackgroundColor: DesignTokens.psychedelicBackground,
-      textTheme: _buildPsychedelicTextTheme(),
-      elevatedButtonTheme: _buildPsychedelicElevatedButtonTheme(primaryColor),
-      floatingActionButtonTheme: _buildPsychedelicFABTheme(primaryColor),
-      bottomNavigationBarTheme: _buildPsychedelicBottomNavTheme(),
-      appBarTheme: _buildPsychedelicAppBarTheme(),
-      iconTheme: IconThemeData(
-        color: DesignTokens.textPsychedelicPrimary,
+      scaffoldBackgroundColor: const Color(0xFF2c2c2c),
+      textTheme: _buildTrippyTextTheme(),
+      elevatedButtonTheme: _buildTrippyElevatedButtonTheme(primaryColor),
+      floatingActionButtonTheme: _buildTrippyFABTheme(primaryColor),
+      bottomNavigationBarTheme: _buildTrippyBottomNavTheme(),
+      appBarTheme: _buildTrippyAppBarTheme(),
+      iconTheme: const IconThemeData(
+        color: Colors.white,
         size: 24,
       ),
       primaryIconTheme: IconThemeData(
         color: primaryColor,
         size: 24,
       ),
-      splashFactory: NoSplash.splashFactory, // Disable splash for psychedelic mode
+      splashFactory: NoSplash.splashFactory, // Disable splash for trippy mode
     );
   }
   
-  TextTheme _buildPsychedelicTextTheme() {
+  TextTheme _buildStandardTextTheme(bool isDark) {
+    final textColor = isDark ? Colors.white : Colors.black;
+    final secondaryTextColor = isDark ? Colors.white70 : Colors.black54;
+    
+    return TextTheme(
+      displayLarge: TextStyle(
+        fontSize: 32,
+        fontWeight: FontWeight.w700,
+        color: textColor,
+        letterSpacing: -0.5,
+      ),
+      displayMedium: TextStyle(
+        fontSize: 28,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+        letterSpacing: -0.25,
+      ),
+      headlineLarge: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      headlineMedium: TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      titleLarge: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: textColor,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w500,
+        color: textColor,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: textColor,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: secondaryTextColor,
+      ),
+      bodySmall: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: secondaryTextColor,
+      ),
+    );
+  }
+
+  TextTheme _buildTrippyTextTheme() {
     return const TextTheme(
       displayLarge: TextStyle(
         fontSize: 32,
         fontWeight: FontWeight.w700,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
         letterSpacing: -0.5,
         shadows: [
           Shadow(
-            color: DesignTokens.psychedelicGlowPurple,
-            blurRadius: 5,
+            color: Color(0xFFff00ff),
+            blurRadius: 8,
+          ),
+          Shadow(
+            color: Color(0xFF00f7ff),
+            blurRadius: 12,
           ),
         ],
       ),
       displayMedium: TextStyle(
         fontSize: 28,
         fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
         letterSpacing: -0.25,
-      ),
-      displaySmall: TextStyle(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
+        shadows: [
+          Shadow(
+            color: Color(0xFFff00ff),
+            blurRadius: 6,
+          ),
+        ],
       ),
       headlineLarge: TextStyle(
         fontSize: 22,
         fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
+        shadows: [
+          Shadow(
+            color: Color(0xFF00f7ff),
+            blurRadius: 4,
+          ),
+        ],
       ),
       headlineMedium: TextStyle(
         fontSize: 20,
         fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
-      ),
-      headlineSmall: TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
       ),
       titleLarge: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w600,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
       ),
       titleMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w500,
-        color: DesignTokens.textPsychedelicPrimary,
-      ),
-      titleSmall: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
       ),
       bodyLarge: TextStyle(
         fontSize: 16,
         fontWeight: FontWeight.w400,
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
       ),
       bodyMedium: TextStyle(
         fontSize: 14,
         fontWeight: FontWeight.w400,
-        color: DesignTokens.textPsychedelicSecondary,
+        color: Colors.white70,
       ),
       bodySmall: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w400,
-        color: DesignTokens.textPsychedelicTertiary,
-      ),
-      labelLarge: TextStyle(
-        fontSize: 14,
-        fontWeight: FontWeight.w500,
-        color: DesignTokens.textPsychedelicPrimary,
-      ),
-      labelMedium: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: DesignTokens.textPsychedelicSecondary,
-      ),
-      labelSmall: TextStyle(
-        fontSize: 10,
-        fontWeight: FontWeight.w500,
-        color: DesignTokens.textPsychedelicTertiary,
+        color: Colors.white60,
       ),
     );
   }
-  
-  ElevatedButtonThemeData _buildPsychedelicElevatedButtonTheme(Color primaryColor) {
+  ElevatedButtonThemeData _buildStandardElevatedButtonTheme(Color primaryColor) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: primaryColor,
         foregroundColor: Colors.white,
-        elevation: 0,
-        shadowColor: Colors.transparent,
+        elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),
@@ -231,37 +318,86 @@ class PsychedelicThemeService extends ChangeNotifier {
       ),
     );
   }
-  
-  FloatingActionButtonThemeData _buildPsychedelicFABTheme(Color primaryColor) {
+
+  ElevatedButtonThemeData _buildTrippyElevatedButtonTheme(Color primaryColor) {
+    return ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: primaryColor.withOpacity(0.8),
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: primaryColor,
+            width: 1,
+          ),
+        ),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 24,
+          vertical: 16,
+        ),
+      ),
+    );
+  }
+
+  FloatingActionButtonThemeData _buildStandardFABTheme(Color primaryColor) {
     return FloatingActionButtonThemeData(
       backgroundColor: primaryColor,
       foregroundColor: Colors.white,
-      elevation: 0,
+      elevation: 6,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16)),
       ),
     );
   }
-  
-  BottomNavigationBarThemeData _buildPsychedelicBottomNavTheme() {
-    return const BottomNavigationBarThemeData(
-      backgroundColor: DesignTokens.psychedelicSurface,
-      selectedItemColor: DesignTokens.neonPurple,
-      unselectedItemColor: DesignTokens.textPsychedelicTertiary,
-      type: BottomNavigationBarType.fixed,
+
+  FloatingActionButtonThemeData _buildTrippyFABTheme(Color primaryColor) {
+    return FloatingActionButtonThemeData(
+      backgroundColor: primaryColor.withOpacity(0.8),
+      foregroundColor: Colors.white,
       elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: const BorderRadius.all(Radius.circular(16)),
+        side: BorderSide(
+          color: primaryColor,
+          width: 2,
+        ),
+      ),
     );
   }
-  
-  AppBarTheme _buildPsychedelicAppBarTheme() {
+
+  AppBarTheme _buildStandardAppBarTheme(bool isDark) {
+    return AppBarTheme(
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      backgroundColor: Colors.transparent,
+      foregroundColor: isDark ? Colors.white : Colors.black,
+      iconTheme: IconThemeData(
+        color: isDark ? Colors.white : Colors.black,
+      ),
+    );
+  }
+
+  AppBarTheme _buildTrippyAppBarTheme() {
     return const AppBarTheme(
       elevation: 0,
       scrolledUnderElevation: 0,
       backgroundColor: Colors.transparent,
-      foregroundColor: DesignTokens.textPsychedelicPrimary,
+      foregroundColor: Colors.white,
       iconTheme: IconThemeData(
-        color: DesignTokens.textPsychedelicPrimary,
+        color: Colors.white,
       ),
+    );
+  }
+
+  BottomNavigationBarThemeData _buildTrippyBottomNavTheme() {
+    return BottomNavigationBarThemeData(
+      backgroundColor: const Color(0xFF2c2c2c).withOpacity(0.9),
+      selectedItemColor: const Color(0xFFff00ff),
+      unselectedItemColor: Colors.white60,
+      type: BottomNavigationBarType.fixed,
+      elevation: 0,
     );
   }
   
