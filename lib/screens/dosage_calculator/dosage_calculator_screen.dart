@@ -3,12 +3,15 @@ import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui';
 import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../../widgets/glass_card.dart';
+import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
@@ -100,29 +103,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ? _buildLoadingState()
                 : _errorMessage != null
                     ? _buildErrorCard(context, isDark)
-                    : CustomScrollView(
-                        slivers: [
-                          SliverPadding(
-                            padding: Spacing.paddingHorizontalMd,
-                            sliver: SliverList(
-                              delegate: SliverChildListDelegate([
-                                _buildUserProfileSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildSearchSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildPopularSubstancesSection(context, isDark),
-                                const SizedBox(height: Spacing.lg),
-                                _buildSafetyWarningSection(context, isDark),
-                                if (_recentCalculations.isNotEmpty) ...[
-                                  const SizedBox(height: Spacing.lg),
-                                  _buildRecentCalculationsSection(context, isDark),
-                                ],
-                                const SizedBox(height: 120),
-                              ]),
-                            ),
-                          ),
+                    : SingleChildScrollView(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      children: [
+                        const SizedBox(height: 16),
+                        _buildUserProfileSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildSearchSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildPopularSubstancesSection(context, isDark),
+                        const SizedBox(height: 24),
+                        _buildSafetyWarningSection(context, isDark),
+                        if (_recentCalculations.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          _buildRecentCalculationsSection(context, isDark),
                         ],
-                      ),
+                        const SizedBox(height: 120), // Space for FAB
+                      ],
+                    ),
+                  ),
           ),
         ],
       ),
@@ -134,7 +134,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 160,
+      height: 90, // Further reduced to approach 64px target
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -230,10 +230,35 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         ),
                       ],
                     ),
-                    child: Icon(
-                      Icons.calculate_rounded,
-                      color: Colors.white,
-                      size: 28,
+                    child: TweenAnimationBuilder<double>(
+                      duration: const Duration(milliseconds: 2000),
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      builder: (context, value, child) {
+                        return Transform.rotate(
+                          angle: value * 6.28, // Full rotation
+                          child: ShaderMask(
+                            shaderCallback: (bounds) {
+                              return LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Colors.white,
+                                  Colors.white.withOpacity(0.8),
+                                  Colors.cyan.withOpacity(0.6),
+                                  Colors.white,
+                                ],
+                                stops: [0.0, 0.3, 0.7, 1.0],
+                                transform: GradientRotation(value * 3.14),
+                              ).createShader(bounds);
+                            },
+                            child: const Icon(
+                              Icons.calculate_rounded,
+                              color: Colors.white,
+                              size: 28,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -661,16 +686,19 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - Spacing.md) / 2).clamp(160.0, 180.0);
+              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 170.0); // Made 5-10% smaller
               
               return Wrap(
-                spacing: Spacing.md,
-                runSpacing: Spacing.md,
+                spacing: 16, // Increased spacing from 12 to 16
+                runSpacing: 16,
                 children: _popularSubstances.take(4).map((substance) {
                   return RepaintBoundary(
-                    child: SizedBox(
+                    key: ValueKey(substance.name), // Add key for better performance
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeInOut,
                       width: cardWidth,
-                      height: 240,
+                      height: 220,
                       child: _buildEnhancedSubstanceCard(context, substance, isDark),
                     ),
                   );
@@ -889,33 +917,48 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 const Spacer(),
                 
-                // Action button
-                SizedBox(
-                  width: double.infinity,
-                  height: 36,
-                  child: ElevatedButton(
-                    onPressed: () => _calculateDosage(substance),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: substanceColor.withOpacity(0.2),
-                      foregroundColor: substanceColor,
-                      side: BorderSide(
-                        color: substanceColor.withOpacity(0.5),
-                        width: 1,
+                // Action button with pulsating effect in trippy mode
+                Consumer<service.PsychedelicThemeService>(
+                  builder: (context, themeService, child) {
+                    final button = SizedBox(
+                      width: double.infinity,
+                      height: 36,
+                      child: ElevatedButton(
+                        onPressed: () => _calculateDosage(substance),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: substanceColor.withOpacity(0.2),
+                          foregroundColor: substanceColor,
+                          side: BorderSide(
+                            color: substanceColor.withOpacity(0.5),
+                            width: 1,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          elevation: 0,
+                          shadowColor: substanceColor.withOpacity(0.3),
+                        ),
+                        child: Text(
+                          'Berechnen',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0,
-                      shadowColor: substanceColor.withOpacity(0.3),
-                    ),
-                    child: Text(
-                      'Berechnen',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
+                    );
+
+                    // Add pulsating effect in trippy mode
+                    if (themeService.isPsychedelicMode) {
+                      return PulsatingWidget(
+                        isEnabled: true,
+                        glowColor: substanceColor,
+                        child: button,
+                      );
+                    }
+
+                    return button;
+                  },
                 ),
               ],
             ),
@@ -1152,23 +1195,28 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             fontWeight: FontWeight.w600,
           ),
         ),
-        const SizedBox(height: Spacing.md),
-        Column(
-          children: _recentCalculations.map((calculation) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: Spacing.sm),
+        const SizedBox(height: 16),
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _recentCalculations.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 8),
+          itemBuilder: (context, index) {
+            final calculation = _recentCalculations[index];
+            return RepaintBoundary(
+              key: ValueKey(calculation['id'] ?? index), // Add key for better performance
               child: GlassCard(
                 child: ListTile(
                   leading: Container(
-                    padding: const EdgeInsets.all(Spacing.xs),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: DesignTokens.accentCyan.withOpacity(0.1),
-                      borderRadius: Spacing.borderRadiusSm,
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.history_rounded,
                       color: DesignTokens.accentCyan,
-                      size: Spacing.iconMd,
+                      size: 20,
                     ),
                   ),
                   title: Text(calculation['substance'] ?? 'Unbekannt'),
@@ -1180,7 +1228,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 ),
               ),
             );
-          }).toList(),
+          },
         ),
       ],
     );
@@ -1286,63 +1334,86 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   Widget _buildSpeedDial(BuildContext context, bool isDark) {
     return SpeedDial(
       animatedIcon: AnimatedIcons.menu_close,
-      animatedIconTheme: IconThemeData(size: 24),
-      backgroundColor: isDark ? DesignTokens.neonPurple : DesignTokens.primaryIndigo,
+      animatedIconTheme: const IconThemeData(size: 24, color: Colors.white),
+      backgroundColor: isDark ? DesignTokens.accentCyan : DesignTokens.primaryIndigo,
       foregroundColor: Colors.white,
-      elevation: 8.0,
+      elevation: 12.0,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(16.0)),
       ),
+      overlayColor: Colors.black,
+      overlayOpacity: 0.4,
+      spaceBetweenChildren: 12,
       children: [
         SpeedDialChild(
-          child: Icon(Icons.add_rounded, color: Colors.white),
+          child: const Icon(Icons.add_rounded, color: Colors.white),
           backgroundColor: DesignTokens.accentCyan,
           label: 'Neuer Eintrag',
-          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-          onTap: () => _showAddEntryDialog(context, isDark),
+          labelStyle: const TextStyle(
+            fontSize: 16.0, 
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          labelBackgroundColor: DesignTokens.accentCyan.withOpacity(0.9),
+          onTap: () => _showAddEntryDialogWithBlur(context, isDark),
         ),
         SpeedDialChild(
-          child: Icon(Icons.timer_rounded, color: Colors.white),
-          backgroundColor: DesignTokens.accentEmerald,
+          child: const Icon(Icons.timer_rounded, color: Colors.white),
+          backgroundColor: DesignTokens.accentPurple,
           label: 'Timer starten',
-          labelStyle: TextStyle(fontSize: 16.0, fontWeight: FontWeight.w600),
-          onTap: () => _showTimerDialog(context, isDark),
+          labelStyle: const TextStyle(
+            fontSize: 16.0, 
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+          labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
+          onTap: () => _showTimerDialogWithBlur(context, isDark),
         ),
       ],
     );
   }
 
-  void _showAddEntryDialog(BuildContext context, bool isDark) {
+  void _showAddEntryDialogWithBlur(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _AddEntryModal(
-        onSubstanceSelected: (substance) {
-          Navigator.of(context).pop();
-          _calculateDosage(substance);
-        },
-        substances: _popularSubstances,
-        isDark: isDark,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: _AddEntryModal(
+          onSubstanceSelected: (substance) {
+            Navigator.of(context).pop();
+            _calculateDosage(substance);
+          },
+          substances: _popularSubstances,
+          isDark: isDark,
+        ),
       ),
     );
   }
 
-  void _showTimerDialog(BuildContext context, bool isDark) {
+  void _showTimerDialogWithBlur(BuildContext context, bool isDark) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => _TimerSelectionModal(
-        substances: _popularSubstances,
-        isDark: isDark,
-        onTimerStarted: (substance, duration) {
-          Navigator.of(context).pop();
-          _startTimerForSubstance(substance, duration);
-        },
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: _TimerSelectionModal(
+          substances: _popularSubstances,
+          isDark: isDark,
+          onTimerStarted: (substance, duration) {
+            Navigator.of(context).pop();
+            _startTimerForSubstance(substance, duration);
+          },
+        ),
       ),
     );
   }
+
+
 
   void _startTimerForSubstance(DosageCalculatorSubstance substance, Duration duration) {
     setState(() {

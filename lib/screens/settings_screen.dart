@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../services/psychedelic_theme_service.dart' as service;
 import '../services/database_service.dart';
 import '../widgets/glass_card.dart';
 import '../theme/design_tokens.dart';
@@ -113,23 +113,51 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Spacing.verticalSpaceMd,
         Consumer<SettingsService>(
           builder: (context, settingsService, child) {
-            return FutureBuilder<bool>(
-              future: settingsService.isDarkMode,
-              builder: (context, snapshot) {
-                final isDarkModeEnabled = snapshot.data ?? false;
-                
+            return Consumer<service.PsychedelicThemeService>(
+              builder: (context, psychedelicService, child) {
                 return GlassCard(
-                  child: SwitchListTile(
-                    title: const Text('Dark Mode'),
-                    subtitle: const Text('Dunkles Design verwenden'),
-                    value: isDarkModeEnabled,
-                    onChanged: (value) {
-                      settingsService.setDarkMode(value);
-                    },
-                    secondary: Icon(
-                      isDarkModeEnabled ? Icons.dark_mode : Icons.light_mode,
-                      color: DesignTokens.primaryIndigo,
-                    ),
+                  usePsychedelicEffects: psychedelicService.isPsychedelicMode,
+                  glowColor: psychedelicService.isPsychedelicMode 
+                      ? const Color(0xFFff00ff) 
+                      : null,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ListTile(
+                        leading: Icon(
+                          Icons.palette_rounded,
+                          color: psychedelicService.isPsychedelicMode 
+                              ? const Color(0xFFff00ff) 
+                              : DesignTokens.primaryIndigo,
+                        ),
+                        title: Text(
+                          'Design Theme',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: psychedelicService.isPsychedelicMode && isDark
+                                ? Colors.white
+                                : null,
+                          ),
+                        ),
+                        subtitle: Text(
+                          _getThemeDescription(psychedelicService.currentThemeMode),
+                          style: TextStyle(
+                            color: psychedelicService.isPsychedelicMode && isDark
+                                ? Colors.white70
+                                : null,
+                          ),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildThemeSelector(psychedelicService),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },
@@ -496,5 +524,105 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
       );
     }
+  }
+
+  String _getThemeDescription(service.ThemeMode themeMode) {
+    switch (themeMode) {
+      case service.ThemeMode.light:
+        return 'Helles Design für die tägliche Nutzung';
+      case service.ThemeMode.dark:
+        return 'Dunkles Design für bessere Augenentspannung';
+      case service.ThemeMode.trippy:
+        return 'Psychedelisches Design mit Neon-Effekten';
+    }
+  }
+
+  Widget _buildThemeSelector(service.PsychedelicThemeService psychedelicService) {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Colors.grey.withOpacity(0.3),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildThemeButton(
+            service.ThemeMode.light,
+            psychedelicService.currentThemeMode,
+            () => psychedelicService.setThemeMode(service.ThemeMode.light),
+            Icons.light_mode_rounded,
+            'Light',
+            Colors.orange,
+          ),
+          const SizedBox(width: 4),
+          _buildThemeButton(
+            service.ThemeMode.dark,
+            psychedelicService.currentThemeMode,
+            () => psychedelicService.setThemeMode(service.ThemeMode.dark),
+            Icons.dark_mode_rounded,
+            'Dark',
+            Colors.indigo,
+          ),
+          const SizedBox(width: 4),
+          _buildThemeButton(
+            service.ThemeMode.trippy,
+            psychedelicService.currentThemeMode,
+            () => psychedelicService.setThemeMode(service.ThemeMode.trippy),
+            Icons.auto_awesome_rounded,
+            'Trippy',
+            const Color(0xFFff00ff),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildThemeButton(
+    service.ThemeMode themeMode,
+    service.ThemeMode currentMode,
+    VoidCallback onTap,
+    IconData icon,
+    String label,
+    Color color,
+  ) {
+    final isSelected = themeMode == currentMode;
+    final theme = Theme.of(context);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+          border: isSelected ? Border.all(color: color, width: 2) : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: isSelected ? color : theme.iconTheme.color?.withOpacity(0.7),
+              size: 20,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: isSelected ? color : theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                fontSize: 10,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

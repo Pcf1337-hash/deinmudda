@@ -95,10 +95,18 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddCustomTimerDialog,
         backgroundColor: DesignTokens.accentCyan,
-        child: const Icon(Icons.add_rounded, color: Colors.white),
+        foregroundColor: Colors.white,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text(
+          'Neuer Timer',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
     );
   }
@@ -107,7 +115,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 140,
+      height: 90, // Consistent with dosage calculator
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -308,30 +316,80 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.timer_off_rounded,
-            size: 64,
-            color: isDark ? Colors.white30 : Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Keine aktiven Timer',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: isDark ? Colors.white70 : Colors.grey.shade600,
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark ? Colors.white20 : Colors.grey.shade300,
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.timer_outlined,
+                    size: 64,
+                    color: DesignTokens.accentCyan,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Keine aktiven Timer',
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      color: DesignTokens.accentCyan,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Erstellen Sie einen benutzerdefinierten Timer oder starten Sie einen Timer bei einem Eintrag',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: isDark ? Colors.white70 : Colors.grey.shade600,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton.icon(
+                        onPressed: _showAddCustomTimerDialog,
+                        icon: const Icon(Icons.add_rounded),
+                        label: const Text('Timer erstellen'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: DesignTokens.accentCyan,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton.icon(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.home_rounded),
+                        label: const Text('Zurück'),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: DesignTokens.accentCyan),
+                          foregroundColor: DesignTokens.accentCyan,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Erstellen Sie einen benutzerdefinierten Timer\noder starten Sie einen Timer bei einem Eintrag',
-            textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isDark ? Colors.white54 : Colors.grey.shade500,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
