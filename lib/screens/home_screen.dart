@@ -350,64 +350,68 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
-          return AnimatedRotationFAB(
-            isTrippyMode: psychedelicService.isPsychedelicMode,
-            onPressed: () {
-              // SpeedDial functionality
-            },
-            child: SpeedDial(
-              tooltip: 'Aktionen',
-              backgroundColor: DesignTokens.accentPink,
-              overlayOpacity: 0.4,
-              overlayColor: Colors.black,
-              spaceBetweenChildren: 12,
-              buttonSize: const Size(56, 56),
-              childrenButtonSize: const Size(48, 48),
-              direction: SpeedDialDirection.up,
-              switchLabelPosition: false,
-              closeManually: false,
-              children: [
+          final speedDial = SpeedDial(
+            tooltip: 'Aktionen',
+            backgroundColor: DesignTokens.accentPink,
+            overlayOpacity: 0.4,
+            overlayColor: Colors.black,
+            spaceBetweenChildren: 12,
+            buttonSize: const Size(56, 56),
+            childrenButtonSize: const Size(48, 48),
+            direction: SpeedDialDirection.up,
+            switchLabelPosition: false,
+            closeManually: false,
+            children: [
+              SpeedDialChild(
+                child: const Icon(Icons.add_rounded),
+                label: 'Neuer Eintrag',
+                backgroundColor: DesignTokens.primaryIndigo,
+                foregroundColor: Colors.white,
+                labelStyle: const TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                ),
+                labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddEntryScreen(),
+                    ),
+                  ).then((result) {
+                    if (result == true) {
+                      setState(() {}); // Refresh the screen
+                    }
+                  });
+                },
+              ),
+              if (_activeTimer != null)
                 SpeedDialChild(
-                  child: const Icon(Icons.add_rounded),
-                  label: 'Neuer Eintrag',
-                  backgroundColor: DesignTokens.primaryIndigo,
+                  child: const Icon(Icons.timer_off_rounded),
+                  label: 'Timer stoppen',
+                  backgroundColor: DesignTokens.warningYellow,
                   foregroundColor: Colors.white,
                   labelStyle: const TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
-                  labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AddEntryScreen(),
-                      ),
-                    ).then((result) {
-                      if (result == true) {
-                        setState(() {}); // Refresh the screen
-                      }
-                    });
-                  },
+                  labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
+                  onTap: () => _stopActiveTimer(),
                 ),
-                if (_activeTimer != null)
-                  SpeedDialChild(
-                    child: const Icon(Icons.timer_off_rounded),
-                    label: 'Timer stoppen',
-                    backgroundColor: DesignTokens.warningYellow,
-                    foregroundColor: Colors.white,
-                    labelStyle: const TextStyle(
-                      fontSize: 16.0,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                    labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
-                    onTap: () => _stopActiveTimer(),
-                  ),
-              ],
-              child: const Icon(Icons.speed_rounded),
-            ),
+            ],
+            child: const Icon(Icons.speed_rounded),
           );
+
+          // Only wrap with animation in trippy mode
+          if (psychedelicService.isPsychedelicMode) {
+            return AnimatedRotationFAB(
+              isTrippyMode: true,
+              child: speedDial,
+            );
+          }
+          
+          return speedDial;
         },
       ),
     );
@@ -1319,13 +1323,11 @@ class GlassEmptyState extends StatelessWidget {
 // Animated rotation FAB widget for trippy mode
 class AnimatedRotationFAB extends StatefulWidget {
   final bool isTrippyMode;
-  final VoidCallback? onPressed;
   final Widget child;
 
   const AnimatedRotationFAB({
     super.key,
     required this.isTrippyMode,
-    this.onPressed,
     required this.child,
   });
 
@@ -1342,12 +1344,12 @@ class _AnimatedRotationFABState extends State<AnimatedRotationFAB>
   void initState() {
     super.initState();
     _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200), // Slightly longer for more dramatic effect
       vsync: this,
     );
     _rotationAnimation = Tween<double>(
       begin: 0.0,
-      end: 2.0, // 2 full rotations
+      end: 4.0, // 4 full rotations for wilder effect
     ).animate(CurvedAnimation(
       parent: _rotationController,
       curve: Curves.elasticOut,
@@ -1360,13 +1362,14 @@ class _AnimatedRotationFABState extends State<AnimatedRotationFAB>
     super.dispose();
   }
 
-  void _handleTap() {
-    if (widget.isTrippyMode) {
+  void _triggerRotation() {
+    if (widget.isTrippyMode && mounted) {
       _rotationController.forward().then((_) {
-        _rotationController.reset();
+        if (mounted) {
+          _rotationController.reset();
+        }
       });
     }
-    widget.onPressed?.call();
   }
 
   @override
@@ -1377,7 +1380,7 @@ class _AnimatedRotationFABState extends State<AnimatedRotationFAB>
         return Transform.rotate(
           angle: _rotationAnimation.value * 3.14159265359, // Convert to radians
           child: GestureDetector(
-            onTap: _handleTap,
+            onTap: _triggerRotation,
             child: widget.child,
           ),
         );

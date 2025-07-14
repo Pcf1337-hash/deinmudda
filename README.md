@@ -33,7 +33,16 @@
 
 ### **📅 Juli 2025**
 
-1. **🎨 UI Fixes & Visual Improvements** (14. Juli 2025)
+1. **🛠️ agent_home_dosage_fixes_1_6 - Crash-Fixes & UX-Verbesserungen** (14. Juli 2025)
+   - **🔧 Menü-Crash Fix**: Navigation-Crashes beim ersten App-Start behoben (context.mounted checks)
+   - **🎯 Zentrierter Text**: Empfohlene Dosis-Box im DosageCalculator mit FittedBox & TextAlign.center
+   - **🧨 Overflow-Behebung**: "BOTTOM OVERFLOWED" im DosageCalculator mit SingleChildScrollView gelöst
+   - **⏱️ Manueller Timer**: Zahlen-Eingabe (z.B. "64") mit formatierter Anzeige "Entspricht: 1 Stunde, 4 Minuten"
+   - **🌈 Visueller Timer-Balken**: Läuft von links nach rechts mit kontrastreichem Text auf Füllfarbe
+   - **✨ Animierter App-Titel**: ShaderMask mit Pulsieren/Reflektieren, verstärkt im Trippy-Mode
+   - **🛑 FAB-Rotation**: Plusknopf dreht sich wild (4x) im Trippy-Darkmode mit elastischem Bounce
+
+2. **🎨 UI Fixes & Visual Improvements** (14. Juli 2025)
    - **Dosisrechner**: Header-Overflow behoben (90px → 80px), Logo-Größe reduziert, Profil-Karte näher positioniert
    - **Substanz-Karten**: Mehr Padding für "Empfohlene Dosis" (12px → 16px), Höhe angepasst (220px → 240px)
    - **Home-Screen**: Statischer Titel durch animiertes Logo ersetzt (Psychology-Icon mit Rotation)
@@ -44,7 +53,7 @@
    - **Preis-Auto-Load**: Automatisches Laden des Preises bei Substanzauswahl
    - **Button-Aktivierung**: Nur bei gültiger Eingabe (Substanz + Dosierung + Einheit + Preis)
 
-2. **🗄️ SQL Database Fixes & Android Launcher Icons** (14. Juli 2025)
+3. **🗄️ SQL Database Fixes & Android Launcher Icons** (14. Juli 2025)
    - Behebung von SQL Database-Inkonsistenzen für stabile Datenbank-Operationen
    - Vollständige Android Launcher Icons (hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi) für APK-Kompilierung
    - **Neue Android-Konfiguration**: `android/app/src/main/res/mipmap-*` Icon-Sets hinzugefügt

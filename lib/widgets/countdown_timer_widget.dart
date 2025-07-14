@@ -230,7 +230,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
         : 0.0;
 
     // Calculate contrast text color based on the fill color
-    final brightness = accentColor.computeLuminance();
+    final brightness = _calculateColorBrightness(accentColor);
     final contrastTextColor = brightness > 0.5 ? Colors.black : Colors.white;
 
     return Column(
@@ -282,24 +282,36 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
                 ],
               ),
             ),
-            Container(
-              height: 8,
-              padding: const EdgeInsets.symmetric(horizontal: 4),
-              child: Center(
-                child: Text(
-                  '${(progress * 100).toInt()}%',
-                  style: TextStyle(
-                    fontSize: 8,
-                    fontWeight: FontWeight.w600,
-                    color: contrastTextColor,
+            if (progress > 0.15) // Only show text if there's enough space
+              Container(
+                height: 8,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
+                      color: contrastTextColor,
+                    ),
                   ),
                 ),
               ),
-            ),
           ],
         ),
       ],
     );
+  }
+
+  // Helper method to calculate color brightness
+  double _calculateColorBrightness(Color color) {
+    // Using the relative luminance formula
+    final r = color.red / 255.0;
+    final g = color.green / 255.0;
+    final b = color.blue / 255.0;
+    
+    return (0.299 * r + 0.587 * g + 0.114 * b);
   }
 }
 
