@@ -327,7 +327,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
                 color: isDark ? Colors.white10 : Colors.grey.shade100,
                 borderRadius: BorderRadius.circular(24),
                 border: Border.all(
-                  color: isDark ? Colors.white20 : Colors.grey.shade300,
+                  color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade300,
                   width: 1,
                 ),
               ),
