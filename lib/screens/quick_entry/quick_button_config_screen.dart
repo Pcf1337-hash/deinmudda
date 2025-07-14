@@ -431,8 +431,6 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           Spacing.verticalSpaceLg,
           _buildDosageSection(context, isDark),
           Spacing.verticalSpaceLg,
-          _buildPriceSection(context, isDark),
-          Spacing.verticalSpaceLg,
           _buildPreviewSection(context, isDark),
         ],
       ),
@@ -605,24 +603,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
             ),
           ],
         ),
-      ],
-    );
-  }
-
-  Widget _buildPriceSection(BuildContext context, bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Preis',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 600),
-        ),
         Spacing.verticalSpaceSm,
+        // Price field moved under unit field
         GlassCard(
           child: TextFormField(
             controller: _priceController,
@@ -655,7 +637,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           ),
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 700),
+          delay: const Duration(milliseconds: 750),
         ).slideY(
           begin: 0.3,
           end: 0,
@@ -699,6 +681,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       ],
     );
   }
+
+
 
   Widget _buildPreviewSection(BuildContext context, bool isDark) {
     if (_selectedSubstance == null || _dosageController.text.isEmpty || _unitController.text.isEmpty) {
