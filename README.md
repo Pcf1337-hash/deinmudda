@@ -23,66 +23,72 @@
 | **Phase 8** | ✅ **ABGESCHLOSSEN** | 2-3 Tage | **Security & Polish** |
 | **Bugfixes** | ✅ **ABGESCHLOSSEN** | 1 Tag | **Dosisrechner Crash-Fixes & UI-Optimierungen** |
 
-**Aktuelle Version:** 1.0.1+2  
+**Aktuelle Version:** 1.0.3+1  
 **Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14)  
 **Letzte Aktualisierung:** 14. Juli 2025
 
 ---
 
-## 🔄 LETZTE 10 ÄNDERUNGEN
+## 🔄 LETZTE 11 ÄNDERUNGEN
 
 ### **📅 Juli 2025**
 
-1. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
+1. **📋 README Update zu Version 1.0.3** (14. Juli 2025)
+   - Aktualisierung der Version von 1.0.1+2 auf 1.0.3+1
+   - Synchronisierung aller Versionsinformationen in pubspec.yaml und README
+   - Vollständige Dokumentation aller seit der letzten Aktualisierung implementierten Features
+   - Konsolidierung der Änderungsdokumentation für bessere Übersicht
+
+2. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
    - Vollständige Bereinigung des HomeScreens - Entfernung von Quick Actions und Advanced Features
    - Integration des ActiveTimerBar für visuelle Timer-Anzeige
    - Implementierung des SpeedDial-Systems für essenzielle Aktionen
    - Automatischer Timer-Start bei QuickEntry-Nutzung mit Substanz-basierter Dauer
    - Single-Timer-Logik verhindert mehrere gleichzeitige Timer
 
-2. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
+3. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
    - Behebung von 24 Compilation Errors im Dosage Calculator Screen
    - Syntax-Fehler in der Substanz-Suche und Benutzer-Profil-Verwaltung behoben
    - Stabile Kompilierung und Funktionalität wiederhergestellt
 
-3. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
+4. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
    - Vollständige Timer-Integration in Entry- und Quick-Button-System
    - Substanz-basierte Timer-Dauern mit Standard-Fallback-Werten
    - Hintergrund-Timer-Überwachung und automatische Benachrichtigungen
    - Timer-Fortschrittsanzeige und animierte Status-Indikatoren
    - Nicht-breaking Integration mit bestehender Funktionalität
 
-4. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
+5. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
    - Implementierung des modernen Glassmorphism-Designs für Substance Cards
    - Responsive Layout mit LayoutBuilder zur Overflow-Vermeidung
    - Substanz-spezifische Farbthemen und Danger-Level-Badges
    - Animierte Interaktionen mit Glow-Effekten und Backdrop-Blur
    - Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung
 
-5. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
+6. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
    - Behebung aller "BOTTOM OVERFLOWED BY X PIXELS" Fehler in Substance Cards
    - Ersetzen von Fixed-Height-Constraints durch flexible Layouts
    - Implementierung von ClampingScrollPhysics für ordnungsgemäße Scrolling-Funktionalität
    - Responsive Grid-Layout mit LayoutBuilder und dynamischen Breiten-Berechnungen
    - Umfassende Widget-Tests zur Overflow-Verhinderung
 
-6. **🐛 Build-Tooling Fix** (13. Juli 2025)
+7. **🐛 Build-Tooling Fix** (13. Juli 2025)
    - Fehler mit ungültigem depfile im Build-Prozess behoben (Flutter Build Tooling)
    - Stellt sicher, dass die App weiterhin fehlerfrei kompiliert werden kann
 
-7. **🖼️ Icon-Fix im Timer-Dashboard** (13. Juli 2025)
+8. **🖼️ Icon-Fix im Timer-Dashboard** (13. Juli 2025)
    - Icon von `Icons.add_timer_rounded` auf `Icons.add_rounded` geändert
    - UI-Darstellung im Dashboard korrigiert
 
-8. **📂 Initiale Planung & Struktur** (12. Juli 2025)
+9. **📂 Initiale Planung & Struktur** (12. Juli 2025)
    - Neue Dateien und Grundstruktur für Features und Aufgaben angelegt
    - Vorbereitungen für die nächsten Entwicklungsschritte
 
-9. **⚡ Compilation Errors & Struktur-Fixes** (12. Juli 2025)
-   - Diverse Kompilierungsfehler sowie strukturelle Probleme beseitigt
-   - Flutter-App ist wieder buildbar und stabil
+10. **⚡ Compilation Errors & Struktur-Fixes** (12. Juli 2025)
+    - Diverse Kompilierungsfehler sowie strukturelle Probleme beseitigt
+    - Flutter-App ist wieder buildbar und stabil
 
-10. **🪟 Glassmorphism Design & Card Overflow Bugfix** (11. Juli 2025)
+11. **🪟 Glassmorphism Design & Card Overflow Bugfix** (11. Juli 2025)
     - Substance Card-Komponente mit Glassmorphism-Design versehen
     - Demo und Dokumentation aktualisiert, Overflow-Bug behoben
 
@@ -96,6 +102,7 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 | Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Wer?          |
 |---------------|------------------------------|-----------------------------------------------------|-------------------------------|---------------|
+| 14.07.2025    | README.md + pubspec.yaml    | Version Update zu 1.0.3, Dokumentation aktualisiert | Vollständige Versionssynchronisation | Copilot/KI    |
 | 14.07.2025    | HomeScreen + Timer           | HomeScreen Cleanup & Timer Integration             | UI-Bereinigung & Timer-Funktionalität | Copilot/KI    |
 | 14.07.2025    | Dosage Calculator Screen     | 24 Compilation Errors behoben                      | Stabile Kompilierung          | Copilot/KI    |
 | 14.07.2025    | Entry + Quick Button System  | Vollständige Timer-Funktionalität implementiert    | Substanz-basierte Timer       | Copilot/KI    |
@@ -218,6 +225,12 @@ lib/
 │   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken
 │   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen
 │   ├── timer_indicator.dart    # ✅ Timer-Status-Indikatoren mit Animationen
+│   ├── countdown_timer_widget.dart # ✅ Countdown-Timer mit visueller Anzeige
+│   ├── performance_optimized_widgets.dart # ✅ Performance-optimierte UI-Komponenten
+│   ├── psychedelic_background.dart # ✅ Psychedelischer Hintergrund-Effekt
+│   ├── pulsating_widgets.dart  # ✅ Pulsierende Animationen für UI-Elemente
+│   ├── theme_switcher.dart     # ✅ Theme-Switcher mit Animationen
+│   ├── unit_dropdown.dart      # ✅ Dropdown für Dosierungseinheiten
 │   ├── charts/                 # ✅ Chart Widgets
 │   │   ├── line_chart_widget.dart # ✅ Interaktive Line Charts
 │   │   ├── bar_chart_widget.dart # ✅ Animierte Bar Charts
