@@ -257,6 +257,83 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<void> _showTimerStartDialog(BuildContext context, bool isDark) async {
+    // Get available substances for timer selection
+    final substances = await _substanceService.getAllSubstances();
+    
+    if (!mounted) return;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.black.withOpacity(0.5),
+      builder: (context) => _TimerStartModal(
+        substances: substances,
+        isDark: isDark,
+        onTimerStarted: (substanceId, substanceName, duration) async {
+          Navigator.of(context).pop();
+          await _startNewTimer(substanceId, substanceName, duration);
+        },
+      ),
+    );
+  }
+
+  Future<void> _startNewTimer(String substanceId, String substanceName, Duration duration) async {
+    try {
+      // Create a temporary entry for the timer
+      final entry = Entry.create(
+        substanceId: substanceId,
+        substanceName: substanceName,
+        dosage: 0.0, // Timer-only entry
+        unit: 'Timer',
+        dateTime: DateTime.now(),
+        notes: 'Timer-Eintrag',
+      );
+
+      // Start the timer
+      final timerEntry = await _timerService.startTimer(entry, customDuration: duration);
+      
+      // Update active timer state
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          setState(() {
+            _activeTimer = timerEntry;
+          });
+        }
+      });
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Timer für $substanceName gestartet (${_formatDuration(duration)})'),
+            backgroundColor: DesignTokens.successGreen,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Timer-Start: $e'),
+            backgroundColor: DesignTokens.errorRed,
+          ),
+        );
+      }
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}min';
+    } else {
+      return '${minutes}min';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -385,6 +462,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   });
                 },
               ),
+              if (_activeTimer == null)
+                SpeedDialChild(
+                  child: const Icon(Icons.timer_rounded),
+                  label: 'Timer starten',
+                  backgroundColor: DesignTokens.accentPurple,
+                  foregroundColor: Colors.white,
+                  labelStyle: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
+                  onTap: () => _showTimerStartDialog(context, isDark),
+                ),
               if (_activeTimer != null)
                 SpeedDialChild(
                   child: const Icon(Icons.timer_off_rounded),
@@ -1386,5 +1477,287 @@ class _AnimatedRotationFABState extends State<AnimatedRotationFAB>
         );
       },
     );
+  }
+}
+
+// Timer Start Modal
+class _TimerStartModal extends StatefulWidget {
+  final List<dynamic> substances; // Using dynamic to handle different substance types
+  final bool isDark;
+  final Function(String, String, Duration) onTimerStarted;
+
+  const _TimerStartModal({
+    required this.substances,
+    required this.isDark,
+    required this.onTimerStarted,
+  });
+
+  @override
+  State<_TimerStartModal> createState() => _TimerStartModalState();
+}
+
+class _TimerStartModalState extends State<_TimerStartModal> {
+  String? selectedSubstanceId;
+  String? selectedSubstanceName;
+  int selectedMinutes = 30;
+  final List<int> timerOptions = [15, 30, 45, 60, 90, 120, 180, 240, 360];
+  final TextEditingController _customTimeController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+
+    return Container(
+      height: mediaQuery.size.height * 0.8,
+      decoration: BoxDecoration(
+        color: widget.isDark ? Colors.grey[900] : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        children: [
+          _buildModalHeader(context),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Substanz auswählen',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildSubstanceSelection(),
+                  const SizedBox(height: 24),
+                  Text(
+                    'Timer-Dauer',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildTimerSelection(),
+                  const SizedBox(height: 24),
+                  _buildCustomTimeInput(),
+                  const Spacer(),
+                  _buildStartButton(),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModalHeader(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: DesignTokens.primaryIndigo,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.timer_rounded, color: Colors.white),
+          const SizedBox(width: 12),
+          Text(
+            'Timer starten',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const Spacer(),
+          IconButton(
+            onPressed: () => Navigator.of(context).pop(),
+            icon: const Icon(Icons.close_rounded, color: Colors.white),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSubstanceSelection() {
+    return SizedBox(
+      height: 120,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: widget.substances.length,
+        itemBuilder: (context, index) {
+          final substance = widget.substances[index];
+          final substanceId = substance.id ?? substance.substanceId ?? '';
+          final substanceName = substance.name ?? substance.substanceName ?? '';
+          final isSelected = selectedSubstanceId == substanceId;
+          
+          return GestureDetector(
+            onTap: () {
+              setState(() {
+                selectedSubstanceId = substanceId;
+                selectedSubstanceName = substanceName;
+              });
+            },
+            child: Container(
+              width: 100,
+              margin: const EdgeInsets.only(right: 12),
+              decoration: BoxDecoration(
+                color: isSelected ? DesignTokens.primaryIndigo : Colors.transparent,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: isSelected ? DesignTokens.primaryIndigo : Colors.grey.withOpacity(0.3),
+                ),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.medication_rounded,
+                    size: 32,
+                    color: isSelected ? Colors.white : Colors.grey[600],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    substanceName,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.grey[600],
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      fontSize: 12,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTimerSelection() {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: timerOptions.map((minutes) {
+        final isSelected = selectedMinutes == minutes;
+        return GestureDetector(
+          onTap: () {
+            setState(() {
+              selectedMinutes = minutes;
+              _customTimeController.clear();
+            });
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected ? DesignTokens.accentPurple : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isSelected ? DesignTokens.accentPurple : Colors.grey.withOpacity(0.3),
+              ),
+            ),
+            child: Text(
+              '${minutes}min',
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey[600],
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  Widget _buildCustomTimeInput() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Eigene Zeit eingeben (Minuten)',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _customTimeController,
+          keyboardType: TextInputType.number,
+          decoration: const InputDecoration(
+            hintText: 'z.B. 90',
+            border: OutlineInputBorder(),
+          ),
+          onChanged: (value) {
+            if (value.isNotEmpty) {
+              final minutes = int.tryParse(value);
+              if (minutes != null && minutes > 0) {
+                setState(() {
+                  selectedMinutes = minutes;
+                });
+              }
+            }
+          },
+        ),
+        if (_customTimeController.text.isNotEmpty && selectedMinutes > 0)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: Text(
+              'Entspricht: ${_formatDuration(Duration(minutes: selectedMinutes))}',
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: DesignTokens.primaryIndigo,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildStartButton() {
+    final isValid = selectedSubstanceId != null && selectedMinutes > 0;
+    
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: isValid 
+          ? () => widget.onTimerStarted(
+              selectedSubstanceId!,
+              selectedSubstanceName!,
+              Duration(minutes: selectedMinutes),
+            )
+          : null,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: DesignTokens.accentPurple,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        child: const Text(
+          'Timer starten',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours} Stunde${hours == 1 ? '' : 'n'}${minutes > 0 ? ', $minutes Min' : ''}';
+    } else {
+      return '$minutes Min';
+    }
   }
 }
