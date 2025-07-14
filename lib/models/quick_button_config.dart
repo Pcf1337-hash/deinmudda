@@ -94,8 +94,8 @@ class QuickButtonConfig {
       'unit': unit,
       'position': position,
       'isActive': isActive ? 1 : 0,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'created_at': createdAt.toIso8601String(),
+      'updated_at': updatedAt.toIso8601String(),
     };
   }
 
@@ -108,8 +108,8 @@ class QuickButtonConfig {
       unit: map['unit'] as String,
       position: map['position'] as int,
       isActive: (map['isActive'] as int) == 1,
-      createdAt: DateTime.parse(map['createdAt'] as String),
-      updatedAt: DateTime.parse(map['updatedAt'] as String),
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: DateTime.parse(map['updated_at'] as String),
     );
   }
 

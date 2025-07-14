@@ -66,7 +66,4 @@ dependencies {
     
     // MultiDex support
     implementation("androidx.multidex:multidex:2.0.1")
-    
-    // MultiDex support
-    implementation("androidx.multidex:multidex:2.0.1")
 }
