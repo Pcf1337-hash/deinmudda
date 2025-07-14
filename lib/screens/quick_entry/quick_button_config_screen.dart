@@ -32,12 +32,14 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   // Form controllers
   final _dosageController = TextEditingController();
   final _unitController = TextEditingController();
+  final _priceController = TextEditingController();
   
   // Form state
   Substance? _selectedSubstance;
   List<Substance> _substances = [];
   String _selectedUnit = ''; // Selected unit from dropdown
   double _calculatedCost = 0.0;
+  double _manualPrice = 0.0;
   bool _autoCalculateCost = true;
   List<String> _commonUnits = ['mg', 'g', 'ml', 'Stück', 'Tablette', 'Flasche', 'Bong', 'Joint'];
   bool _isLoading = false;
@@ -74,6 +76,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     _isDisposed = true;
     _dosageController.dispose();
     _unitController.dispose();
+    _priceController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -84,6 +87,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       _dosageController.text = config.dosage.toString().replaceAll('.', ',');
       _selectedUnit = config.unit;
       _unitController.text = _selectedUnit;
+      // Load saved price if available
+      _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
       // Trigger cost calculation after form is initialized
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateCalculatedCost();
@@ -127,7 +132,10 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           );
           if (_selectedSubstance != null) {
             _unitController.text = _selectedSubstance!.defaultUnit;
+            _selectedUnit = _selectedSubstance!.defaultUnit;
             _updateCalculatedCost(); // Update cost when editing
+            // Set price in the price controller
+            _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
           }
         }
         
@@ -423,6 +431,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           Spacing.verticalSpaceLg,
           _buildDosageSection(context, isDark),
           Spacing.verticalSpaceLg,
+          _buildPriceSection(context, isDark),
+          Spacing.verticalSpaceLg,
           _buildPreviewSection(context, isDark),
         ],
       ),
@@ -462,6 +472,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   _selectedUnit = substance.defaultUnit;
                   _unitController.text = _selectedUnit;
                   _updateCalculatedCost();
+                  // Auto-load price when substance is selected
+                  _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
                 }
               });
             },
@@ -515,9 +527,11 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
                   ],
-                  onChanged: (value) {
-                    _updateCalculatedCost();
-                  },
+                    onChanged: (value) {
+                      _updateCalculatedCost();
+                      // Update price display
+                      _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+                    },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
                       return 'Bitte geben Sie eine Dosierung ein';
@@ -556,6 +570,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                           _selectedUnit = value;
                           _unitController.text = value;
                           _updateCalculatedCost(); // Update cost when unit changes
+                          // Update price display
+                          _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
                         });
                       },
                       itemBuilder: (BuildContext context) {
@@ -593,6 +609,97 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
+  Widget _buildPriceSection(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Preis',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 600),
+        ),
+        Spacing.verticalSpaceSm,
+        GlassCard(
+          child: TextFormField(
+            controller: _priceController,
+            decoration: const InputDecoration(
+              labelText: 'Preis (€)',
+              border: InputBorder.none,
+              prefixIcon: Icon(Icons.euro_rounded),
+              suffixText: '€',
+            ),
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+            ],
+            onChanged: (value) {
+              final price = double.tryParse(value.replaceAll(',', '.')) ?? 0.0;
+              setState(() {
+                _manualPrice = price;
+              });
+            },
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return 'Bitte geben Sie einen Preis ein';
+              }
+              final price = double.tryParse(value.replaceAll(',', '.'));
+              if (price == null || price < 0) {
+                return 'Bitte geben Sie einen gültigen Preis ein';
+              }
+              return null;
+            },
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 700),
+        ).slideY(
+          begin: 0.3,
+          end: 0,
+          duration: DesignTokens.animationMedium,
+          curve: DesignTokens.curveEaseOut,
+        ),
+        Spacing.verticalSpaceXs,
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.blue.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color: Colors.blue.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.info_outline_rounded,
+                color: Colors.blue,
+                size: 16,
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Berechneter Preis: ${_calculatedCost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 800),
+        ),
+      ],
+    );
+  }
+
   Widget _buildPreviewSection(BuildContext context, bool isDark) {
     if (_selectedSubstance == null || _dosageController.text.isEmpty || _unitController.text.isEmpty) {
       return const SizedBox.shrink();
@@ -600,7 +707,10 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
 
     final dosage = double.tryParse(_dosageController.text.replaceAll(',', '.')) ?? 0.0;
     final formattedDosage = '${dosage.toString().replaceAll('.', ',')} ${_unitController.text}';
-    final formattedCost = _selectedSubstance!.formatCostForAmount(dosage, _unitController.text);
+    final priceToShow = _priceController.text.isNotEmpty 
+        ? double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0
+        : _calculatedCost;
+    final formattedCost = '${priceToShow.toStringAsFixed(2).replaceAll('.', ',')}€';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -749,7 +859,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   Widget _buildSaveButton(BuildContext context, bool isDark, bool isEdit) {
     final hasValidData = _selectedSubstance != null &&
         _dosageController.text.isNotEmpty &&
-        (_selectedUnit.isNotEmpty || _unitController.text.isNotEmpty);
+        (_selectedUnit.isNotEmpty || _unitController.text.isNotEmpty) &&
+        _priceController.text.isNotEmpty;
 
     return ModernFAB(
       onPressed: (_isSaving || !hasValidData) ? null : _saveQuickButton,

@@ -351,20 +351,52 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: SpeedDial(
         tooltip: 'Aktionen',
         backgroundColor: DesignTokens.accentPink,
-        actions: [
-          SpeedDialAction(
+        overlayOpacity: 0.4,
+        overlayColor: Colors.black,
+        spaceBetweenChildren: 12,
+        buttonSize: const Size(56, 56),
+        childrenButtonSize: const Size(48, 48),
+        direction: SpeedDialDirection.up,
+        switchLabelPosition: false,
+        closeManually: false,
+        children: [
+          SpeedDialChild(
             child: const Icon(Icons.add_rounded),
             label: 'Neuer Eintrag',
             tooltip: 'Neuen Eintrag hinzufügen',
             backgroundColor: DesignTokens.primaryIndigo,
-            onTap: () => _navigateToAddEntry(),
+            foregroundColor: Colors.white,
+            labelStyle: const TextStyle(
+              fontSize: 16.0,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+            labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddEntryScreen(),
+                ),
+              ).then((result) {
+                if (result == true) {
+                  setState(() {}); // Refresh the screen
+                }
+              });
+            },
           ),
           if (_activeTimer != null)
-            SpeedDialAction(
+            SpeedDialChild(
               child: const Icon(Icons.timer_off_rounded),
               label: 'Timer stoppen',
               tooltip: 'Aktiven Timer stoppen',
               backgroundColor: DesignTokens.warningYellow,
+              foregroundColor: Colors.white,
+              labelStyle: const TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
+              labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
               onTap: () => _stopActiveTimer(),
             ),
         ],
@@ -381,7 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
 
     return SliverAppBar(
-      expandedHeight: 150,
+      expandedHeight: 120, // Reduced from 150 to 120
       floating: false,
       pinned: true,
       elevation: 0,
@@ -413,30 +445,90 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           child: SafeArea(
             child: Padding(
-              padding: Spacing.paddingMd,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Reduced padding
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  PulsatingWidget(
-                    isEnabled: isPsychedelic,
-                    glowColor: substanceColors['primary'],
-                    intensity: 0.5,
-                    child: Text(
-                      'Konsum Tracker Pro',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: isPsychedelic 
-                            ? DesignTokens.textPsychedelicPrimary 
-                            : Colors.white,
-                        fontWeight: FontWeight.w700,
-                        shadows: isPsychedelic ? [
-                          Shadow(
-                            color: substanceColors['primary']!.withOpacity(0.3),
-                            blurRadius: 10,
+                  // Replace static text with animated logo
+                  Row(
+                    children: [
+                      // Animated logo container
+                      PulsatingWidget(
+                        isEnabled: isPsychedelic,
+                        glowColor: substanceColors['primary'],
+                        intensity: 0.5,
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
+                            ),
                           ),
-                        ] : null,
+                          child: TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 3000),
+                            tween: Tween(begin: 0.0, end: 1.0),
+                            builder: (context, value, child) {
+                              return Transform.rotate(
+                                angle: value * 6.28, // Full rotation
+                                child: ShaderMask(
+                                  shaderCallback: (bounds) {
+                                    return LinearGradient(
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                      colors: [
+                                        Colors.white,
+                                        Colors.white.withOpacity(0.8),
+                                        isPsychedelic ? substanceColors['primary']! : DesignTokens.accentCyan,
+                                        Colors.white,
+                                      ],
+                                      stops: [0.0, 0.3, 0.7, 1.0],
+                                      transform: GradientRotation(value * 3.14),
+                                    ).createShader(bounds);
+                                  },
+                                  child: const Icon(
+                                    Icons.psychology_rounded,
+                                    color: Colors.white,
+                                    size: 28,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: PulsatingWidget(
+                          isEnabled: isPsychedelic,
+                          glowColor: substanceColors['primary'],
+                          intensity: 0.3,
+                          child: Text(
+                            'Konsum Tracker Pro',
+                            style: theme.textTheme.headlineMedium?.copyWith(
+                              color: isPsychedelic 
+                                  ? DesignTokens.textPsychedelicPrimary 
+                                  : Colors.white,
+                              fontWeight: FontWeight.w700,
+                              shadows: isPsychedelic ? [
+                                Shadow(
+                                  color: substanceColors['primary']!.withOpacity(0.3),
+                                  blurRadius: 10,
+                                ),
+                              ] : [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 8,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ).animate().fadeIn(
                     duration: DesignTokens.animationSlow,
                     delay: const Duration(milliseconds: 200),
@@ -446,10 +538,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     duration: DesignTokens.animationSlow,
                     curve: DesignTokens.curveEaseOut,
                   ),
-                  Spacing.verticalSpaceXs,
+                  const SizedBox(height: 4), // Reduced from Spacing.verticalSpaceXs
                   Text(
                     dateText,
-                    style: theme.textTheme.bodyLarge?.copyWith(
+                    style: theme.textTheme.bodyMedium?.copyWith( // Changed from bodyLarge to bodyMedium
                       color: isPsychedelic 
                           ? DesignTokens.textPsychedelicSecondary 
                           : Colors.white.withOpacity(0.9),
@@ -996,41 +1088,54 @@ class _HomeScreenState extends State<HomeScreen> {
     String subtitle,
     IconData icon,
   ) {
-    return GlassCard(
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: Spacing.iconXl,
-            color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+    return Center( // Center the entire empty state
+      child: Container(
+        padding: const EdgeInsets.all(24), // Add padding around the card
+        child: GlassCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min, // Use minimum size needed
+            children: [
+              Icon(
+                icon,
+                size: Spacing.iconXl,
+                color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
+              ),
+              Spacing.verticalSpaceMd,
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Spacing.verticalSpaceXs,
+              Text(
+                subtitle,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+                ),
+                textAlign: TextAlign.center,
+              ),
+              Spacing.verticalSpaceMd,
+              Container(
+                width: double.infinity, // Make button full width of card
+                child: ElevatedButton.icon(
+                  onPressed: () => _navigateToAddEntry(),
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text('Ersten Button erstellen'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: DesignTokens.primaryIndigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16), // Better padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12), // More rounded corners
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          Spacing.verticalSpaceMd,
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Spacing.verticalSpaceXs,
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Spacing.verticalSpaceMd,
-          ElevatedButton.icon(
-            onPressed: () => _navigateToAddEntry(),
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Ersten Eintrag hinzufügen'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: DesignTokens.primaryIndigo,
-              foregroundColor: Colors.white,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
