@@ -23,9 +23,9 @@
 | **Phase 8** | ✅ **ABGESCHLOSSEN** | 2-3 Tage | **Security & Polish** |
 | **Bugfixes** | ✅ **ABGESCHLOSSEN** | 1 Tag | **Dosisrechner Crash-Fixes & UI-Optimierungen** |
 
-**Aktuelle Version:** 1.0.1+2  
-**Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14)  
-**Letzte Aktualisierung:** 14. Juli 2025
+**Aktuelle Version:** 1.0.2+3  
+**Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14) mit Timer-Funktionalität  
+**Letzte Aktualisierung:** 14. Juli 2025 (HomeScreen Cleanup, Timer-Integration, Glassmorphismus-Enhancements)
 
 ---
 
@@ -35,10 +35,13 @@
 
 1. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
    - Vollständige Bereinigung des HomeScreens - Entfernung von Quick Actions und Advanced Features
-   - Integration des ActiveTimerBar für visuelle Timer-Anzeige
-   - Implementierung des SpeedDial-Systems für essenzielle Aktionen
-   - Automatischer Timer-Start bei QuickEntry-Nutzung mit Substanz-basierter Dauer
-   - Single-Timer-Logik verhindert mehrere gleichzeitige Timer
+   - **Entfernte Komponenten**: `_buildQuickActionsSection()`, `_buildAdvancedFeaturesSection()`, `_buildQuickActionCard()`
+   - **Entfernte Buttons**: Quick Buttons verwalten, Erweiterte Suche, Musteranalyse, Daten Export/Import
+   - Integration des ActiveTimerBar für visuelle Timer-Anzeige mit Pulsing-Animation
+   - Implementierung des SpeedDial-Systems für essenzielle Aktionen (Neuer Eintrag, Timer stoppen)
+   - Automatischer Timer-Start bei QuickEntry-Nutzung mit Substanz-basierter Dauer (Fallback: 4 Stunden)
+   - Single-Timer-Logik verhindert mehrere gleichzeitige Timer mit `currentActiveTimer` und `hasAnyActiveTimer` Getters
+   - **Neue Dateien**: `lib/widgets/active_timer_bar.dart`, `lib/widgets/speed_dial.dart`
 
 2. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
    - Behebung von 24 Compilation Errors im Dosage Calculator Screen
@@ -47,24 +50,34 @@
 
 3. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
    - Vollständige Timer-Integration in Entry- und Quick-Button-System
-   - Substanz-basierte Timer-Dauern mit Standard-Fallback-Werten
-   - Hintergrund-Timer-Überwachung und automatische Benachrichtigungen
-   - Timer-Fortschrittsanzeige und animierte Status-Indikatoren
+   - **Neue Timer-Felder im Entry-Model**: `timerStartTime`, `timerEndTime`, `timerCompleted`, `timerNotificationSent`
+   - **Timer-Getters**: `hasTimer`, `isTimerActive`, `isTimerExpired`, `timerProgress`, `remainingTime`, `formattedRemainingTime`
+   - Substanz-basierte Timer-Dauern mit Standard-Fallback-Werten (Koffein: 4h, Cannabis: 2h, Nikotin: 30min)
+   - Hintergrund-Timer-Überwachung alle 30 Sekunden mit automatischen Benachrichtigungen
+   - Timer-Fortschrittsanzeige und animierte Status-Indikatoren mit Pulsing-Effekt
+   - **Database-Migration**: Version 2 mit neuen Timer-Spalten und Substanz-Dauer-Feld
+   - **Neue Komponenten**: Timer Indicator, Timer Progress Bar, Timer Checkbox, Animated Timer Status
    - Nicht-breaking Integration mit bestehender Funktionalität
 
 4. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
-   - Implementierung des modernen Glassmorphism-Designs für Substance Cards
-   - Responsive Layout mit LayoutBuilder zur Overflow-Vermeidung
-   - Substanz-spezifische Farbthemen und Danger-Level-Badges
-   - Animierte Interaktionen mit Glow-Effekten und Backdrop-Blur
-   - Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung
+   - Implementierung des modernen Glassmorphism-Designs für Substance Cards mit Backdrop-Blur
+   - **Neue Widget-Komponenten**: `DangerBadge`, `DosageLevelIndicator`, `SubstanceGlassCard`, `SubstanceQuickCard`
+   - Responsive Layout mit LayoutBuilder zur Overflow-Vermeidung und `IntrinsicHeight`
+   - Substanz-spezifische Farbthemen und Danger-Level-Badges (Niedrig, Mittel, Hoch, Kritisch)
+   - **Substanz-spezifische Icons**: heart für MDMA, brain für LSD, konsistente Farbkodierung
+   - Animierte Interaktionen mit Glow-Effekten und Backdrop-Blur bei Hover/Tap
+   - Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung und per-kg/total Dosage-Display
+   - **Technische Verbesserungen**: Transluzente Karten, runde Ecken, subtile Borders, Smooth Glow-Animationen
 
 5. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
    - Behebung aller "BOTTOM OVERFLOWED BY X PIXELS" Fehler in Substance Cards
-   - Ersetzen von Fixed-Height-Constraints durch flexible Layouts
-   - Implementierung von ClampingScrollPhysics für ordnungsgemäße Scrolling-Funktionalität
-   - Responsive Grid-Layout mit LayoutBuilder und dynamischen Breiten-Berechnungen
-   - Umfassende Widget-Tests zur Overflow-Verhinderung
+   - **Technische Fixes**: Ersetzen von Fixed-Height-Constraints (240px) durch flexible `BoxConstraints` (minHeight: 220, maxHeight: 280)
+   - **Scrolling-Verbesserungen**: `NeverScrollableScrollPhysics()` → `ClampingScrollPhysics()` für ordnungsgemäßes Scrolling
+   - **Responsive Design**: Implementierung von `LayoutBuilder`, `FittedBox`, `Flexible` und `Expanded` Widgets
+   - **Grid-Layout-Optimierungen**: Dynamische Breiten-Berechnungen mit `itemWidth.clamp(80.0, 120.0)` für verschiedene Bildschirmgrößen
+   - **Text-Overflow-Handling**: Improved substance name display (1 line → 2 lines) mit `maxLines` und `ellipsis`
+   - **Widget-Strukturverbesserungen**: `mainAxisSize: MainAxisSize.min` für Dosage-Preview, `IntrinsicHeight` für flexible Card-Höhen
+   - Umfassende Widget-Tests zur Overflow-Verhinderung mit `overflow_test_app.dart`
 
 6. **🐛 Build-Tooling Fix** (13. Juli 2025)
    - Fehler mit ungültigem depfile im Build-Prozess behoben (Flutter Build Tooling)
@@ -94,19 +107,19 @@
 
 Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werden die wichtigsten Commit-Änderungen tabellarisch erfasst:
 
-| Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Wer?          |
-|---------------|------------------------------|-----------------------------------------------------|-------------------------------|---------------|
-| 14.07.2025    | HomeScreen + Timer           | HomeScreen Cleanup & Timer Integration             | UI-Bereinigung & Timer-Funktionalität | Copilot/KI    |
-| 14.07.2025    | Dosage Calculator Screen     | 24 Compilation Errors behoben                      | Stabile Kompilierung          | Copilot/KI    |
-| 14.07.2025    | Entry + Quick Button System  | Vollständige Timer-Funktionalität implementiert    | Substanz-basierte Timer       | Copilot/KI    |
-| 14.07.2025    | Substance Cards              | Glassmorphism Enhancement & Responsive Design       | Modernes UI & Overflow-Fixes  | Copilot/KI    |
-| 14.07.2025    | UI Overflow Fixes            | Flutter UI Overflow Fixes für Substance Cards      | Stabile UI auf allen Geräten  | Copilot/KI    |
-| 13.07.2025    | Build-Tooling                | Fix für invalid depfile im Build-Prozess            | Build-Fehler behoben          | Copilot/KI    |
-| 13.07.2025    | Timer-Dashboard              | Icon von add_timer_rounded auf add_rounded geändert | UI-Korrektur                  | Copilot/KI    |
-| 12.07.2025    | Projektstruktur              | Initiale Planung und Grundstruktur angelegt         | Vorbereitungen für Features   | Copilot/KI    |
-| 12.07.2025    | Flutter-App                  | Kompilierungsfehler und Strukturprobleme gefixt     | Build-Fähigkeit wiederhergestellt | Copilot/KI |
-| 11.07.2025    | Substance Card-Komponente    | Glassmorphism Design & Card Overflow Bugfix         | UI-Verbesserung               | Copilot/KI    |
-| 10.07.2025    | Diverse Dart-Dateien         | Import- und Syntax-Fehler behoben                   | Codequalität                  | Copilot/KI    |
+| Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Technische Details          | Wer?          |
+|---------------|------------------------------|-----------------------------------------------------|-------------------------------|----------------------------|---------------|
+| 14.07.2025    | HomeScreen + Timer           | HomeScreen Cleanup & Timer Integration             | UI-Bereinigung & Timer-Funktionalität | Entfernung von `_buildQuickActionsSection()`, `_buildAdvancedFeaturesSection()`, neue Widgets: `ActiveTimerBar`, `SpeedDial` | Copilot/KI    |
+| 14.07.2025    | Dosage Calculator Screen     | 24 Compilation Errors behoben                      | Stabile Kompilierung          | Syntax-Fehler in Substanz-Suche und User-Profile behoben | Copilot/KI    |
+| 14.07.2025    | Entry + Quick Button System  | Vollständige Timer-Funktionalität implementiert    | Substanz-basierte Timer       | Neue Timer-Felder: `timerStartTime`, `timerEndTime`, `timerCompleted`, DB-Migration v2 | Copilot/KI    |
+| 14.07.2025    | Substance Cards              | Glassmorphism Enhancement & Responsive Design       | Modernes UI & Overflow-Fixes  | Neue Widgets: `DangerBadge`, `DosageLevelIndicator`, `SubstanceGlassCard`, `SubstanceQuickCard` | Copilot/KI    |
+| 14.07.2025    | UI Overflow Fixes            | Flutter UI Overflow Fixes für Substance Cards      | Stabile UI auf allen Geräten  | Fixed-Height (240px) → `BoxConstraints`, `ClampingScrollPhysics`, `LayoutBuilder` | Copilot/KI    |
+| 13.07.2025    | Build-Tooling                | Fix für invalid depfile im Build-Prozess            | Build-Fehler behoben          | Flutter Build Tooling Depfile-Korrektur | Copilot/KI    |
+| 13.07.2025    | Timer-Dashboard              | Icon von add_timer_rounded auf add_rounded geändert | UI-Korrektur                  | Icon-Wechsel in Timer-Dashboard | Copilot/KI    |
+| 12.07.2025    | Projektstruktur              | Initiale Planung und Grundstruktur angelegt         | Vorbereitungen für Features   | Neue .md Dokumentations-Dateien erstellt | Copilot/KI    |
+| 12.07.2025    | Flutter-App                  | Kompilierungsfehler und Strukturprobleme gefixt     | Build-Fähigkeit wiederhergestellt | Import- und Syntax-Fehler behoben | Copilot/KI |
+| 11.07.2025    | Substance Card-Komponente    | Glassmorphism Design & Card Overflow Bugfix         | UI-Verbesserung               | Glasmorphismus-Effekte, Card-Overflow-Fixes | Copilot/KI    |
+| 10.07.2025    | Diverse Dart-Dateien         | Import- und Syntax-Fehler behoben                   | Codequalität                  | Diverse Import-Statements und Syntax korrigiert | Copilot/KI    |
 
 > **Bitte diesen Abschnitt bei neuen Änderungen immer aktualisieren, um Transparenz für alle KI-Agenten und Mitwirkenden zu gewährleisten!**
 
@@ -136,13 +149,15 @@ Erwachsene für verantwortungsvolles Substanz-Monitoring in medizinischen/therap
 
 ### **Tech Stack**
 - **Framework:** Flutter 3.16+ mit Dart 3.0+
-- **Database:** SQLite (sqflite) für lokale Datenspeicherung
-- **State Management:** Provider Pattern
-- **Design:** Material Design 3 + Glasmorphismus-Effekte
-- **Animations:** Standard Flutter Animations (flutter_animate entfernt für Stabilität)
-- **Charts:** Custom Chart Widgets mit Canvas API
+- **Database:** SQLite (sqflite) für lokale Datenspeicherung - Version 2 mit Timer-Unterstützung
+- **State Management:** Provider Pattern mit Singleton-Services
+- **Design:** Material Design 3 + Glasmorphismus-Effekte mit Backdrop-Blur
+- **Animations:** Standard Flutter Animations (flutter_animate entfernt für Stabilität), Custom Pulsing-Animationen
+- **Charts:** Custom Chart Widgets mit Canvas API für interaktive Darstellungen
 - **Security:** local_auth für biometrische Authentifizierung ✅
-- **Notifications:** flutter_local_notifications für Erinnerungen ✅
+- **Notifications:** flutter_local_notifications für Erinnerungen und Timer-Benachrichtigungen ✅
+- **Timer-System:** Background Timer-Checking (30s-Intervall) mit automatischen Benachrichtigungen
+- **Responsive Design:** LayoutBuilder, Flexible Widgets, BoxConstraints für Overflow-Vermeidung
 
 ### **🎨 Design & Visuelle Highlights**
 - **Glasmorphismus-Design** - Durchgängige Verwendung von transluzenten Glaseffekten für moderne UI
@@ -215,21 +230,26 @@ lib/
 │   ├── glass_card.dart         # ✅ Glasmorphismus-Karten
 │   ├── modern_fab.dart         # ✅ Moderner Floating Action Button
 │   ├── animated_entry_card.dart # ✅ Animierte Entry-Darstellung mit Swipe
-│   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken
-│   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen
+│   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken und Pulsing-Animation
+│   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen mit Expand/Collapse-Animation
 │   ├── timer_indicator.dart    # ✅ Timer-Status-Indikatoren mit Animationen
+│   ├── unit_dropdown.dart      # ✅ Einheiten-Dropdown für Dosage-Eingabe
+│   ├── countdown_timer_widget.dart # ✅ Countdown-Timer-Widget mit visueller Anzeige
+│   ├── psychedelic_background.dart # ✅ Psychedelischer Hintergrund-Effekt
+│   ├── pulsating_widgets.dart  # ✅ Pulsating-Effekte für UI-Elemente
+│   ├── performance_optimized_widgets.dart # ✅ Performance-optimierte Widget-Komponenten
 │   ├── charts/                 # ✅ Chart Widgets
 │   │   ├── line_chart_widget.dart # ✅ Interaktive Line Charts
 │   │   ├── bar_chart_widget.dart # ✅ Animierte Bar Charts
 │   │   └── pie_chart_widget.dart # ✅ Pie Charts mit Legende
-│   ├── dosage_calculator/      # ✅ Dosisrechner Widgets (Enhanced)
+│   ├── dosage_calculator/      # ✅ Dosisrechner Widgets (Enhanced mit Glassmorphismus)
 │   │   ├── bmi_indicator.dart  # ✅ BMI-Anzeige Widget mit Animationen
-│   │   ├── dosage_result_card.dart # ✅ Dosierungsergebnis Modal
-│   │   ├── substance_card.dart # ✅ Substanz-Karte mit Dosage Preview
-│   │   ├── danger_badge.dart   # ✅ Substanz-Gefahrenstufen-Badge
-│   │   ├── dosage_level_indicator.dart # ✅ Dosage-Level-Indikatoren
-│   │   ├── substance_glass_card.dart # ✅ Glasmorphismus-Substance-Cards
-│   │   └── substance_quick_card.dart # ✅ Overflow-freie Substance-Cards
+│   │   ├── dosage_result_card.dart # ✅ Dosierungsergebnis Modal mit responsivem Layout
+│   │   ├── substance_card.dart # ✅ Substanz-Karte mit Dosage Preview (Overflow-behoben)
+│   │   ├── danger_badge.dart   # ✅ Substanz-Gefahrenstufen-Badge (Niedrig, Mittel, Hoch, Kritisch)
+│   │   ├── dosage_level_indicator.dart # ✅ Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung
+│   │   ├── substance_glass_card.dart # ✅ Glasmorphismus-Substance-Cards mit Backdrop-Blur
+│   │   └── substance_quick_card.dart # ✅ Overflow-freie Substance-Cards mit flexiblen Layouts
 │   └── quick_entry/            # ✅ Quick Entry Widgets
 │       ├── quick_entry_bar.dart # ✅ Horizontale Scrollbar mit Quick Buttons
 │       └── quick_button_widget.dart # ✅ Einzelner Quick Button mit Animationen
@@ -249,6 +269,53 @@ lib/
         ├── dosage_calculator_substances.json # ✅ Basis-Dosisrechner-Daten
         └── dosage_calculator_substances_enhanced.json # ✅ Erweiterte Daten mit Wechselwirkungen
 ```
+
+### **🧪 Test & Demo Files**
+```text
+├── overflow_test_app.dart        # ✅ Overflow-Testing-App für Substance Cards
+├── demo_homescreen.dart          # ✅ HomeScreen Demo mit Timer-Integration
+├── demo_ui.html                  # ✅ UI-Demo für Glassmorphismus-Effekte
+├── test_implementation.dart      # ✅ Implementation-Tests für neue Features
+├── test_integration.dart         # ✅ Integration-Tests für Timer-System
+├── test_runner.dart              # ✅ Test-Runner für alle Tests
+├── verify_implementation.dart    # ✅ Verifikation der Implementation
+└── verify_overflow_fixes.dart    # ✅ Verifikation der Overflow-Fixes
+```
+
+---
+
+## 🔧 TECHNISCHE IMPLEMENTIERUNGSDETAILS
+
+### **Timer-System**
+- **Database-Schema**: Neue Timer-Spalten in `entries` Tabelle und `duration` in `substances` Tabelle
+- **Service-Integration**: `TimerService` mit Singleton-Pattern für Background-Monitoring
+- **Notification-Channel**: Spezifische Timer-Benachrichtigungen mit "Timer abgelaufen" Meldungen
+- **Default-Durationen**: Koffein (4h), Cannabis (2h), Alkohol (2h), Vitamin D (24h), Nikotin (30min)
+- **UI-Komponenten**: `ActiveTimerBar`, `TimerIndicator`, `TimerProgressBar` mit Pulsing-Animationen
+
+### **Glasmorphismus-Design**
+- **Backdrop-Blur**: `BackdropFilter` mit `ImageFilter.blur` für transluzente Effekte
+- **Substanz-Farbthemen**: Individuelle Farbkodierung pro Substanz (heart für MDMA, brain für LSD)
+- **Danger-Level-System**: Automatische Gefahrenstufen-Erkennung (Niedrig, Mittel, Hoch, Kritisch)
+- **Animation-System**: Glow-Effekte bei Interaktionen, Smooth-Transitions
+
+### **Overflow-Fixes**
+- **Layout-Optimierungen**: `LayoutBuilder` für responsive Designs, `BoxConstraints` statt Fixed-Height
+- **Scrolling-Physik**: `ClampingScrollPhysics` für ordnungsgemäße Scrolling-Funktionalität
+- **Widget-Hierarchie**: `Flexible`, `Expanded`, `FittedBox` für verschiedene Bildschirmgrößen
+- **Test-Coverage**: `overflow_test_app.dart` für umfassende Overflow-Verhinderung
+
+### **Performance-Optimierungen**
+- **Widget-Caching**: `performance_optimized_widgets.dart` für wiederverwendbare Komponenten
+- **setState-Management**: `addPostFrameCallback` für sichere State-Updates
+- **Memory-Management**: Proper disposal von Animation-Controllern und Timer-Streams
+
+### **📋 Dokumentation & Implementation-Details**
+- **HOMESCREEN_IMPLEMENTATION.md**: Detaillierte Dokumentation der HomeScreen-Bereinigung und Timer-Integration
+- **OVERFLOW_FIXES.md**: Technische Lösung für Flutter UI-Overflow-Probleme mit Code-Beispielen
+- **SUBSTANCE_CARD_IMPROVEMENTS.md**: Glassmorphismus-Enhancement mit neuen Widget-Komponenten
+- **TIMER_IMPLEMENTATION.md**: Vollständige Timer-System-Implementierung mit Database-Schema
+- **Alle Implementation-Details**: Vollständig dokumentiert mit Before/After-Code-Beispielen
 
 ---
 
