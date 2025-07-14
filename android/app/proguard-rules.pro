@@ -38,20 +38,37 @@
   public static final android.os.Parcelable$Creator *;
 }
 
-# Flutter specific rules
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.**  { *; }
--keep class io.flutter.util.**  { *; }
--keep class io.flutter.view.**  { *; }
--keep class io.flutter.**  { *; }
--keep class io.flutter.plugins.**  { *; }
+# SQLite/sqflite specific rules
+-keep class org.sqlite.** { *; }
+-keep class org.sqlite.database.** { *; }
+-keep class net.sqlcipher.** { *; }
+-keep class net.sqlcipher.database.** { *; }
 
-# Keep native methods
--keepclassmembers class * {
-    native <methods>;
+# Keep database models and their constructors
+-keep class * extends java.lang.Object {
+    public <init>(...);
 }
 
-# Keep Parcelable implementations
--keep class * implements android.os.Parcelable {
-  public static final android.os.Parcelable$Creator *;
+# Keep reflection for database operations
+-keepattributes *Annotation*
+-keepattributes Signature
+-keepattributes InnerClasses
+
+# Keep JSON serialization classes
+-keep class com.google.gson.** { *; }
+-keep class com.google.gson.reflect.TypeToken { *; }
+-keep class * extends com.google.gson.reflect.TypeToken
+
+# Keep database field names for reflection
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# Keep model classes for database operations
+-keepclassmembers class * {
+    public <init>();
+    public <init>(android.content.Context);
+    public void set*(***);
+    public *** get*();
+    public *** is*();
 }

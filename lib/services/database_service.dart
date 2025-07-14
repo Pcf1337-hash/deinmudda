@@ -35,19 +35,6 @@ class DatabaseService {
       onUpgrade: _onUpgrade,
     );
   }
-  
-  // Original openDatabase call (replaced with the above)
-  Future<Database> _initDatabaseOriginal() async {
-    final databasesPath = await getDatabasesPath();
-    final path = join(databasesPath, _databaseName);
-
-    return await openDatabase(
-      path,
-      version: _databaseVersion,
-      onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
-    );
-  }
 
   Future<void> _onCreate(Database db, int version) async {
     final batch = db.batch();
@@ -63,8 +50,8 @@ class DatabaseService {
         dateTime TEXT NOT NULL,
         cost REAL NOT NULL DEFAULT 0.0,
         notes TEXT,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
         timerStartTime TEXT,
         timerEndTime TEXT,
         timerCompleted INTEGER NOT NULL DEFAULT 0,
@@ -99,8 +86,8 @@ class DatabaseService {
         unit TEXT NOT NULL,
         position INTEGER NOT NULL,
         isActive INTEGER NOT NULL DEFAULT 1,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        updated_at TEXT NOT NULL,
         FOREIGN KEY (substanceId) REFERENCES substances (id) ON DELETE CASCADE
       )
     ''');
@@ -336,8 +323,9 @@ class DatabaseService {
           'defaultUnit': 'Stück',
           'notes': 'Tägliche Vitamin- und Mineralstoffergänzung',
           'iconName': 'pill',
-          'createdAt': DateTime.now().toIso8601String(),
-          'updatedAt': DateTime.now().toIso8601String(),
+          'duration': 1440, // 24 hours
+          'created_at': DateTime.now().toIso8601String(),
+          'updated_at': DateTime.now().toIso8601String(),
         },
       ];
 
