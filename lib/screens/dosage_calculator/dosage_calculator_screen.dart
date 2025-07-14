@@ -1354,7 +1354,6 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         SpeedDialChild(
           child: const Icon(Icons.add_rounded),
           label: 'Neuer Eintrag',
-          tooltip: 'Neuen Eintrag hinzufügen',
           backgroundColor: DesignTokens.primaryIndigo,
           foregroundColor: Colors.white,
           labelStyle: const TextStyle(
@@ -1368,7 +1367,6 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         SpeedDialChild(
           child: const Icon(Icons.timer_rounded),
           label: 'Timer starten',
-          tooltip: 'Timer starten',
           backgroundColor: DesignTokens.accentPurple,
           foregroundColor: Colors.white,
           labelStyle: const TextStyle(
