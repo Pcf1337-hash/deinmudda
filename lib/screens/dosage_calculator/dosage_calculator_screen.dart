@@ -866,43 +866,56 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 const SizedBox(height: 12),
                 
-                // Recommended dose section
+                // Recommended dose section - improved to handle text overflow
                 Container(
-                  padding: const EdgeInsets.all(16), // Increased padding from 12 to 16
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: substanceColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12), // Increased from 10 to 12
+                    borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: substanceColor.withOpacity(0.2),
                       width: 1,
                     ),
                   ),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center, // Center the content
                     children: [
-                      Text(
-                        'Empfohlene Dosis',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 11,
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Empfohlene Dosis',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 11,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 6), // Increased spacing from 4 to 6
-                      Text(
-                        '${recommendedDose.toStringAsFixed(1)} mg',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
+                      const SizedBox(height: 6),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '${recommendedDose.toStringAsFixed(1)} mg',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 14,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 2), // Add small spacing before subtitle
-                      Text(
-                        '(15-20% reduziert)',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark ? Colors.white60 : Colors.grey[600],
-                          fontSize: 10,
+                      const SizedBox(height: 2),
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '(15-20% reduziert)',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: isDark ? Colors.white60 : Colors.grey[600],
+                            fontSize: 10,
+                          ),
+                          textAlign: TextAlign.center,
                         ),
                       ),
                     ],
@@ -1327,36 +1340,39 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
   Widget _buildSpeedDial(BuildContext context, bool isDark) {
     return SpeedDial(
-      animatedIcon: AnimatedIcons.menu_close,
-      animatedIconTheme: const IconThemeData(size: 24, color: Colors.white),
-      backgroundColor: isDark ? DesignTokens.accentCyan : DesignTokens.primaryIndigo,
-      foregroundColor: Colors.white,
-      elevation: 12.0,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.all(Radius.circular(16.0)),
-      ),
-      overlayColor: Colors.black,
+      tooltip: 'Aktionen',
+      backgroundColor: DesignTokens.accentPink,
       overlayOpacity: 0.4,
+      overlayColor: Colors.black,
       spaceBetweenChildren: 12,
+      buttonSize: const Size(56, 56),
+      childrenButtonSize: const Size(48, 48),
+      direction: SpeedDialDirection.up,
+      switchLabelPosition: false,
+      closeManually: false,
       children: [
         SpeedDialChild(
-          child: const Icon(Icons.add_rounded, color: Colors.white),
-          backgroundColor: DesignTokens.accentCyan,
+          child: const Icon(Icons.add_rounded),
           label: 'Neuer Eintrag',
+          tooltip: 'Neuen Eintrag hinzufügen',
+          backgroundColor: DesignTokens.primaryIndigo,
+          foregroundColor: Colors.white,
           labelStyle: const TextStyle(
-            fontSize: 16.0, 
+            fontSize: 16.0,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
-          labelBackgroundColor: DesignTokens.accentCyan.withOpacity(0.9),
+          labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
           onTap: () => _showAddEntryDialogWithBlur(context, isDark),
         ),
         SpeedDialChild(
-          child: const Icon(Icons.timer_rounded, color: Colors.white),
-          backgroundColor: DesignTokens.accentPurple,
+          child: const Icon(Icons.timer_rounded),
           label: 'Timer starten',
+          tooltip: 'Timer starten',
+          backgroundColor: DesignTokens.accentPurple,
+          foregroundColor: Colors.white,
           labelStyle: const TextStyle(
-            fontSize: 16.0, 
+            fontSize: 16.0,
             fontWeight: FontWeight.w600,
             color: Colors.white,
           ),
@@ -1364,6 +1380,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           onTap: () => _showTimerDialogWithBlur(context, isDark),
         ),
       ],
+      child: const Icon(Icons.speed_rounded),
     );
   }
 
@@ -1838,25 +1855,37 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
           const SizedBox(width: 24),
           Expanded(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center, // Center the content
               children: [
-                Text(
-                  'Empfohlene Dosis',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Empfohlene Dosis',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                Text(
-                  '${dose.toStringAsFixed(1)} mg',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: color,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${dose.toStringAsFixed(1)} mg',
+                    style: theme.textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: color,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ),
-                Text(
-                  '${_selectedIntensity.displayName} Intensität',
-                  style: theme.textTheme.bodyMedium,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    '${_selectedIntensity.displayName} Intensität',
+                    style: theme.textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ],
             ),
