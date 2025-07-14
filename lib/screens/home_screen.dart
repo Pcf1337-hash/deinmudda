@@ -15,7 +15,7 @@ import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
-import '../widgets/speed_dial.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
