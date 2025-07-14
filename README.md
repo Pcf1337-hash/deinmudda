@@ -33,7 +33,18 @@
 
 ### **📅 Juli 2025**
 
-1. **🗄️ SQL Database Fixes & Android Launcher Icons** (14. Juli 2025)
+1. **🎨 UI Fixes & Visual Improvements** (14. Juli 2025)
+   - **Dosisrechner**: Header-Overflow behoben (90px → 80px), Logo-Größe reduziert, Profil-Karte näher positioniert
+   - **Substanz-Karten**: Mehr Padding für "Empfohlene Dosis" (12px → 16px), Höhe angepasst (220px → 240px)
+   - **Home-Screen**: Statischer Titel durch animiertes Logo ersetzt (Psychology-Icon mit Rotation)
+   - **Header-Bereich**: Vertikaler Platz reduziert (150px → 120px), kompakte Darstellung
+   - **"Erster Button erstellen"**: Zentriert mit korrektem Padding und Container-Wrapper
+   - **SpeedDial FAB**: OnPressed-Funktionalität repariert, korrekte Positionierung rechts unten
+   - **Quick Button Creation**: Lightning-Icon ausgerichtet, editierbares Preis-Feld hinzugefügt
+   - **Preis-Auto-Load**: Automatisches Laden des Preises bei Substanzauswahl
+   - **Button-Aktivierung**: Nur bei gültiger Eingabe (Substanz + Dosierung + Einheit + Preis)
+
+2. **🗄️ SQL Database Fixes & Android Launcher Icons** (14. Juli 2025)
    - Behebung von SQL Database-Inkonsistenzen für stabile Datenbank-Operationen
    - Vollständige Android Launcher Icons (hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi) für APK-Kompilierung
    - **Neue Android-Konfiguration**: `android/app/src/main/res/mipmap-*` Icon-Sets hinzugefügt
@@ -42,7 +53,7 @@
    - **Styles & Colors**: Verbesserte Android-Theme-Konfiguration in `values/styles.xml` und `values/colors.xml`
    - **APK-Ready**: Vollständige Kompilierung für Android-Geräte ohne Fehler möglich
 
-2. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
+3. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
    - Vollständige Bereinigung des HomeScreens - Entfernung von Quick Actions und Advanced Features
    - **Entfernte Komponenten**: `_buildQuickActionsSection()`, `_buildAdvancedFeaturesSection()`, `_buildQuickActionCard()`
    - **Entfernte Buttons**: Quick Buttons verwalten, Erweiterte Suche, Musteranalyse, Daten Export/Import
@@ -52,12 +63,12 @@
    - Single-Timer-Logik verhindert mehrere gleichzeitige Timer mit `currentActiveTimer` und `hasAnyActiveTimer` Getters
    - **Neue Dateien**: `lib/widgets/active_timer_bar.dart`, `lib/widgets/speed_dial.dart`
 
-3. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
+4. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
    - Behebung von 24 Compilation Errors im Dosage Calculator Screen
    - Syntax-Fehler in der Substanz-Suche und Benutzer-Profil-Verwaltung behoben
    - Stabile Kompilierung und Funktionalität wiederhergestellt
 
-4. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
+5. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
    - Vollständige Timer-Integration in Entry- und Quick-Button-System
    - **Neue Timer-Felder im Entry-Model**: `timerStartTime`, `timerEndTime`, `timerCompleted`, `timerNotificationSent`
    - **Timer-Getters**: `hasTimer`, `isTimerActive`, `isTimerExpired`, `timerProgress`, `remainingTime`, `formattedRemainingTime`
@@ -68,7 +79,7 @@
    - **Neue Komponenten**: Timer Indicator, Timer Progress Bar, Timer Checkbox, Animated Timer Status
    - Nicht-breaking Integration mit bestehender Funktionalität
 
-5. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
+6. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
    - Implementierung des modernen Glassmorphism-Designs für Substance Cards mit Backdrop-Blur
    - **Neue Widget-Komponenten**: `DangerBadge`, `DosageLevelIndicator`, `SubstanceGlassCard`, `SubstanceQuickCard`
    - Responsive Layout mit LayoutBuilder zur Overflow-Vermeidung und `IntrinsicHeight`
@@ -78,7 +89,7 @@
    - Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung und per-kg/total Dosage-Display
    - **Technische Verbesserungen**: Transluzente Karten, runde Ecken, subtile Borders, Smooth Glow-Animationen
 
-6. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
+7. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
    - Behebung aller "BOTTOM OVERFLOWED BY X PIXELS" Fehler in Substance Cards
    - **Technische Fixes**: Ersetzen von Fixed-Height-Constraints (240px) durch flexible `BoxConstraints` (minHeight: 220, maxHeight: 280)
    - **Scrolling-Verbesserungen**: `NeverScrollableScrollPhysics()` → `ClampingScrollPhysics()` für ordnungsgemäßes Scrolling
@@ -88,21 +99,17 @@
    - **Widget-Strukturverbesserungen**: `mainAxisSize: MainAxisSize.min` für Dosage-Preview, `IntrinsicHeight` für flexible Card-Höhen
    - Umfassende Widget-Tests zur Overflow-Verhinderung mit `overflow_test_app.dart`
 
-7. **🐛 Build-Tooling Fix** (13. Juli 2025)
+8. **🐛 Build-Tooling Fix** (13. Juli 2025)
    - Fehler mit ungültigem depfile im Build-Prozess behoben (Flutter Build Tooling)
    - Stellt sicher, dass die App weiterhin fehlerfrei kompiliert werden kann
 
-8. **🖼️ Icon-Fix im Timer-Dashboard** (13. Juli 2025)
+9. **🖼️ Icon-Fix im Timer-Dashboard** (13. Juli 2025)
    - Icon von `Icons.add_timer_rounded` auf `Icons.add_rounded` geändert
    - UI-Darstellung im Dashboard korrigiert
 
-9. **📂 Initiale Planung & Struktur** (12. Juli 2025)
-   - Neue Dateien und Grundstruktur für Features und Aufgaben angelegt
-   - Vorbereitungen für die nächsten Entwicklungsschritte
-
-10. **⚡ Compilation Errors & Struktur-Fixes** (12. Juli 2025)
-    - Diverse Kompilierungsfehler sowie strukturelle Probleme beseitigt
-    - Flutter-App ist wieder buildbar und stabil
+10. **📂 Initiale Planung & Struktur** (12. Juli 2025)
+    - Neue Dateien und Grundstruktur für Features und Aufgaben angelegt
+    - Vorbereitungen für die nächsten Entwicklungsschritte
 
 10. **🪟 Glassmorphism Design & Card Overflow Bugfix** (11. Juli 2025)
     - Substance Card-Komponente mit Glassmorphism-Design versehen
@@ -118,6 +125,7 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 | Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Technische Details          | Wer?          |
 |---------------|------------------------------|-----------------------------------------------------|-------------------------------|----------------------------|---------------|
+| 14.07.2025    | UI/UX Fixes                  | Dosisrechner, Home-Screen & Quick Button UI-Fixes  | Visuelle Bugs & Overflow-Fixes | Header-Overflow behoben, animiertes Logo, Preis-Feld hinzugefügt, SpeedDial-Fix, Button-Aktivierung bei gültiger Eingabe | Copilot/KI    |
 | 14.07.2025    | SQL Database + Android Build | SQL Database-Inkonsistenzen behoben & Android Icons | APK-Kompilierung & Stabilität | Android Launcher Icons (hdpi-xxxhdpi), network_security_config.xml, gradle.kts-Optimierungen | Copilot/KI    |
 | 14.07.2025    | HomeScreen + Timer           | HomeScreen Cleanup & Timer Integration             | UI-Bereinigung & Timer-Funktionalität | Entfernung von `_buildQuickActionsSection()`, `_buildAdvancedFeaturesSection()`, neue Widgets: `ActiveTimerBar`, `SpeedDial` | Copilot/KI    |
 | 14.07.2025    | Dosage Calculator Screen     | 24 Compilation Errors behoben                      | Stabile Kompilierung          | Syntax-Fehler in Substanz-Suche und User-Profile behoben | Copilot/KI    |

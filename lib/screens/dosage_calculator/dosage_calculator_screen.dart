@@ -134,7 +134,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 90, // Further reduced to approach 64px target
+      height: 80, // Reduced from 90 to 80 for less vertical space
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -170,63 +170,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           if (_activeTimer != null) _buildTimerBanner(context, isDark),
           SafeArea(
             child: Padding(
-              padding: Spacing.paddingMd,
-              child: Column(
-                children: [
-              Row(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Reduced padding
+              child: Row(
                 children: [
                   IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                    padding: EdgeInsets.zero, // Minimize padding
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
                   ),
-                  const Spacer(),
-                  Flexible(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.3),
-                          width: 1,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.verified_user_rounded,
-                            color: Colors.white,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Sicher',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
+                  const SizedBox(width: 8), // Reduced spacing
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(8), // Reduced from 12 to 8
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(12), // Reduced from 16 to 12
                       boxShadow: [
                         BoxShadow(
                           color: Colors.white.withOpacity(0.2),
-                          blurRadius: 10,
-                          spreadRadius: 2,
+                          blurRadius: 8,
+                          spreadRadius: 1,
                         ),
                       ],
                     ),
@@ -254,21 +217,22 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             child: const Icon(
                               Icons.calculate_rounded,
                               color: Colors.white,
-                              size: 28,
+                              size: 24, // Reduced from 28 to 24
                             ),
                           ),
                         );
                       },
                     ),
                   ),
-                  const SizedBox(width: 16),
+                  const SizedBox(width: 12), // Reduced spacing
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
                           'Dosisrechner Pro',
-                          style: theme.textTheme.headlineMedium?.copyWith(
+                          style: theme.textTheme.titleLarge?.copyWith( // Changed from headlineMedium to titleLarge
                             color: Colors.white,
                             fontWeight: FontWeight.w900,
                             shadows: [
@@ -279,10 +243,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             ],
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2), // Reduced from 4 to 2
                         Text(
                           'Präzise Dosierungsempfehlungen',
-                          style: theme.textTheme.bodyMedium?.copyWith(
+                          style: theme.textTheme.bodySmall?.copyWith( // Changed from bodyMedium to bodySmall
                             color: Colors.white.withOpacity(0.9),
                             fontWeight: FontWeight.w500,
                           ),
@@ -290,9 +254,38 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       ],
                     ),
                   ),
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), // Reduced padding
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16), // Reduced from 20 to 16
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.verified_user_rounded,
+                          color: Colors.white,
+                          size: 14, // Reduced from 16 to 14
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Sicher',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 11, // Reduced from 12 to 11
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
-              ),
-              ],
               ),
             ),
           ),
@@ -686,7 +679,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 170.0); // Made 5-10% smaller
+              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 165.0); // Slightly reduced max width
               
               return Wrap(
                 spacing: 16, // Increased spacing from 12 to 16
@@ -698,7 +691,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
                       width: cardWidth,
-                      height: 220,
+                      height: 240, // Increased height to accommodate more padding
                       child: _buildEnhancedSubstanceCard(context, substance, isDark),
                     ),
                   );
@@ -875,10 +868,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 // Recommended dose section
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16), // Increased padding from 12 to 16
                   decoration: BoxDecoration(
                     color: substanceColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12), // Increased from 10 to 12
                     border: Border.all(
                       color: substanceColor.withOpacity(0.2),
                       width: 1,
@@ -895,7 +888,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           fontSize: 11,
                         ),
                       ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 6), // Increased spacing from 4 to 6
                       Text(
                         '${recommendedDose.toStringAsFixed(1)} mg',
                         style: theme.textTheme.titleSmall?.copyWith(
@@ -904,6 +897,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           fontSize: 14,
                         ),
                       ),
+                      const SizedBox(height: 2), // Add small spacing before subtitle
                       Text(
                         '(15-20% reduziert)',
                         style: theme.textTheme.bodySmall?.copyWith(
