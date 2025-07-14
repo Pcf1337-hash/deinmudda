@@ -104,25 +104,25 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 : _errorMessage != null
                     ? _buildErrorCard(context, isDark)
                     : SingleChildScrollView(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: [
-                        const SizedBox(height: 16),
-                        _buildUserProfileSection(context, isDark),
-                        const SizedBox(height: 24),
-                        _buildSearchSection(context, isDark),
-                        const SizedBox(height: 24),
-                        _buildPopularSubstancesSection(context, isDark),
-                        const SizedBox(height: 24),
-                        _buildSafetyWarningSection(context, isDark),
-                        if (_recentCalculations.isNotEmpty) ...[
-                          const SizedBox(height: 24),
-                          _buildRecentCalculationsSection(context, isDark),
-                        ],
-                        const SizedBox(height: 120), // Space for FAB
-                      ],
-                    ),
-                  ),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Column(
+                          children: [
+                            const SizedBox(height: 16),
+                            _buildUserProfileSection(context, isDark),
+                            const SizedBox(height: 24),
+                            _buildSearchSection(context, isDark),
+                            const SizedBox(height: 24),
+                            _buildPopularSubstancesSection(context, isDark),
+                            const SizedBox(height: 24),
+                            _buildSafetyWarningSection(context, isDark),
+                            if (_recentCalculations.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              _buildRecentCalculationsSection(context, isDark),
+                            ],
+                            const SizedBox(height: 120), // Space for FAB
+                          ],
+                        ),
+                      ),
           ),
         ],
       ),
@@ -1783,28 +1783,34 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                               size: 24,
                             ),
                             const SizedBox(height: 8),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                intensity.displayName,
-                                style: theme.textTheme.titleSmall?.copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  color: isSelected ? color : null,
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  intensity.displayName,
+                                  style: theme.textTheme.titleSmall?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: isSelected ? color : null,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            FittedBox(
-                              fit: BoxFit.scaleDown,
-                              child: Text(
-                                '${dose.toStringAsFixed(1)} mg',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: isSelected ? color : Colors.grey,
-                                  fontWeight: FontWeight.w500,
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                child: Text(
+                                  '${dose.toStringAsFixed(1)} mg',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isSelected ? color : Colors.grey,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                           ],

@@ -348,57 +348,67 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: SpeedDial(
-        tooltip: 'Aktionen',
-        backgroundColor: DesignTokens.accentPink,
-        overlayOpacity: 0.4,
-        overlayColor: Colors.black,
-        spaceBetweenChildren: 12,
-        buttonSize: const Size(56, 56),
-        childrenButtonSize: const Size(48, 48),
-        direction: SpeedDialDirection.up,
-        switchLabelPosition: false,
-        closeManually: false,
-        children: [
-          SpeedDialChild(
-            child: const Icon(Icons.add_rounded),
-            label: 'Neuer Eintrag',
-            backgroundColor: DesignTokens.primaryIndigo,
-            foregroundColor: Colors.white,
-            labelStyle: const TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-            labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AddEntryScreen(),
-                ),
-              ).then((result) {
-                if (result == true) {
-                  setState(() {}); // Refresh the screen
-                }
-              });
+      floatingActionButton: Consumer<PsychedelicThemeService>(
+        builder: (context, psychedelicService, child) {
+          return AnimatedRotationFAB(
+            isTrippyMode: psychedelicService.isPsychedelicMode,
+            onPressed: () {
+              // SpeedDial functionality
             },
-          ),
-          if (_activeTimer != null)
-            SpeedDialChild(
-              child: const Icon(Icons.timer_off_rounded),
-              label: 'Timer stoppen',
-              backgroundColor: DesignTokens.warningYellow,
-              foregroundColor: Colors.white,
-              labelStyle: const TextStyle(
-                fontSize: 16.0,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-              labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
-              onTap: () => _stopActiveTimer(),
+            child: SpeedDial(
+              tooltip: 'Aktionen',
+              backgroundColor: DesignTokens.accentPink,
+              overlayOpacity: 0.4,
+              overlayColor: Colors.black,
+              spaceBetweenChildren: 12,
+              buttonSize: const Size(56, 56),
+              childrenButtonSize: const Size(48, 48),
+              direction: SpeedDialDirection.up,
+              switchLabelPosition: false,
+              closeManually: false,
+              children: [
+                SpeedDialChild(
+                  child: const Icon(Icons.add_rounded),
+                  label: 'Neuer Eintrag',
+                  backgroundColor: DesignTokens.primaryIndigo,
+                  foregroundColor: Colors.white,
+                  labelStyle: const TextStyle(
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                  labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AddEntryScreen(),
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        setState(() {}); // Refresh the screen
+                      }
+                    });
+                  },
+                ),
+                if (_activeTimer != null)
+                  SpeedDialChild(
+                    child: const Icon(Icons.timer_off_rounded),
+                    label: 'Timer stoppen',
+                    backgroundColor: DesignTokens.warningYellow,
+                    foregroundColor: Colors.white,
+                    labelStyle: const TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                    labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
+                    onTap: () => _stopActiveTimer(),
+                  ),
+              ],
+              child: const Icon(Icons.speed_rounded),
             ),
-        ],
-        child: const Icon(Icons.speed_rounded),
+          );
+        },
       ),
     );
       }, // End of Consumer builder
@@ -504,24 +514,57 @@ class _HomeScreenState extends State<HomeScreen> {
                           isEnabled: isPsychedelic,
                           glowColor: substanceColors['primary'],
                           intensity: 0.3,
-                          child: Text(
-                            'Konsum Tracker Pro',
-                            style: theme.textTheme.headlineMedium?.copyWith(
-                              color: isPsychedelic 
-                                  ? DesignTokens.textPsychedelicPrimary 
-                                  : Colors.white,
-                              fontWeight: FontWeight.w700,
-                              shadows: isPsychedelic ? [
-                                Shadow(
-                                  color: substanceColors['primary']!.withOpacity(0.3),
-                                  blurRadius: 10,
-                                ),
-                              ] : [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 8,
-                                ),
-                              ],
+                          child: ShaderMask(
+                            shaderCallback: (bounds) {
+                              return LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: isPsychedelic ? [
+                                  substanceColors['primary']!,
+                                  DesignTokens.textPsychedelicPrimary,
+                                  substanceColors['primary']!,
+                                  Colors.white,
+                                ] : [
+                                  Colors.white,
+                                  Colors.white,
+                                  Colors.white,
+                                  Colors.white,
+                                ],
+                                stops: isPsychedelic ? [0.0, 0.3, 0.7, 1.0] : [0.0, 0.3, 0.7, 1.0],
+                              ).createShader(bounds);
+                            },
+                            child: TweenAnimationBuilder<double>(
+                              duration: const Duration(milliseconds: 2000),
+                              tween: Tween(begin: 0.0, end: 1.0),
+                              builder: (context, value, child) {
+                                return Transform.scale(
+                                  scale: 1.0 + (isPsychedelic ? (0.05 * (1.0 - value)) : 0.0),
+                                  child: Text(
+                                    'Konsum Tracker Pro',
+                                    style: theme.textTheme.headlineMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                      shadows: isPsychedelic ? [
+                                        Shadow(
+                                          color: substanceColors['primary']!.withOpacity(0.3),
+                                          blurRadius: 10,
+                                        ),
+                                      ] : [
+                                        Shadow(
+                                          color: Colors.black.withOpacity(0.3),
+                                          blurRadius: 8,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              },
+                              onEnd: () {
+                                // Restart animation in trippy mode
+                                if (isPsychedelic && mounted) {
+                                  setState(() {});
+                                }
+                              },
                             ),
                           ),
                         ),
@@ -1269,6 +1312,76 @@ class GlassEmptyState extends StatelessWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+// Animated rotation FAB widget for trippy mode
+class AnimatedRotationFAB extends StatefulWidget {
+  final bool isTrippyMode;
+  final VoidCallback? onPressed;
+  final Widget child;
+
+  const AnimatedRotationFAB({
+    super.key,
+    required this.isTrippyMode,
+    this.onPressed,
+    required this.child,
+  });
+
+  @override
+  State<AnimatedRotationFAB> createState() => _AnimatedRotationFABState();
+}
+
+class _AnimatedRotationFABState extends State<AnimatedRotationFAB>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _rotationController;
+  late Animation<double> _rotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 800),
+      vsync: this,
+    );
+    _rotationAnimation = Tween<double>(
+      begin: 0.0,
+      end: 2.0, // 2 full rotations
+    ).animate(CurvedAnimation(
+      parent: _rotationController,
+      curve: Curves.elasticOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _rotationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTap() {
+    if (widget.isTrippyMode) {
+      _rotationController.forward().then((_) {
+        _rotationController.reset();
+      });
+    }
+    widget.onPressed?.call();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _rotationAnimation,
+      builder: (context, child) {
+        return Transform.rotate(
+          angle: _rotationAnimation.value * 3.14159265359, // Convert to radians
+          child: GestureDetector(
+            onTap: _handleTap,
+            child: widget.child,
+          ),
+        );
+      },
     );
   }
 }
