@@ -363,7 +363,6 @@ class _HomeScreenState extends State<HomeScreen> {
           SpeedDialChild(
             child: const Icon(Icons.add_rounded),
             label: 'Neuer Eintrag',
-            tooltip: 'Neuen Eintrag hinzufügen',
             backgroundColor: DesignTokens.primaryIndigo,
             foregroundColor: Colors.white,
             labelStyle: const TextStyle(
@@ -388,7 +387,6 @@ class _HomeScreenState extends State<HomeScreen> {
             SpeedDialChild(
               child: const Icon(Icons.timer_off_rounded),
               label: 'Timer stoppen',
-              tooltip: 'Aktiven Timer stoppen',
               backgroundColor: DesignTokens.warningYellow,
               foregroundColor: Colors.white,
               labelStyle: const TextStyle(
