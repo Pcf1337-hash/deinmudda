@@ -512,6 +512,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToSubstanceManagement() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SubstanceManagementScreen(),
@@ -520,6 +521,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToCalendar() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const CalendarScreen(),
@@ -528,6 +530,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToAdvancedSearch() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const AdvancedSearchScreen(),
@@ -536,6 +539,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToPatternAnalysis() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const PatternAnalysisScreen(),
@@ -544,6 +548,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToTimerDashboard() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const TimerDashboardScreen(),
@@ -552,6 +557,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToDataExport() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const DataExportScreen(),
@@ -561,6 +567,7 @@ class _MenuScreenState extends State<MenuScreen> {
 
   // New navigation methods for security and notifications
   void _navigateToSecuritySettings() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const SecuritySettingsScreen(),
@@ -569,6 +576,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToNotificationSettings() {
+    if (!mounted) return;
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => const NotificationSettingsScreen(),

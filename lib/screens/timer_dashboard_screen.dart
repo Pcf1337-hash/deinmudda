@@ -406,6 +406,7 @@ class _CustomTimerDialog extends StatefulWidget {
 
 class _CustomTimerDialogState extends State<_CustomTimerDialog> {
   final _titleController = TextEditingController();
+  final _minutesController = TextEditingController(text: '30');
   Duration _duration = const Duration(minutes: 30);
   Color _selectedColor = DesignTokens.accentCyan;
 
@@ -417,6 +418,42 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
     Colors.orange,
     Colors.red,
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _minutesController.addListener(_updateDurationFromText);
+  }
+
+  @override
+  void dispose() {
+    _minutesController.removeListener(_updateDurationFromText);
+    _minutesController.dispose();
+    super.dispose();
+  }
+
+  void _updateDurationFromText() {
+    final text = _minutesController.text;
+    if (text.isNotEmpty) {
+      final minutes = int.tryParse(text) ?? 30;
+      if (minutes != _duration.inMinutes) {
+        setState(() {
+          _duration = Duration(minutes: minutes.clamp(1, 1440)); // Max 24 hours
+        });
+      }
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes % 60;
+    
+    if (hours > 0) {
+      return 'Entspricht: $hours Stunde${hours > 1 ? 'n' : ''}, $minutes Minute${minutes > 1 ? 'n' : ''}';
+    } else {
+      return 'Entspricht: $minutes Minute${minutes > 1 ? 'n' : ''}';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -443,21 +480,63 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
             ),
           ),
           const SizedBox(height: 16),
+          TextFormField(
+            controller: _minutesController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(
+              labelText: 'Minuten',
+              hintText: 'z.B. 64',
+              suffixText: 'min',
+            ),
+            onChanged: (value) {
+              _updateDurationFromText();
+            },
+          ),
+          const SizedBox(height: 8),
           Text(
-            'Dauer: ${_duration.inMinutes} Minuten',
+            _formatDuration(_duration),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: _selectedColor,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Oder wähle eine Voreinstellung:',
             style: theme.textTheme.bodyMedium,
           ),
-          Slider(
-            value: _duration.inMinutes.toDouble(),
-            min: 1,
-            max: 240,
-            divisions: 239,
-            activeColor: _selectedColor,
-            onChanged: (value) {
-              setState(() {
-                _duration = Duration(minutes: value.toInt());
-              });
-            },
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [15, 30, 45, 60, 90, 120].map((minutes) {
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _duration = Duration(minutes: minutes);
+                    _minutesController.text = minutes.toString();
+                  });
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: _duration.inMinutes == minutes ? _selectedColor.withOpacity(0.2) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: _duration.inMinutes == minutes ? _selectedColor : Colors.grey,
+                      width: 1,
+                    ),
+                  ),
+                  child: Text(
+                    '${minutes}min',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: _duration.inMinutes == minutes ? _selectedColor : null,
+                      fontWeight: _duration.inMinutes == minutes ? FontWeight.w600 : null,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
           const SizedBox(height: 16),
           Text(
@@ -497,7 +576,7 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (_titleController.text.isNotEmpty) {
+            if (_titleController.text.isNotEmpty && _duration.inMinutes > 0) {
               widget.onTimerCreated({
                 'title': _titleController.text,
                 'endTime': DateTime.now().add(_duration),

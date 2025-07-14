@@ -226,8 +226,12 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
   Widget _buildProgressBar(BuildContext context, bool isDark, Color accentColor) {
     final totalDuration = widget.endTime.difference(widget.endTime.subtract(_remainingTime));
     final progress = totalDuration.inSeconds > 0 
-        ? (_remainingTime.inSeconds / totalDuration.inSeconds).clamp(0.0, 1.0)
+        ? (1.0 - (_remainingTime.inSeconds / totalDuration.inSeconds)).clamp(0.0, 1.0)
         : 0.0;
+
+    // Calculate contrast text color based on the fill color
+    final brightness = _calculateColorBrightness(accentColor);
+    final contrastTextColor = brightness > 0.5 ? Colors.black : Colors.white;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -243,7 +247,7 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
               ),
             ),
             Text(
-              '${((1 - progress) * 100).toInt()}%',
+              '${(progress * 100).toInt()}%',
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
@@ -252,15 +256,62 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
             ),
           ],
         ),
-        const SizedBox(height: 4),
-        LinearProgressIndicator(
-          value: 1 - progress,
-          backgroundColor: isDark ? Colors.white10 : Colors.grey.shade200,
-          valueColor: AlwaysStoppedAnimation<Color>(accentColor),
-          minHeight: 6,
+        const SizedBox(height: 8),
+        Stack(
+          children: [
+            Container(
+              height: 8,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white10 : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 8,
+              width: MediaQuery.of(context).size.width * progress,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: BorderRadius.circular(4),
+                boxShadow: [
+                  BoxShadow(
+                    color: accentColor.withOpacity(0.4),
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                  ),
+                ],
+              ),
+            ),
+            if (progress > 0.15) // Only show text if there's enough space
+              Container(
+                height: 8,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    '${(progress * 100).toInt()}%',
+                    style: TextStyle(
+                      fontSize: 8,
+                      fontWeight: FontWeight.w600,
+                      color: contrastTextColor,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
       ],
     );
+  }
+
+  // Helper method to calculate color brightness
+  double _calculateColorBrightness(Color color) {
+    // Using the relative luminance formula
+    final r = color.red / 255.0;
+    final g = color.green / 255.0;
+    final b = color.blue / 255.0;
+    
+    return (0.299 * r + 0.587 * g + 0.114 * b);
   }
 }
 
