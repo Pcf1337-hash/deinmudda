@@ -33,7 +33,17 @@
 
 ### **📅 Juli 2025**
 
-1. **📝 README Komplettierung & Dokumentations-Update** (14. Juli 2025)
+1. **🏠 agent_home_layout_transfer - Home Layout Restructuring & Timer Features** (14. Juli 2025)
+   - **🔀 HomeScreen Layout**: Bestätigte korrekte Komponentenreihenfolge (Quick-Buttons → Timer → Statistiken → Einträge)
+   - **🧩 FAB-Funktionen Transfer**: Timer-Start-Funktionalität vom DosageCalculator übernommen
+   - **⏱️ Timer-Eingabe Erweiterung**: Erweiterte ActiveTimerBar mit ausklappbarem Eingabefeld
+   - **🔢 Numerische Validierung**: Echtzeit-Konvertierung von Minuten zu "Entspricht: X Std Y Min"
+   - **💊 Vorschlagschips**: Schnellauswahl für gängige Timer-Dauern (15/30/45/60/90/120 Min)
+   - **🎯 Automatische Timer-Anpassung**: Sofortige Übertragung der Eingabe auf aktiven Timer
+   - **🔄 TimerService Enhancement**: Neue `updateTimerDuration` Methode für Timer-Anpassungen
+   - **🚀 Nahtlose Integration**: Vollständige Kompatibilität mit bestehendem Entry-basiertem Timer-System
+
+2. **📝 README Komplettierung & Dokumentations-Update** (14. Juli 2025)
    - **🧪 Testing Strategy**: Vollständige Testing-Strategie mit 5 Test-Kategorien dokumentiert
    - **📱 Setup & Installation**: Detaillierte Installationsanweisungen für Flutter, Android und iOS
    - **🔐 Sicherheit & Datenschutz**: Umfassende Sicherheitsrichtlinien und DSGVO-Compliance
@@ -43,7 +53,7 @@
    - **📊 Test-Coverage**: Detaillierte Test-Abdeckung für Database, UI, Business Logic und Integration
    - **🚀 CI/CD Integration**: Automatisierte Test-Ausführung und Performance-Regression-Tests
 
-2. **🛠️ agent_home_dosage_fixes_1_6 - Crash-Fixes & UX-Verbesserungen** (14. Juli 2025)
+3. **🛠️ agent_home_dosage_fixes_1_6 - Crash-Fixes & UX-Verbesserungen** (14. Juli 2025)
    - **🔧 Menü-Crash Fix**: Navigation-Crashes beim ersten App-Start behoben (context.mounted checks)
    - **🎯 Zentrierter Text**: Empfohlene Dosis-Box im DosageCalculator mit FittedBox & TextAlign.center
    - **🧨 Overflow-Behebung**: "BOTTOM OVERFLOWED" im DosageCalculator mit SingleChildScrollView gelöst
@@ -144,6 +154,7 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 | Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Technische Details          | Wer?          |
 |---------------|------------------------------|-----------------------------------------------------|-------------------------------|----------------------------|---------------|
+| 14.07.2025    | HomeScreen + ActiveTimerBar  | agent_home_layout_transfer - Timer-Features erweitert | Layout-Umbau & Timer-Eingabe | FAB-Timer-Start, ActiveTimerBar mit Eingabefeld, updateTimerDuration-Methode, Echtzeit-Formatierung | Copilot/KI    |
 | 14.07.2025    | README.md                    | Komplettierung der README-Dokumentation            | Vollständige Projekt-Dokumentation | Testing Strategy, Setup & Installation, Sicherheitsrichtlinien, Verwendungsrichtlinien, CI/CD Integration | Copilot/KI    |
 | 14.07.2025    | UI/UX Fixes                  | Dosisrechner, Home-Screen & Quick Button UI-Fixes  | Visuelle Bugs & Overflow-Fixes | Header-Overflow behoben, animiertes Logo, Preis-Feld hinzugefügt, SpeedDial-Fix, Button-Aktivierung bei gültiger Eingabe | Copilot/KI    |
 | 14.07.2025    | SQL Database + Android Build | SQL Database-Inkonsistenzen behoben & Android Icons | APK-Kompilierung & Stabilität | Android Launcher Icons (hdpi-xxxhdpi), network_security_config.xml, gradle.kts-Optimierungen | Copilot/KI    |
@@ -327,9 +338,14 @@ lib/
 ### **Timer-System**
 - **Database-Schema**: Neue Timer-Spalten in `entries` Tabelle und `duration` in `substances` Tabelle
 - **Service-Integration**: `TimerService` mit Singleton-Pattern für Background-Monitoring
+- **Timer-Anpassung**: Neue `updateTimerDuration` Methode für Echtzeit-Timer-Modifikation
 - **Notification-Channel**: Spezifische Timer-Benachrichtigungen mit "Timer abgelaufen" Meldungen
 - **Default-Durationen**: Koffein (4h), Cannabis (2h), Alkohol (2h), Vitamin D (24h), Nikotin (30min)
 - **UI-Komponenten**: `ActiveTimerBar`, `TimerIndicator`, `TimerProgressBar` mit Pulsing-Animationen
+- **Timer-Eingabe**: Erweiterte `ActiveTimerBar` mit ausklappbarem Eingabefeld
+- **Echtzeit-Formatierung**: Automatische Konvertierung von Minuten zu "X Std Y Min" Format
+- **Vorschlag-Chips**: Schnellauswahl für gängige Dauern (15/30/45/60/90/120 Min)
+- **FAB-Integration**: Timer-Start über HomeScreen FloatingActionButton mit Substanz-Auswahl
 
 ### **Glasmorphismus-Design**
 - **Backdrop-Blur**: `BackdropFilter` mit `ImageFilter.blur` für transluzente Effekte

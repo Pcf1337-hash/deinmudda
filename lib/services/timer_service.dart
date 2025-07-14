@@ -248,6 +248,40 @@ class TimerService {
     return const Duration(hours: 4);
   }
 
+  // Update timer duration for an active timer
+  Future<Entry> updateTimerDuration(Entry entry, Duration newDuration) async {
+    try {
+      if (!_activeTimers.any((e) => e.id == entry.id)) {
+        throw StateError('Timer not found in active timers');
+      }
+
+      // Calculate new end time based on the new duration
+      final startTime = entry.timerStartTime ?? DateTime.now();
+      final newEndTime = startTime.add(newDuration);
+
+      final updatedEntry = entry.copyWith(
+        timerEndTime: newEndTime,
+        timerCompleted: false,
+        timerNotificationSent: false,
+      );
+
+      await _entryService.updateEntry(updatedEntry);
+
+      // Update the active timer in the list
+      final index = _activeTimers.indexWhere((e) => e.id == entry.id);
+      if (index != -1) {
+        _activeTimers[index] = updatedEntry;
+      }
+
+      return updatedEntry;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error updating timer duration: $e');
+      }
+      return entry;
+    }
+  }
+
   // Dispose timer service
   void dispose() {
     _timerCheckTimer?.cancel();
