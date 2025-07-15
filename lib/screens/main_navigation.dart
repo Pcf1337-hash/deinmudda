@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'statistics_screen.dart';
 import 'dosage_calculator/dosage_calculator_screen.dart'; // Changed from calendar_screen.dart
@@ -8,6 +10,8 @@ import 'menu_screen.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
+import '../utils/platform_helper.dart';
+import '../services/psychedelic_theme_service.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -54,6 +58,26 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    
+    // Update system UI overlay style based on theme
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _updateSystemUIOverlayStyle();
+    });
+  }
+
+  void _updateSystemUIOverlayStyle() {
+    if (!mounted) return;
+    
+    final psychedelicService = Provider.of<PsychedelicThemeService>(context, listen: false);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    
+    SystemChrome.setSystemUIOverlayStyle(
+      PlatformHelper.getStatusBarStyle(
+        isDark: isDark,
+        isPsychedelicMode: psychedelicService.isPsychedelicMode,
+      ),
+    );
   }
 
   @override
@@ -73,6 +97,9 @@ class _MainNavigationState extends State<MainNavigation> {
         duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
         curve: DesignTokens.curveEaseOut,
       );
+      
+      // Platform-specific haptic feedback
+      PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
     }
   }
 
@@ -81,19 +108,36 @@ class _MainNavigationState extends State<MainNavigation> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        // Disable swiping to reduce frame time errors
-        physics: const NeverScrollableScrollPhysics(),
-        children: _screens,
-      ),
-      bottomNavigationBar: _buildBottomNavigationBar(context, isDark),
+    return Consumer<PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        // Update system UI overlay style when theme changes
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _updateSystemUIOverlayStyle();
+        });
+        
+        return Scaffold(
+          body: SafeArea(
+            bottom: false, // Let bottom navigation handle its own safe area
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                
+                // Platform-specific haptic feedback for swipe navigation
+                PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
+              },
+              // Use platform-appropriate scroll physics
+              physics: PlatformHelper.isIOS 
+                ? const BouncingScrollPhysics()
+                : const ClampingScrollPhysics(),
+              children: _screens,
+            ),
+          ),
+          bottomNavigationBar: _buildBottomNavigationBar(context, isDark),
+        );
+      },
     );
   }
 
