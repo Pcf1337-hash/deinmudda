@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../services/auth_service.dart';
 import '../../widgets/glass_card.dart';
+import '../../widgets/header_bar.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 
@@ -332,37 +333,44 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Sicherheitseinstellungen'),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
+      body: Column(
+        children: [
+          HeaderBar(
+            title: 'Sicherheitseinstellungen',
+            subtitle: 'App-Sperre und Biometrie',
+            showBackButton: true,
+            showLightningIcon: true,
+          ),
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : SingleChildScrollView(
+                    padding: Spacing.paddingMd,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_errorMessage.isNotEmpty) ...[
+                          _buildErrorCard(context, isDark),
+                          Spacing.verticalSpaceMd,
+                        ],
+                        
+                        _buildAppLockSection(context, isDark),
+                        Spacing.verticalSpaceLg,
+                        
+                        if (_isBiometricAvailable) ...[
+                          _buildBiometricSection(context, isDark),
+                          Spacing.verticalSpaceLg,
+                        ],
+                        
+                        _buildPINSection(context, isDark),
+                        Spacing.verticalSpaceLg,
+                        _buildResetSection(context, isDark),
+                      ],
+                    ),
+                  ),
+          ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: Spacing.paddingMd,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (_errorMessage.isNotEmpty) ...[
-                    _buildErrorCard(context, isDark),
-                    Spacing.verticalSpaceMd,
-                  ],
-                  
-                  _buildAppLockSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  
-                  if (_isBiometricAvailable) ...[
-                    _buildBiometricSection(context, isDark),
-                    Spacing.verticalSpaceLg,
-                  ],
-                  
-                  _buildPINSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  _buildResetSection(context, isDark),
-                ],
-              ),
-            ),
     );
   }
 
