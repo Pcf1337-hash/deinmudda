@@ -6,6 +6,8 @@ import '../services/substance_service.dart';
 import '../utils/unit_manager.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
+import '../widgets/header_bar.dart';
+import '../widgets/consistent_fab.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/validation_helper.dart';
@@ -110,7 +112,12 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
     return Scaffold(
       body: Column(
         children: [
-          _buildAppBar(context, isDark),
+          HeaderBar(
+            title: 'Substanzen verwalten',
+            subtitle: '${_filteredSubstances.length} Substanzen',
+            showBackButton: true,
+            showLightningIcon: true,
+          ),
           Expanded(
             child: SingleChildScrollView(
               controller: _scrollController,
@@ -136,105 +143,6 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
         ],
       ),
       floatingActionButton: _buildAddButton(context, isDark),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isDark) {
-    final theme = Theme.of(context);
-
-    return Container(
-      height: 140,
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF16213E),
-                  Color(0xFF0F3460),
-                ],
-              )
-            : DesignTokens.primaryGradient,
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 56.0),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          Icons.science_rounded,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Substanzen verwalten',
-                              style: theme.textTheme.headlineMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Eigene Substanzen erstellen & bearbeiten',
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: Colors.white.withOpacity(0.8),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_filteredSubstances.isNotEmpty)
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: Spacing.sm,
-                            vertical: Spacing.xs,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: Spacing.borderRadiusSm,
-                          ),
-                          child: Text(
-                            '${_filteredSubstances.length}',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 
@@ -626,10 +534,18 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
   }
 
   Widget _buildAddButton(BuildContext context, bool isDark) {
-    return ModernFAB(
-      onPressed: _addSubstance,
-      icon: Icons.add_rounded,
-      label: 'Substanz',
+    return ConsistentFAB(
+      speedDialChildren: [
+        FABHelper.createSpeedDialChild(
+          icon: Icons.add_rounded,
+          label: 'Neue Substanz',
+          onTap: _addSubstance,
+          backgroundColor: DesignTokens.primaryIndigo,
+        ),
+      ],
+      onMainAction: _addSubstance,
+      mainIcon: Icons.add_rounded,
+      mainLabel: 'Substanz hinzufügen',
       backgroundColor: DesignTokens.primaryIndigo,
     ).animate().fadeIn(
       duration: DesignTokens.animationSlow,
