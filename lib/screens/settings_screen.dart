@@ -89,32 +89,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ? const Color(0xFFff00ff) 
                               : DesignTokens.primaryIndigo,
                         ),
-                        title: Flexible(
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Design Theme',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: psychedelicService.isPsychedelicMode && isDark
-                                    ? Colors.white
-                                    : null,
-                              ),
-                            ),
+                        title: Text(
+                          'Design Theme',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            color: psychedelicService.isPsychedelicMode && isDark
+                                ? Colors.white
+                                : null,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        subtitle: Flexible(
-                          child: Text(
-                            _getThemeDescription(psychedelicService.currentThemeMode),
-                            style: TextStyle(
-                              color: psychedelicService.isPsychedelicMode && isDark
-                                  ? Colors.white70
-                                  : null,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                        subtitle: Text(
+                          _getThemeDescription(psychedelicService.currentThemeMode),
+                          style: TextStyle(
+                            color: psychedelicService.isPsychedelicMode && isDark
+                                ? Colors.white70
+                                : null,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       Padding(
