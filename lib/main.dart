@@ -5,18 +5,20 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'utils/performance_helper.dart';
 import 'utils/platform_helper.dart';
+import 'utils/error_handler.dart';
+import 'utils/app_initialization_manager.dart';
 
-import 'screens/auth/auth_screen.dart'; // Import the auth screen
+import 'screens/auth/auth_screen.dart';
 import 'screens/main_navigation.dart';
 import 'services/database_service.dart';
 import 'services/entry_service.dart';
 import 'services/substance_service.dart';
 import 'services/settings_service.dart';
 import 'services/quick_button_service.dart';
-import 'services/auth_service.dart'; // Import the auth service
-import 'services/notification_service.dart'; // Import the notification service
-import 'services/timer_service.dart'; // Import the timer service
-import 'services/psychedelic_theme_service.dart'; // Import the psychedelic theme service
+import 'services/auth_service.dart';
+import 'services/notification_service.dart';
+import 'services/timer_service.dart';
+import 'services/psychedelic_theme_service.dart';
 import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
@@ -24,9 +26,7 @@ void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  if (kDebugMode) {
-    print('🚀 Initialisiere Theme...');
-  }
+  ErrorHandler.logStartup('MAIN', 'App-Initialisierung gestartet');
   
   // Initialize performance optimizations
   PerformanceHelper.init();
@@ -46,56 +46,6 @@ void main() async {
   // Initialize locale data for German
   await initializeDateFormatting('de_DE', null);
   
-  // Initialize services with proper error handling
-  late DatabaseService databaseService;
-  late NotificationService notificationService;
-  late TimerService timerService;
-  late PsychedelicThemeService psychedelicThemeService;
-  
-  try {
-    // Initialize database
-    if (kDebugMode) {
-      print('🗄️ Initialisiere Database...');
-    }
-    databaseService = DatabaseService();
-    await databaseService.database;
-    
-    // Initialize notification service
-    if (kDebugMode) {
-      print('🔔 Initialisiere Notifications...');
-    }
-    notificationService = NotificationService();
-    await notificationService.init();
-    
-    // Initialize timer service
-    if (kDebugMode) {
-      print('⏰ Initialisiere TimerService...');
-    }
-    timerService = TimerService();
-    await timerService.init();
-    
-    // Initialize psychedelic theme service
-    if (kDebugMode) {
-      print('🎨 Initialisiere PsychedelicThemeService...');
-    }
-    psychedelicThemeService = PsychedelicThemeService();
-    await psychedelicThemeService.init();
-    
-    if (kDebugMode) {
-      print('✅ Alle Services initialisiert');
-    }
-  } catch (e) {
-    if (kDebugMode) {
-      print('❌ Fehler bei Service-Initialisierung: $e');
-    }
-    
-    // Create fallback services to prevent white screen
-    databaseService = DatabaseService();
-    notificationService = NotificationService();
-    timerService = TimerService();
-    psychedelicThemeService = PsychedelicThemeService();
-  }
-    
   // Set platform-appropriate system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     PlatformHelper.getStatusBarStyle(
@@ -107,54 +57,63 @@ void main() async {
   // Set edge-to-edge display for modern look
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
-  if (kDebugMode) {
-    print('🏁 Starte App...');
-  }
+  // Initialize app with proper initialization manager
+  final initManager = AppInitializationManager();
+  
+  ErrorHandler.logStartup('MAIN', 'Starte KonsumTrackerApp...');
   
   runApp(KonsumTrackerApp(
-    psychedelicThemeService: psychedelicThemeService,
+    initManager: initManager,
   ));
 }
 
 class KonsumTrackerApp extends StatelessWidget {
-  final PsychedelicThemeService psychedelicThemeService;
+  final AppInitializationManager initManager;
   
   const KonsumTrackerApp({
     super.key,
-    required this.psychedelicThemeService,
+    required this.initManager,
   });
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: initManager.initialize(),
+      builder: (context, snapshot) {
+        // Show initialization screen while loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return MaterialApp(
+            home: InitializationScreen(initManager: initManager),
+            debugShowCheckedModeBanner: false,
+          );
+        }
+        
+        // Handle initialization completion
+        if (snapshot.hasData) {
+          return _buildMainApp();
+        }
+        
+        // Handle initialization errors
+        return MaterialApp(
+          home: InitializationScreen(initManager: initManager),
+          debugShowCheckedModeBanner: false,
+        );
+      },
+    );
+  }
+
+  Widget _buildMainApp() {
     return MultiProvider(
       providers: [
-        Provider<DatabaseService>(
-          create: (_) => DatabaseService(),
-        ),
-        ProxyProvider<DatabaseService, EntryService>(
-          update: (_, db, __) => EntryService(),
-        ),
-        ProxyProvider<DatabaseService, SubstanceService>(
-          update: (_, db, __) => SubstanceService(),
-        ),
-        ProxyProvider<DatabaseService, QuickButtonService>(
-          update: (_, db, __) => QuickButtonService(),
-        ),
-        ChangeNotifierProvider<SettingsService>(
-          create: (_) => SettingsService(),
-        ),
-        ChangeNotifierProvider<PsychedelicThemeService>.value(
-          value: psychedelicThemeService,
-        ),
-        Provider<AuthService>(
-          create: (_) => AuthService(),
-        ),
-        Provider<NotificationService>(
-          create: (_) => NotificationService(),
-        ),
-        Provider<TimerService>(
-          create: (_) => TimerService(),
-        ),
+        Provider<DatabaseService>.value(value: initManager.databaseService),
+        Provider<EntryService>.value(value: initManager.entryService),
+        Provider<SubstanceService>.value(value: initManager.substanceService),
+        Provider<QuickButtonService>.value(value: initManager.quickButtonService),
+        ChangeNotifierProvider<SettingsService>.value(value: initManager.settingsService),
+        ChangeNotifierProvider<PsychedelicThemeService>.value(value: initManager.psychedelicThemeService),
+        Provider<AuthService>.value(value: initManager.authService),
+        Provider<NotificationService>.value(value: initManager.notificationService),
+        Provider<TimerService>.value(value: initManager.timerService),
       ],
       child: Consumer2<SettingsService, PsychedelicThemeService>(
         builder: (context, settingsService, psychedelicService, child) {
@@ -196,14 +155,13 @@ class KonsumTrackerApp extends StatelessWidget {
                 
                 // Handle errors gracefully
                 if (snapshot.hasError) {
-                  if (kDebugMode) {
-                    print('❌ Fehler beim Laden der Auth-Einstellungen: ${snapshot.error}');
-                  }
+                  ErrorHandler.logError('MAIN_APP', 'Fehler beim Laden der Auth-Einstellungen: ${snapshot.error}');
                   // Default to main navigation on error
                   return _buildMainContent(psychedelicService, false);
                 }
                 
                 final showAuth = snapshot.data ?? false;
+                ErrorHandler.logInfo('MAIN_APP', 'Auth-Status: $showAuth');
                 return _buildMainContent(psychedelicService, showAuth);
               },
             ),
@@ -224,10 +182,13 @@ class KonsumTrackerApp extends StatelessWidget {
   // Helper method to build main content with error handling
   Widget _buildMainContent(PsychedelicThemeService psychedelicService, bool showAuth) {
     try {
+      ErrorHandler.logUI('MAIN_CONTENT', 'Baue Hauptinhalt, showAuth: $showAuth');
+      
       final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
       
       // Wrap with psychedelic background if enabled and in trippy mode
       if (psychedelicService.isPsychedelicMode) {
+        ErrorHandler.logTheme('MAIN_CONTENT', 'Psychedelic-Modus aktiv, verwende PsychedelicBackground');
         return PsychedelicBackground(
           isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
           child: mainContent,
@@ -236,9 +197,7 @@ class KonsumTrackerApp extends StatelessWidget {
       
       return mainContent;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Erstellen des Hauptinhalts: $e');
-      }
+      ErrorHandler.logError('MAIN_CONTENT', 'Fehler beim Erstellen des Hauptinhalts: $e');
       
       // Fallback to basic navigation
       return const MainNavigation();

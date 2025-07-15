@@ -17,6 +17,7 @@ import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
 import '../widgets/consistent_fab.dart';
+import '../utils/error_handler.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -135,15 +136,33 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadQuickButtons() async {
     try {
+      if (kDebugMode) {
+        print('🏠 Lade QuickButtons...');
+      }
+      
       final buttons = await _quickButtonService.getAllQuickButtons();
-      setState(() {
-        _quickButtons = buttons;
-        _isLoadingQuickButtons = false;
-      });
+      
+      if (mounted) {
+        setState(() {
+          _quickButtons = buttons;
+          _isLoadingQuickButtons = false;
+        });
+        
+        if (kDebugMode) {
+          print('✅ QuickButtons geladen: ${buttons.length} Buttons');
+        }
+      }
     } catch (e) {
-      setState(() {
-        _isLoadingQuickButtons = false;
-      });
+      if (kDebugMode) {
+        print('❌ Fehler beim Laden der QuickButtons: $e');
+      }
+      
+      if (mounted) {
+        setState(() {
+          _quickButtons = [];
+          _isLoadingQuickButtons = false;
+        });
+      }
     }
   }
 
@@ -456,29 +475,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     // Use FutureBuilder for data-dependent sections to improve loading performance
                     FutureBuilder<List<Entry>>(
                       future: _entryService.getAllEntries(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(Spacing.lg),
-                          child: CircularProgressIndicator(),
-                        ),
-                      );
-                    }
-                    
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Spacing.verticalSpaceLg,
-                        _buildRecentEntriesSection(context, isDark, snapshot.data),
-                        Spacing.verticalSpaceLg,
-                        _buildTodayStatsSection(context, isDark),
-                        Spacing.verticalSpaceLg,
-                        _buildQuickInsightsSection(context, isDark),
-                      ],
-                    );
-                  },
-                ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          if (kDebugMode) {
+                            print('🔄 HomeScreen: Lade Einträge...');
+                          }
+                          return const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(Spacing.lg),
+                              child: CircularProgressIndicator(),
+                            ),
+                          );
+                        }
+                        
+                        // Handle errors gracefully
+                        if (snapshot.hasError) {
+                          if (kDebugMode) {
+                            print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
+                          }
+                          return _buildErrorFallback(context, isDark);
+                        }
+                        
+                        final entries = snapshot.data ?? [];
+                        if (kDebugMode) {
+                          print('✅ HomeScreen: ${entries.length} Einträge geladen');
+                        }
+                        
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Spacing.verticalSpaceLg,
+                            _buildRecentEntriesSection(context, isDark, entries),
+                            Spacing.verticalSpaceLg,
+                            _buildTodayStatsSection(context, isDark),
+                            Spacing.verticalSpaceLg,
+                            _buildQuickInsightsSection(context, isDark),
+                          ],
+                        );
+                      },
+                    ),
                 
                 const SizedBox(height: 120), // Bottom padding for navigation
               ]),
@@ -780,35 +815,58 @@ class _HomeScreenState extends State<HomeScreen> {
             Icons.note_add_outlined,
           )
         else
-          Column(
-            children: List.generate(entries.take(3).length, (index) {
-              final entryData = entries.take(3).elementAt(index);
-              
-              // Only animate if animations should be enabled
-              Widget card = CompactEntryCard(
-                entry: entryData,
-                onTap: () => _navigateToEditEntry(entryData),
-              );
-              
-              if (PerformanceHelper.shouldEnableAnimations()) {
-                card = card.animate().fadeIn(
-                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-                  delay: Duration(milliseconds: 1000 + (index * 100).toInt()),
-                ).slideY(
-                  begin: 0.3,
-                  end: 0,
-                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-                  curve: DesignTokens.curveEaseOut,
-                );
-              }
-              
-              return Padding(
-                padding: const EdgeInsets.only(bottom: Spacing.sm),
-                child: card,
-              );
-            }),
-          ),
+          _buildEntriesCards(entries),
       ],
+    );
+  }
+
+  Widget _buildEntriesCards(List<Entry> entries) {
+    return Column(
+      children: List.generate(entries.take(3).length, (index) {
+        final entryData = entries.take(3).elementAt(index);
+        
+        try {
+          // Only animate if animations should be enabled
+          Widget card = CompactEntryCard(
+            entry: entryData,
+            onTap: () => _navigateToEditEntry(entryData),
+          );
+          
+          if (PerformanceHelper.shouldEnableAnimations()) {
+            card = card.animate().fadeIn(
+              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
+              delay: Duration(milliseconds: 1000 + (index * 100).toInt()),
+            ).slideY(
+              begin: 0.3,
+              end: 0,
+              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
+              curve: DesignTokens.curveEaseOut,
+            );
+          }
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: Spacing.sm),
+            child: card,
+          );
+        } catch (e) {
+          if (kDebugMode) {
+            print('❌ Fehler beim Rendern von Entry Card ${entryData.id}: $e');
+          }
+          
+          // Fallback simple card on error
+          return Padding(
+            padding: const EdgeInsets.only(bottom: Spacing.sm),
+            child: Card(
+              child: ListTile(
+                title: Text(entryData.substanceName ?? 'Unbekannt'),
+                subtitle: Text('${entryData.dosage} ${entryData.unit}'),
+                trailing: Text('${entryData.cost?.toStringAsFixed(2) ?? '0.00'}€'),
+                onTap: () => _navigateToEditEntry(entryData),
+              ),
+            ),
+          );
+        }
+      }),
     );
   }
 
@@ -841,6 +899,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildStatsLoading();
             } else if (snapshot.hasError) {
+              ErrorHandler.logError('HOME_SCREEN', 'Fehler beim Laden der Statistiken: ${snapshot.error}');
               return _buildStatsError(context, isDark);
             } else {
               final stats = snapshot.data ?? {};
@@ -848,66 +907,71 @@ class _HomeScreenState extends State<HomeScreen> {
               final todayCost = stats['todayCost'] ?? 0.0;
               final todaySubstances = stats['todaySubstances'] ?? 0;
 
-              return Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Einträge',
-                      todayEnt.toString(),
-                      Icons.note_rounded,
-                      DesignTokens.primaryIndigo,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1200),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+              try {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Einträge',
+                        todayEnt.toString(),
+                        Icons.note_rounded,
+                        DesignTokens.primaryIndigo,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1200),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                  Spacing.horizontalSpaceMd,
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Kosten',
-                      '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
-                      Icons.euro_rounded,
-                      DesignTokens.accentEmerald,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1300),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+                    Spacing.horizontalSpaceMd,
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Kosten',
+                        '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                        Icons.euro_rounded,
+                        DesignTokens.accentEmerald,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1300),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                  Spacing.horizontalSpaceMd,
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Substanzen',
-                      todaySubstances.toString(),
-                      Icons.science_rounded,
-                      DesignTokens.accentCyan,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1400),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+                    Spacing.horizontalSpaceMd,
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Substanzen',
+                        todaySubstances.toString(),
+                        Icons.science_rounded,
+                        DesignTokens.accentCyan,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1400),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              } catch (e) {
+                ErrorHandler.logError('HOME_SCREEN', 'Fehler beim Rendern der Statistik-Karten: $e');
+                return _buildStatsError(context, isDark);
+              }
             }
           },
         ),
@@ -1227,6 +1291,27 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _buildErrorFallback(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Spacing.verticalSpaceLg,
+        _buildErrorState(
+          context,
+          isDark,
+          'Fehler beim Laden',
+          'Die Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.',
+          Icons.error_outline,
+        ),
+        Spacing.verticalSpaceLg,
+        // Still show today stats and insights even if entries failed
+        _buildTodayStatsSection(context, isDark),
+        Spacing.verticalSpaceLg,
+        _buildQuickInsightsSection(context, isDark),
+      ],
+    );
+  }
+
   Widget _buildErrorState(
     BuildContext context,
     bool isDark,
@@ -1321,77 +1406,141 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Navigation methods
+  // Navigation methods with mounted checks
   Future<void> _navigateToAddEntry() async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AddEntryScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const AddEntryScreen(),
+        ),
+      );
 
-    if (result == true) {
-      setState(() {}); // Refresh the home screen
+      if (result == true && mounted) {
+        setState(() {}); // Refresh the home screen
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu AddEntry fehlgeschlagen: $e');
+      }
     }
   }
 
   Future<void> _navigateToEditEntry(Entry entry) async {
-    final result = await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => EditEntryScreen(entry: entry),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => EditEntryScreen(entry: entry),
+        ),
+      );
 
-    if (result == true) {
-      setState(() {}); // Refresh the home screen
+      if (result == true && mounted) {
+        setState(() {}); // Refresh the home screen
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu EditEntry fehlgeschlagen: $e');
+      }
     }
   }
 
   void _navigateToEntryList() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const EntryListScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const EntryListScreen(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu EntryList fehlgeschlagen: $e');
+      }
+    }
   }
 
   void _navigateToDayDetail(DateTime date) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => DayDetailScreen(date: date),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => DayDetailScreen(date: date),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu DayDetail fehlgeschlagen: $e');
+      }
+    }
   }
 
   void _navigateToAdvancedSearch() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AdvancedSearchScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const AdvancedSearchScreen(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu AdvancedSearch fehlgeschlagen: $e');
+      }
+    }
   }
 
   void _navigateToPatternAnalysis() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const PatternAnalysisScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const PatternAnalysisScreen(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu PatternAnalysis fehlgeschlagen: $e');
+      }
+    }
   }
 
   void _navigateToDataExport() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const DataExportScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const DataExportScreen(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu DataExport fehlgeschlagen: $e');
+      }
+    }
   }
 
   void _navigateToTimerDashboard() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const TimerDashboardScreen(),
-      ),
-    );
+    if (!mounted) return;
+    
+    try {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (context) => const TimerDashboardScreen(),
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Navigation zu TimerDashboard fehlgeschlagen: $e');
+      }
+    }
   }
 }
 

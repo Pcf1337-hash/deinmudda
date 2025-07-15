@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
+import '../utils/error_handler.dart';
 
 enum ThemeMode { light, dark, trippy }
 
@@ -19,6 +20,7 @@ class PsychedelicThemeService extends ChangeNotifier {
   String _currentSubstance = 'default';
   
   SharedPreferences? _prefs;
+  bool _isInitialized = false;
   
   ThemeMode get currentThemeMode => _currentThemeMode;
   bool get isPsychedelicMode => _currentThemeMode == ThemeMode.trippy;
@@ -28,26 +30,58 @@ class PsychedelicThemeService extends ChangeNotifier {
   bool get isPulsingButtonsEnabled => _isPulsingButtonsEnabled;
   double get glowIntensity => _glowIntensity;
   String get currentSubstance => _currentSubstance;
+  bool get isInitialized => _isInitialized;
   
   Future<void> init() async {
     try {
-      if (kDebugMode) {
-        print('🎨 PsychedelicThemeService init gestartet...');
-      }
+      ErrorHandler.logTheme('INIT', 'PsychedelicThemeService Initialisierung gestartet');
       
       _prefs = await SharedPreferences.getInstance();
       await _loadSettings();
       
-      if (kDebugMode) {
-        print('✅ PsychedelicThemeService erfolgreich initialisiert');
-      }
+      _isInitialized = true;
+      ErrorHandler.logSuccess('THEME_SERVICE', 'PsychedelicThemeService erfolgreich initialisiert');
+      
+      // Notify listeners that initialization is complete
+      notifyListeners();
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler bei PsychedelicThemeService init: $e');
-      }
+      ErrorHandler.logError('THEME_SERVICE', 'Fehler bei PsychedelicThemeService init: $e');
       
       // Fallback to defaults
       _currentThemeMode = ThemeMode.light;
+      _isAnimatedBackgroundEnabled = true;
+      _isPulsingButtonsEnabled = true;
+      _glowIntensity = 1.0;
+      _currentSubstance = 'default';
+      _isInitialized = true;
+      
+      ErrorHandler.logWarning('THEME_SERVICE', 'Fallback-Werte für PsychedelicThemeService gesetzt');
+      notifyListeners();
+    }
+  }
+
+  Future<void> _loadSettings() async {
+    if (_prefs == null) {
+      ErrorHandler.logWarning('THEME_SERVICE', 'SharedPreferences nicht verfügbar');
+      return;
+    }
+    
+    try {
+      // Load theme mode
+      final themeModeIndex = _prefs!.getInt(_themeModeKey) ?? ThemeMode.light.index;
+      _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
+      
+      // Load other settings
+      _isAnimatedBackgroundEnabled = _prefs!.getBool(_animatedBackgroundKey) ?? true;
+      _isPulsingButtonsEnabled = _prefs!.getBool(_pulsingButtonsKey) ?? true;
+      _glowIntensity = _prefs!.getDouble(_glowIntensityKey) ?? 1.0;
+      _currentSubstance = _prefs!.getString(_currentSubstanceKey) ?? 'default';
+      
+      ErrorHandler.logTheme('LOAD_SETTINGS', 'Theme-Einstellungen geladen: $_currentThemeMode');
+    } catch (e) {
+      ErrorHandler.logError('THEME_SERVICE', 'Fehler beim Laden der Theme-Einstellungen: $e');
+    }
+  }
       _isAnimatedBackgroundEnabled = true;
       _isPulsingButtonsEnabled = true;
       _glowIntensity = 1.0;

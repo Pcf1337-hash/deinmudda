@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
+import '../utils/error_handler.dart';
 import 'entry_service.dart';
 import 'substance_service.dart';
 import 'notification_service.dart';
@@ -27,31 +28,24 @@ class TimerService {
   // Initialize timer service
   Future<void> init() async {
     try {
-      if (kDebugMode) {
-        print('⏰ TimerService init gestartet...');
-      }
+      ErrorHandler.logTimer('INIT', 'TimerService Initialisierung gestartet');
       
       _prefs = await SharedPreferences.getInstance();
       await _loadActiveTimers();
       await _restoreTimersFromPrefs();
       _startTimerCheckLoop();
       
-      if (kDebugMode) {
-        print('✅ TimerService erfolgreich initialisiert');
-      }
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService erfolgreich initialisiert');
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler bei TimerService init: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler bei TimerService init: $e');
       
       // Fallback initialization
       try {
         _prefs = await SharedPreferences.getInstance();
         _startTimerCheckLoop();
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Fallback-Initialisierung erfolgreich');
       } catch (fallbackError) {
-        if (kDebugMode) {
-          print('❌ Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
-        }
+        ErrorHandler.logError('TIMER_SERVICE', 'Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
       }
     }
   }
@@ -59,6 +53,10 @@ class TimerService {
   // Load active timers from database
   Future<void> _loadActiveTimers() async {
     try {
+      if (kDebugMode) {
+        print('⏰ Lade aktive Timer aus der Datenbank...');
+      }
+      
       final allEntries = await _entryService.getAllEntries();
       _activeTimers.clear();
       
@@ -67,22 +65,33 @@ class TimerService {
           _activeTimers.add(entry);
         }
       }
-    } catch (e) {
+      
       if (kDebugMode) {
-        print('Error loading active timers: $e');
+        print('✅ ${_activeTimers.length} aktive Timer geladen');
       }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Laden aktiver Timer: $e');
+      
+      // Ensure the list is cleared on error
+      _activeTimers.clear();
     }
   }
 
-  // Start timer check loop
+  // Start timer check loop with better error handling
   void _startTimerCheckLoop() {
-    _timerCheckTimer?.cancel();
-    _timerCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      _checkTimers();
-    });
+    try {
+      _timerCheckTimer?.cancel();
+      _timerCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+        _checkTimers();
+      });
+      
+      ErrorHandler.logTimer('CHECK_LOOP', 'Timer-Check-Loop gestartet');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Starten des Timer-Check-Loops: $e');
+    }
   }
 
-  // Check for expired timers
+  // Check for expired timers with improved error handling
   Future<void> _checkTimers() async {
     if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
       return; // Timer was cancelled, don't proceed
@@ -92,7 +101,10 @@ class TimerService {
       final now = DateTime.now();
       final expiredTimers = <Entry>[];
 
-      for (final entry in _activeTimers) {
+      // Create a copy of the list to avoid concurrent modification
+      final activeTimersCopy = List<Entry>.from(_activeTimers);
+
+      for (final entry in activeTimersCopy) {
         if (entry.timerEndTime != null && 
             now.isAfter(entry.timerEndTime!) && 
             !entry.timerCompleted &&
@@ -107,10 +119,12 @@ class TimerService {
 
       // Remove expired timers from active list
       _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error checking timers: $e');
+      
+      if (expiredTimers.isNotEmpty) {
+        ErrorHandler.logTimer('CHECK', '${expiredTimers.length} Timer abgelaufen und verarbeitet');
       }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Überprüfen der Timer: $e');
     }
   }
 
@@ -240,9 +254,7 @@ class TimerService {
     try {
       return _activeTimers.isNotEmpty ? _activeTimers.first : null;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Abrufen des aktiven Timers: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Abrufen des aktiven Timers: $e');
       return null;
     }
   }
@@ -469,7 +481,18 @@ class TimerService {
 
   // Dispose timer service
   void dispose() {
-    if (kDebugMode) {
+    try {
+      ErrorHandler.logDispose('TIMER_SERVICE', 'TimerService dispose gestartet');
+      
+      _timerCheckTimer?.cancel();
+      _timerCheckTimer = null;
+      _activeTimers.clear();
+      
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService dispose abgeschlossen');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Dispose des TimerService: $e');
+    }
+  }
       print('🧹 TimerService dispose gestartet...');
     }
     

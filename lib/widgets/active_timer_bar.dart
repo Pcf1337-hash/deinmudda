@@ -8,6 +8,7 @@ import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/safe_navigation.dart';
+import '../utils/error_handler.dart';
 
 class ActiveTimerBar extends StatefulWidget {
   final Entry timer;
@@ -101,37 +102,28 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   @override
   void dispose() {
-    if (kDebugMode) {
-      print('🧹 ActiveTimerBar dispose gestartet...');
-    }
+    ErrorHandler.logDispose('ACTIVE_TIMER_BAR', 'ActiveTimerBar dispose gestartet');
     
     try {
+      _animationController.stop();
       _animationController.dispose();
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Dispose des AnimationController: $e');
-      }
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des AnimationController: $e');
     }
     
     try {
       _timerInputController.dispose();
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Dispose des TextEditingController: $e');
-      }
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des TextEditingController: $e');
     }
     
     try {
       _focusNode.dispose();
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Dispose des FocusNode: $e');
-      }
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des FocusNode: $e');
     }
     
-    if (kDebugMode) {
-      print('✅ ActiveTimerBar dispose abgeschlossen');
-    }
+    ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'ActiveTimerBar dispose abgeschlossen');
     
     super.dispose();
   }
@@ -147,6 +139,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
       final progress = widget.timer.timerProgress;
+      
+      // Additional safety check for timer
+      if (widget.timer.timerEndTime == null) {
+        return const SizedBox.shrink();
+      }
       
       return Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
