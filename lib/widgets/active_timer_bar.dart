@@ -9,6 +9,8 @@ import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/safe_navigation.dart';
 import '../utils/error_handler.dart';
+import '../utils/crash_protection.dart';
+import '../utils/impeller_helper.dart';
 
 class ActiveTimerBar extends StatefulWidget {
   final Entry timer;
@@ -25,7 +27,7 @@ class ActiveTimerBar extends StatefulWidget {
 }
 
 class _ActiveTimerBarState extends State<ActiveTimerBar>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, SafeStateMixin {
   late AnimationController _animationController;
   late Animation<double> _pulseAnimation;
   late Animation<double> _progressAnimation;
@@ -35,33 +37,56 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   final FocusNode _focusNode = FocusNode();
   
   bool _showTimerInput = false;
+  bool _isDisposed = false;
   final List<int> _suggestionMinutes = [15, 30, 45, 60, 90, 120];
 
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      duration: const Duration(seconds: 2),
-      vsync: this,
-    );
     
-    _pulseAnimation = Tween<double>(
-      begin: 0.95,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _progressAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeInOut,
-    ));
-    
-    _animationController.repeat(reverse: true);
+    try {
+      ErrorHandler.logTimer('INIT', 'ActiveTimerBar initialisiert für ${widget.timer.substanceName}');
+      
+      // Get animation settings based on Impeller status
+      final animationSettings = ImpellerHelper.getTimerAnimationSettings();
+      final duration = animationSettings['animationDuration'] as Duration;
+      
+      _animationController = AnimationController(
+        duration: duration,
+        vsync: this,
+      );
+      
+      _pulseAnimation = Tween<double>(
+        begin: 0.95,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+      
+      _progressAnimation = Tween<double>(
+        begin: 0.0,
+        end: 1.0,
+      ).animate(CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ));
+      
+      // Only start pulsing animation if Impeller supports it
+      if (ImpellerHelper.shouldEnableFeature('pulsing')) {
+        _animationController.repeat(reverse: true);
+      } else {
+        // Use a simple static state for problematic devices
+        _animationController.value = 1.0;
+      }
+      
+      ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'Animation Controller erfolgreich initialisiert');
+    } catch (e) {
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Initialisieren: $e');
+      
+      // Log potential Impeller issue
+      ImpellerHelper.logPerformanceIssue('ACTIVE_TIMER_BAR', 'Animation initialization failed: $e');
+    }
   }
 
   // Helper method to determine text color based on luminance
@@ -102,23 +127,29 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   @override
   void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    
     ErrorHandler.logDispose('ACTIVE_TIMER_BAR', 'ActiveTimerBar dispose gestartet');
     
     try {
       _animationController.stop();
       _animationController.dispose();
+      ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'AnimationController erfolgreich disposed');
     } catch (e) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des AnimationController: $e');
     }
     
     try {
       _timerInputController.dispose();
+      ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'TextEditingController erfolgreich disposed');
     } catch (e) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des TextEditingController: $e');
     }
     
     try {
       _focusNode.dispose();
+      ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'FocusNode erfolgreich disposed');
     } catch (e) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des FocusNode: $e');
     }
@@ -130,11 +161,38 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   @override
   Widget build(BuildContext context) {
-    // Early return if widget is not mounted
-    if (!mounted) {
+    // Early return if widget is not mounted or disposed
+    if (!mounted || _isDisposed) {
       return const SizedBox.shrink();
     }
     
+    return CrashProtectionWrapper(
+      context: 'ActiveTimerBar',
+      fallbackWidget: _buildTimerErrorFallback(context),
+      child: _buildTimerContent(context),
+    );
+  }
+  
+  Widget _buildTimerErrorFallback(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(Spacing.md),
+      padding: const EdgeInsets.all(Spacing.md),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: Spacing.borderRadiusLg,
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: const Row(
+        children: [
+          Icon(Icons.error_outline, color: Colors.red),
+          SizedBox(width: Spacing.sm),
+          Text('Timer nicht verfügbar - siehe Log', style: TextStyle(color: Colors.red)),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildTimerContent(BuildContext context) {
     try {
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
@@ -142,13 +200,14 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       
       // Additional safety check for timer
       if (widget.timer.timerEndTime == null) {
+        ErrorHandler.logWarning('ACTIVE_TIMER_BAR', 'Timer hat keine EndTime');
         return const SizedBox.shrink();
       }
       
       return Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
-          // Early return if widget is not mounted
-          if (!mounted) {
+          // Early return if widget is not mounted or disposed
+          if (!mounted || _isDisposed) {
             return const SizedBox.shrink();
           }
           
@@ -160,8 +219,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           return AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, child) {
-              // Early return if widget is not mounted
-              if (!mounted) {
+              // Early return if widget is not mounted or disposed
+              if (!mounted || _isDisposed) {
                 return const SizedBox.shrink();
               }
               
@@ -169,7 +228,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                 scale: _pulseAnimation.value,
                 child: GestureDetector(
                   onTap: () {
-                    if (mounted && widget.onTap != null) {
+                    if (mounted && !_isDisposed && widget.onTap != null) {
                       widget.onTap!();
                     }
                   },
@@ -202,7 +261,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                         ],
                       ],
                     ),
-                    child: _buildTimerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
+                    child: _buildTimerInnerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
                   ),
                 ),
               );
@@ -211,27 +270,10 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         },
       );
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Erstellen der ActiveTimerBar: $e');
-      }
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Erstellen der ActiveTimerBar: $e');
       
       // Fallback widget
-      return Container(
-        margin: const EdgeInsets.all(Spacing.md),
-        padding: const EdgeInsets.all(Spacing.md),
-        decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.1),
-          borderRadius: Spacing.borderRadiusLg,
-          border: Border.all(color: Colors.grey.withOpacity(0.3)),
-        ),
-        child: const Row(
-          children: [
-            Icon(Icons.timer_rounded, color: Colors.grey),
-            SizedBox(width: Spacing.sm),
-            Text('Timer nicht verfügbar', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-      );
+      return _buildTimerErrorFallback(context);
     }
   }
 
@@ -362,8 +404,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   }
 
   void _onTimerInputChanged(String value) {
-    if (mounted) {
-      setState(() {}); // Trigger rebuild to update conversion display
+    if (mounted && !_isDisposed) {
+      safeSetState(() {}); // Trigger rebuild to update conversion display
     }
   }
 
@@ -382,6 +424,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   }
 
   Future<void> _updateTimerDuration() async {
+    if (_isDisposed || !mounted) return;
+    
     final inputText = _timerInputController.text.trim();
     if (inputText.isEmpty) return;
     
@@ -392,23 +436,27 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     }
     
     try {
+      ErrorHandler.logTimer('UPDATE', 'Timer wird auf $minutes Minuten angepasst');
+      
       // Update the timer with new duration
       final newDuration = Duration(minutes: minutes);
       await _timerService.updateTimerDuration(widget.timer, newDuration);
       
       // Hide input field and clear text
-      if (mounted) {
-        setState(() {
+      if (mounted && !_isDisposed) {
+        safeSetState(() {
           _showTimerInput = false;
           _timerInputController.clear();
         });
       }
       
       // Unfocus the text field
-      _focusNode.unfocus();
+      if (_focusNode.hasFocus) {
+        _focusNode.unfocus();
+      }
       
       // Show success message
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -427,13 +475,18 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           ),
         );
       }
+      
+      ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'Timer erfolgreich angepasst');
     } catch (e) {
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Anpassen des Timers: $e');
       _showErrorMessage('Fehler beim Aktualisieren des Timers: $e');
     }
   }
 
   void _showErrorMessage(String message) {
-    if (mounted) {
+    if (mounted && !_isDisposed) {
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Zeige Fehlermeldung: $message');
+      
       SafeNavigation.showDialogSafe(
         context,
         AlertDialog(
@@ -450,8 +503,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     }
   }
 
-  Widget _buildTimerContent(ThemeData theme, Color progressColor, Color textColor, bool isPsychedelicMode, double progress) {
-    if (!mounted) {
+  Widget _buildTimerInnerContent(ThemeData theme, Color progressColor, Color textColor, bool isPsychedelicMode, double progress) {
+    if (!mounted || _isDisposed) {
       return const SizedBox.shrink();
     }
     
@@ -534,8 +587,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                   const SizedBox(width: Spacing.sm),
                   IconButton(
                     onPressed: () {
-                      if (mounted) {
-                        setState(() {
+                      if (mounted && !_isDisposed) {
+                        safeSetState(() {
                           _showTimerInput = !_showTimerInput;
                         });
                       }
@@ -578,8 +631,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                             ),
                           ),
                         ),
-                        // Animated shine effect
-                        if (isPsychedelicMode)
+                        // Animated shine effect - only if Impeller supports it
+                        if (isPsychedelicMode && ImpellerHelper.shouldEnableFeature('shine'))
                           AnimatedBuilder(
                             animation: _animationController,
                             builder: (context, child) {
