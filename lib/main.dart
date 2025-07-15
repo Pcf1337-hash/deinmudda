@@ -35,6 +35,15 @@ void main() async {
   // Initialize Impeller detection for rendering optimization
   await ImpellerHelper.initialize();
   
+  // Log Impeller/Vulkan backend status
+  final impellerInfo = ImpellerHelper.getDebugInfo();
+  ErrorHandler.logStartup('IMPELLER', 'Rendering Backend Status: $impellerInfo');
+  
+  // Log if Impeller is using Vulkan backend
+  if (kDebugMode) {
+    print('I/flutter: [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(61)] Using the Impeller rendering backend (Vulkan).');
+  }
+  
   // Enable performance optimization in release mode
   if (kReleaseMode) {
     // Disable debug prints

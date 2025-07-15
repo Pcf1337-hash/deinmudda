@@ -18,6 +18,7 @@ import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
 import '../widgets/consistent_fab.dart';
 import '../utils/error_handler.dart';
+import '../utils/crash_protection.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -39,7 +40,7 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   bool _isQuickEntryEditMode = false;
@@ -93,7 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final isScrolled = _scrollController.offset > 50;
       if (isScrolled != _isScrolled) {
-        setState(() {
+        safeSetState(() {
           _isScrolled = isScrolled;
         });
       }
@@ -112,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       final activeTimer = _timerService.currentActiveTimer;
       if (mounted) {
-        setState(() {
+        safeSetState(() {
           _activeTimer = activeTimer;
         });
         
@@ -127,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
       // Ensure state is reset on error
       if (mounted) {
-        setState(() {
+        safeSetState(() {
           _activeTimer = null;
         });
       }
@@ -143,7 +144,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final buttons = await _quickButtonService.getAllQuickButtons();
       
       if (mounted) {
-        setState(() {
+        safeSetState(() {
           _quickButtons = buttons;
           _isLoadingQuickButtons = false;
         });
@@ -158,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
       
       if (mounted) {
-        setState(() {
+        safeSetState(() {
           _quickButtons = [];
           _isLoadingQuickButtons = false;
         });
@@ -191,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            setState(() {
+            safeSetState(() {
               _activeTimer = entryWithTimer;
             });
           }
@@ -218,7 +219,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
         
         // Refresh the home screen to show the new entry
-        setState(() {});
+        safeSetState(() {});
       }
     } catch (e) {
       if (mounted) {
@@ -243,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            setState(() {
+            safeSetState(() {
               _activeTimer = null;
             });
           }
@@ -301,7 +302,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
     try {
       await _quickButtonService.reorderQuickButtons(reorderedButtons);
-      setState(() {
+      safeSetState(() {
         _quickButtons = reorderedButtons;
         _isQuickEntryEditMode = false;
       });
@@ -365,7 +366,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (mounted) {
-            setState(() {
+            safeSetState(() {
               _activeTimer = timerEntry;
             });
           }
@@ -456,9 +457,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         onQuickEntry: _handleQuickEntry,
                         onAddButton: _navigateToQuickButtonConfig,
                         onEditMode: () {
-                          setState(() {
-                            _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                          });
+                          if (mounted) {
+                            safeSetState(() {
+                              _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                            });
+                          }
                         },
                         isEditing: _isQuickEntryEditMode,
                         onReorder: _reorderQuickButtons,
@@ -535,8 +538,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         builder: (context) => const AddEntryScreen(),
                       ),
                     ).then((result) {
-                      if (result == true) {
-                        setState(() {}); // Refresh the screen
+                      if (result == true && mounted) {
+                        safeSetState(() {}); // Refresh the screen
                       }
                     });
                   },
@@ -567,8 +570,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) => const AddEntryScreen(),
                     ),
                   ).then((result) {
-                    if (result == true) {
-                      setState(() {}); // Refresh the screen
+                    if (result == true && mounted) {
+                      safeSetState(() {}); // Refresh the screen
                     }
                   });
                 },
@@ -737,7 +740,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               onEnd: () {
                                 // Restart animation in trippy mode
                                 if (isPsychedelic && mounted) {
-                                  setState(() {});
+                                  safeSetState(() {});
                                 }
                               },
                             ),
@@ -1418,7 +1421,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (result == true && mounted) {
-        setState(() {}); // Refresh the home screen
+        safeSetState(() {}); // Refresh the home screen
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1438,7 +1441,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
 
       if (result == true && mounted) {
-        setState(() {}); // Refresh the home screen
+        safeSetState(() {}); // Refresh the home screen
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1690,7 +1693,7 @@ class _TimerStartModal extends StatefulWidget {
   State<_TimerStartModal> createState() => _TimerStartModalState();
 }
 
-class _TimerStartModalState extends State<_TimerStartModal> {
+class _TimerStartModalState extends State<_TimerStartModal> with SafeStateMixin {
   String? selectedSubstanceId;
   String? selectedSubstanceName;
   int selectedMinutes = 30;
@@ -1789,10 +1792,12 @@ class _TimerStartModalState extends State<_TimerStartModal> {
           
           return GestureDetector(
             onTap: () {
-              setState(() {
-                selectedSubstanceId = substanceId;
-                selectedSubstanceName = substanceName;
-              });
+              if (mounted) {
+                safeSetState(() {
+                  selectedSubstanceId = substanceId;
+                  selectedSubstanceName = substanceName;
+                });
+              }
             },
             child: Container(
               width: 100,
@@ -1841,10 +1846,12 @@ class _TimerStartModalState extends State<_TimerStartModal> {
         final isSelected = selectedMinutes == minutes;
         return GestureDetector(
           onTap: () {
-            setState(() {
-              selectedMinutes = minutes;
-              _customTimeController.clear();
-            });
+            if (mounted) {
+              safeSetState(() {
+                selectedMinutes = minutes;
+                _customTimeController.clear();
+              });
+            }
           },
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -1890,9 +1897,11 @@ class _TimerStartModalState extends State<_TimerStartModal> {
             if (value.isNotEmpty) {
               final minutes = int.tryParse(value);
               if (minutes != null && minutes > 0) {
-                setState(() {
-                  selectedMinutes = minutes;
-                });
+                if (mounted) {
+                  safeSetState(() {
+                    selectedMinutes = minutes;
+                  });
+                }
               }
             }
           },
