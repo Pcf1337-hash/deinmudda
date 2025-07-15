@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/platform_helper.dart';
 
 class HeaderBar extends StatelessWidget {
   final String title;
@@ -36,7 +37,7 @@ class HeaderBar extends StatelessWidget {
         final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
         return Container(
-          height: height ?? 120,
+          height: height ?? (PlatformHelper.isIOS ? 100 : 120),
           decoration: BoxDecoration(
             gradient: isPsychedelicMode
                 ? LinearGradient(
@@ -62,7 +63,10 @@ class HeaderBar extends StatelessWidget {
           ),
           child: SafeArea(
             child: Padding(
-              padding: Spacing.paddingMd,
+              padding: EdgeInsets.symmetric(
+                horizontal: PlatformHelper.isIOS ? 12.0 : 16.0,
+                vertical: PlatformHelper.isIOS ? 8.0 : 12.0,
+              ),
               child: Stack(
                 children: [
                   // Back button
@@ -70,12 +74,22 @@ class HeaderBar extends StatelessWidget {
                     Align(
                       alignment: Alignment.centerLeft,
                       child: IconButton(
-                        onPressed: onBackPressed ?? () => Navigator.of(context).pop(),
+                        onPressed: () {
+                          if (onBackPressed != null) {
+                            onBackPressed!();
+                          } else {
+                            PlatformHelper.handleBackNavigation(context);
+                          }
+                          
+                          // Platform-specific haptic feedback
+                          PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact);
+                        },
                         icon: Icon(
-                          Icons.arrow_back_rounded,
+                          PlatformHelper.isIOS ? Icons.arrow_back_ios_rounded : Icons.arrow_back_rounded,
                           color: isPsychedelicMode
                               ? DesignTokens.textPsychedelicPrimary
                               : Colors.white,
+                          size: PlatformHelper.getPlatformIconSize(),
                         ),
                       ),
                     ),
@@ -147,12 +161,12 @@ class HeaderBar extends StatelessWidget {
 
   Widget _buildLightningIcon(bool isPsychedelicMode, Map<String, Color> substanceColors) {
     return Container(
-      padding: const EdgeInsets.all(Spacing.xs),
+      padding: EdgeInsets.all(PlatformHelper.isIOS ? 6.0 : 8.0),
       decoration: BoxDecoration(
         color: isPsychedelicMode
             ? substanceColors['primary']!.withOpacity(0.2)
             : Colors.white.withOpacity(0.2),
-        borderRadius: Spacing.borderRadiusSm,
+        borderRadius: PlatformHelper.getPlatformBorderRadius(),
         border: Border.all(
           color: isPsychedelicMode
               ? substanceColors['primary']!.withOpacity(0.3)
@@ -161,7 +175,7 @@ class HeaderBar extends StatelessWidget {
         ),
       ),
       child: TweenAnimationBuilder<double>(
-        duration: const Duration(milliseconds: 2000),
+        duration: Duration(milliseconds: isPsychedelicMode ? 2000 : 3000),
         tween: Tween(begin: 0.0, end: 1.0),
         builder: (context, value, child) {
           return Transform.rotate(
@@ -171,7 +185,7 @@ class HeaderBar extends StatelessWidget {
               color: isPsychedelicMode
                   ? substanceColors['primary']!
                   : Colors.white,
-              size: Spacing.iconMd,
+              size: PlatformHelper.getPlatformIconSize(),
             ),
           );
         },
