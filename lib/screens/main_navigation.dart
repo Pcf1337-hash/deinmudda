@@ -68,38 +68,58 @@ class _MainNavigationState extends State<MainNavigation> {
   void _updateSystemUIOverlayStyle() {
     if (!mounted) return;
     
-    final psychedelicService = Provider.of<PsychedelicThemeService>(context, listen: false);
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    
-    SystemChrome.setSystemUIOverlayStyle(
-      PlatformHelper.getStatusBarStyle(
-        isDark: isDark,
-        isPsychedelicMode: psychedelicService.isPsychedelicMode,
-      ),
-    );
+    try {
+      final psychedelicService = Provider.of<PsychedelicThemeService>(context, listen: false);
+      final theme = Theme.of(context);
+      final isDark = theme.brightness == Brightness.dark;
+      
+      SystemChrome.setSystemUIOverlayStyle(
+        PlatformHelper.getStatusBarStyle(
+          isDark: isDark,
+          isPsychedelicMode: psychedelicService.isPsychedelicMode,
+        ),
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Aktualisieren des SystemUIOverlayStyle: $e');
+      }
+    }
   }
 
   @override
   void dispose() {
-    _pageController.dispose();
+    try {
+      _pageController.dispose();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des PageController: $e');
+      }
+    }
     super.dispose();
   }
 
   void _onItemTapped(int index) {
-    if (index != _currentIndex) {
-      setState(() {
-        _currentIndex = index;
-      });
-      _pageController.animateToPage(
-        index,
-        // Use optimized animation duration
-        duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-        curve: DesignTokens.curveEaseOut,
-      );
-      
-      // Platform-specific haptic feedback
-      PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
+    if (!mounted) return;
+    
+    try {
+      if (index != _currentIndex) {
+        setState(() {
+          _currentIndex = index;
+        });
+        _pageController.animateToPage(
+          index,
+          // Use optimized animation duration
+          duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
+          curve: DesignTokens.curveEaseOut,
+        );
+        
+        // Platform-specific haptic feedback
+        PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Navigieren zu Tab $index: $e');
+      }
     }
   }
 

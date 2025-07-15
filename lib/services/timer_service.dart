@@ -59,6 +59,10 @@ class TimerService {
   // Load active timers from database
   Future<void> _loadActiveTimers() async {
     try {
+      if (kDebugMode) {
+        print('⏰ Lade aktive Timer aus der Datenbank...');
+      }
+      
       final allEntries = await _entryService.getAllEntries();
       _activeTimers.clear();
       
@@ -67,22 +71,39 @@ class TimerService {
           _activeTimers.add(entry);
         }
       }
+      
+      if (kDebugMode) {
+        print('✅ ${_activeTimers.length} aktive Timer geladen');
+      }
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading active timers: $e');
+        print('❌ Fehler beim Laden aktiver Timer: $e');
+      }
+      
+      // Ensure the list is cleared on error
+      _activeTimers.clear();
+    }
+  }
+
+  // Start timer check loop with better error handling
+  void _startTimerCheckLoop() {
+    try {
+      _timerCheckTimer?.cancel();
+      _timerCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+        _checkTimers();
+      });
+      
+      if (kDebugMode) {
+        print('✅ Timer-Check-Loop gestartet');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Starten des Timer-Check-Loops: $e');
       }
     }
   }
 
-  // Start timer check loop
-  void _startTimerCheckLoop() {
-    _timerCheckTimer?.cancel();
-    _timerCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-      _checkTimers();
-    });
-  }
-
-  // Check for expired timers
+  // Check for expired timers with improved error handling
   Future<void> _checkTimers() async {
     if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
       return; // Timer was cancelled, don't proceed
@@ -92,7 +113,10 @@ class TimerService {
       final now = DateTime.now();
       final expiredTimers = <Entry>[];
 
-      for (final entry in _activeTimers) {
+      // Create a copy of the list to avoid concurrent modification
+      final activeTimersCopy = List<Entry>.from(_activeTimers);
+
+      for (final entry in activeTimersCopy) {
         if (entry.timerEndTime != null && 
             now.isAfter(entry.timerEndTime!) && 
             !entry.timerCompleted &&
@@ -107,9 +131,13 @@ class TimerService {
 
       // Remove expired timers from active list
       _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
+      
+      if (expiredTimers.isNotEmpty && kDebugMode) {
+        print('✅ ${expiredTimers.length} Timer abgelaufen und verarbeitet');
+      }
     } catch (e) {
       if (kDebugMode) {
-        print('Error checking timers: $e');
+        print('❌ Fehler beim Überprüfen der Timer: $e');
       }
     }
   }
@@ -469,7 +497,24 @@ class TimerService {
 
   // Dispose timer service
   void dispose() {
-    if (kDebugMode) {
+    try {
+      if (kDebugMode) {
+        print('🧹 TimerService dispose gestartet...');
+      }
+      
+      _timerCheckTimer?.cancel();
+      _timerCheckTimer = null;
+      _activeTimers.clear();
+      
+      if (kDebugMode) {
+        print('✅ TimerService dispose abgeschlossen');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des TimerService: $e');
+      }
+    }
+  }
       print('🧹 TimerService dispose gestartet...');
     }
     

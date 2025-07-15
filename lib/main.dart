@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'utils/performance_helper.dart';
 import 'utils/platform_helper.dart';
+import 'utils/error_handler.dart';
 
 import 'screens/auth/auth_screen.dart'; // Import the auth screen
 import 'screens/main_navigation.dart';
@@ -24,9 +25,7 @@ void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
   
-  if (kDebugMode) {
-    print('🚀 Initialisiere Theme...');
-  }
+  ErrorHandler.logStartup('MAIN', 'App-Initialisierung gestartet');
   
   // Initialize performance optimizations
   PerformanceHelper.init();
@@ -54,46 +53,40 @@ void main() async {
   
   try {
     // Initialize database
-    if (kDebugMode) {
-      print('🗄️ Initialisiere Database...');
-    }
+    ErrorHandler.logStartup('DATABASE', 'Initialisiere Database...');
     databaseService = DatabaseService();
     await databaseService.database;
+    ErrorHandler.logSuccess('DATABASE', 'Database erfolgreich initialisiert');
     
     // Initialize notification service
-    if (kDebugMode) {
-      print('🔔 Initialisiere Notifications...');
-    }
+    ErrorHandler.logStartup('NOTIFICATIONS', 'Initialisiere Notifications...');
     notificationService = NotificationService();
     await notificationService.init();
+    ErrorHandler.logSuccess('NOTIFICATIONS', 'Notifications erfolgreich initialisiert');
     
     // Initialize timer service
-    if (kDebugMode) {
-      print('⏰ Initialisiere TimerService...');
-    }
+    ErrorHandler.logStartup('TIMER', 'Initialisiere TimerService...');
     timerService = TimerService();
     await timerService.init();
+    ErrorHandler.logSuccess('TIMER', 'TimerService erfolgreich initialisiert');
     
     // Initialize psychedelic theme service
-    if (kDebugMode) {
-      print('🎨 Initialisiere PsychedelicThemeService...');
-    }
+    ErrorHandler.logStartup('THEME', 'Initialisiere PsychedelicThemeService...');
     psychedelicThemeService = PsychedelicThemeService();
     await psychedelicThemeService.init();
+    ErrorHandler.logSuccess('THEME', 'PsychedelicThemeService erfolgreich initialisiert');
     
-    if (kDebugMode) {
-      print('✅ Alle Services initialisiert');
-    }
+    ErrorHandler.logSuccess('MAIN', 'Alle Services erfolgreich initialisiert');
   } catch (e) {
-    if (kDebugMode) {
-      print('❌ Fehler bei Service-Initialisierung: $e');
-    }
+    ErrorHandler.logError('MAIN', 'Fehler bei Service-Initialisierung: $e');
     
     // Create fallback services to prevent white screen
     databaseService = DatabaseService();
     notificationService = NotificationService();
     timerService = TimerService();
     psychedelicThemeService = PsychedelicThemeService();
+    
+    ErrorHandler.logWarning('MAIN', 'Fallback-Services erstellt');
   }
     
   // Set platform-appropriate system UI overlay style
@@ -107,9 +100,7 @@ void main() async {
   // Set edge-to-edge display for modern look
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
-  if (kDebugMode) {
-    print('🏁 Starte App...');
-  }
+  ErrorHandler.logStartup('MAIN', 'Starte KonsumTrackerApp...');
   
   runApp(KonsumTrackerApp(
     psychedelicThemeService: psychedelicThemeService,
@@ -196,14 +187,13 @@ class KonsumTrackerApp extends StatelessWidget {
                 
                 // Handle errors gracefully
                 if (snapshot.hasError) {
-                  if (kDebugMode) {
-                    print('❌ Fehler beim Laden der Auth-Einstellungen: ${snapshot.error}');
-                  }
+                  ErrorHandler.logError('MAIN_APP', 'Fehler beim Laden der Auth-Einstellungen: ${snapshot.error}');
                   // Default to main navigation on error
                   return _buildMainContent(psychedelicService, false);
                 }
                 
                 final showAuth = snapshot.data ?? false;
+                ErrorHandler.logInfo('MAIN_APP', 'Auth-Status: $showAuth');
                 return _buildMainContent(psychedelicService, showAuth);
               },
             ),
@@ -224,10 +214,13 @@ class KonsumTrackerApp extends StatelessWidget {
   // Helper method to build main content with error handling
   Widget _buildMainContent(PsychedelicThemeService psychedelicService, bool showAuth) {
     try {
+      ErrorHandler.logUI('MAIN_CONTENT', 'Baue Hauptinhalt, showAuth: $showAuth');
+      
       final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
       
       // Wrap with psychedelic background if enabled and in trippy mode
       if (psychedelicService.isPsychedelicMode) {
+        ErrorHandler.logTheme('MAIN_CONTENT', 'Psychedelic-Modus aktiv, verwende PsychedelicBackground');
         return PsychedelicBackground(
           isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
           child: mainContent,
@@ -236,9 +229,7 @@ class KonsumTrackerApp extends StatelessWidget {
       
       return mainContent;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Erstellen des Hauptinhalts: $e');
-      }
+      ErrorHandler.logError('MAIN_CONTENT', 'Fehler beim Erstellen des Hauptinhalts: $e');
       
       // Fallback to basic navigation
       return const MainNavigation();

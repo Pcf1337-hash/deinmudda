@@ -106,6 +106,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     }
     
     try {
+      _animationController.stop();
       _animationController.dispose();
     } catch (e) {
       if (kDebugMode) {
@@ -147,6 +148,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
       final progress = widget.timer.timerProgress;
+      
+      // Additional safety check for timer
+      if (widget.timer.timerEndTime == null) {
+        return const SizedBox.shrink();
+      }
       
       return Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
