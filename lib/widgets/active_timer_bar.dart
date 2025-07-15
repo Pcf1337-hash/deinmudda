@@ -7,6 +7,7 @@ import '../services/timer_service.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/safe_navigation.dart';
 
 class ActiveTimerBar extends StatefulWidget {
   final Entry timer;
@@ -68,20 +69,33 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 
-  // Helper method to get progress-based color
+  // Helper method to get progress-based color with enhanced color transitions
   Color _getProgressBasedColor(double progress, PsychedelicThemeService? psychedelicService) {
     if (psychedelicService?.isPsychedelicMode == true) {
       final substanceColors = psychedelicService!.getCurrentSubstanceColors();
-      return substanceColors['primary'] ?? DesignTokens.accentCyan;
+      final baseColor = substanceColors['primary'] ?? DesignTokens.accentCyan;
+      
+      // Apply progress-based intensity in trippy mode
+      if (progress < 0.3) {
+        return Color.lerp(baseColor, DesignTokens.successGreen, 0.3)!;
+      } else if (progress < 0.7) {
+        return Color.lerp(baseColor, DesignTokens.warningOrange, 0.3)!;
+      } else {
+        return Color.lerp(baseColor, DesignTokens.errorRed, 0.3)!;
+      }
     }
     
-    // Color transitions based on progress
-    if (progress < 0.3) {
-      return Color.lerp(DesignTokens.successGreen, DesignTokens.accentCyan, progress / 0.3)!;
-    } else if (progress < 0.7) {
-      return Color.lerp(DesignTokens.accentCyan, DesignTokens.warningOrange, (progress - 0.3) / 0.4)!;
+    // Enhanced color transitions based on progress (smooth gradients)
+    if (progress < 0.2) {
+      return DesignTokens.successGreen;
+    } else if (progress < 0.4) {
+      return Color.lerp(DesignTokens.successGreen, DesignTokens.accentCyan, (progress - 0.2) / 0.2)!;
+    } else if (progress < 0.6) {
+      return Color.lerp(DesignTokens.accentCyan, DesignTokens.warningYellow, (progress - 0.4) / 0.2)!;
+    } else if (progress < 0.8) {
+      return Color.lerp(DesignTokens.warningYellow, DesignTokens.warningOrange, (progress - 0.6) / 0.2)!;
     } else {
-      return Color.lerp(DesignTokens.warningOrange, DesignTokens.errorRed, (progress - 0.7) / 0.3)!;
+      return Color.lerp(DesignTokens.warningOrange, DesignTokens.errorRed, (progress - 0.8) / 0.2)!;
     }
   }
 
@@ -101,6 +115,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     
     return Consumer<PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
+        // Safe access to psychedelic service
         final progressColor = _getProgressBasedColor(progress, psychedelicService);
         final textColor = _getTextColorForBackground(progressColor);
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
@@ -111,7 +126,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
             return Transform.scale(
               scale: _pulseAnimation.value,
               child: GestureDetector(
-                onTap: widget.onTap,
+                onTap: () {
+                  if (widget.onTap != null) {
+                    widget.onTap!();
+                  }
+                },
                 child: Container(
                   margin: const EdgeInsets.all(Spacing.md),
                   decoration: BoxDecoration(
@@ -189,11 +208,16 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        widget.timer.substanceName,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          color: textColor,
-                                          fontWeight: FontWeight.w600,
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          widget.timer.substanceName,
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            color: textColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       Text(
@@ -215,9 +239,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                 const SizedBox(width: Spacing.sm),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() {
-                                      _showTimerInput = !_showTimerInput;
-                                    });
+                                    if (mounted) {
+                                      setState(() {
+                                        _showTimerInput = !_showTimerInput;
+                                      });
+                                    }
                                   },
                                   icon: Icon(
                                     _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
@@ -437,7 +463,9 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   }
 
   void _onTimerInputChanged(String value) {
-    setState(() {}); // Trigger rebuild to update conversion display
+    if (mounted) {
+      setState(() {}); // Trigger rebuild to update conversion display
+    }
   }
 
   String _formatInputTime(String input) {
@@ -470,10 +498,12 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       await _timerService.updateTimerDuration(widget.timer, newDuration);
       
       // Hide input field and clear text
-      setState(() {
-        _showTimerInput = false;
-        _timerInputController.clear();
-      });
+      if (mounted) {
+        setState(() {
+          _showTimerInput = false;
+          _timerInputController.clear();
+        });
+      }
       
       // Unfocus the text field
       _focusNode.unfocus();
@@ -482,9 +512,19 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Timer auf ${_formatInputTime(inputText)} angepasst'),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('Timer auf ${_formatInputTime(inputText)} angepasst'),
+              ],
+            ),
             backgroundColor: DesignTokens.successGreen,
             duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
@@ -495,11 +535,17 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   void _showErrorMessage(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      SafeNavigation.showDialogSafe(
+        context,
+        AlertDialog(
+          title: const Text('Timer Fehler'),
           content: Text(message),
-          backgroundColor: DesignTokens.errorRed,
-          duration: const Duration(seconds: 3),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     }

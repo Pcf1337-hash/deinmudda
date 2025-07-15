@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
 import 'entry_service.dart';
@@ -17,10 +18,17 @@ class TimerService {
 
   Timer? _timerCheckTimer;
   final List<Entry> _activeTimers = [];
+  SharedPreferences? _prefs;
+
+  // Timer persistence keys
+  static const String _activeTimerCountKey = 'active_timer_count';
+  static const String _activeTimerKeyPrefix = 'active_timer_';
 
   // Initialize timer service
   Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
     await _loadActiveTimers();
+    await _restoreTimersFromPrefs();
     _startTimerCheckLoop();
   }
 
@@ -52,6 +60,10 @@ class TimerService {
 
   // Check for expired timers
   Future<void> _checkTimers() async {
+    if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
+      return; // Timer was cancelled, don't proceed
+    }
+    
     try {
       final now = DateTime.now();
       final expiredTimers = <Entry>[];
@@ -80,6 +92,10 @@ class TimerService {
 
   // Handle timer expiration
   Future<void> _handleTimerExpired(Entry entry) async {
+    if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
+      return; // Timer was cancelled, don't proceed
+    }
+    
     try {
       // Send notification
       await _notificationService.showTimerExpiredNotification(
@@ -94,6 +110,9 @@ class TimerService {
       );
 
       await _entryService.updateEntry(updatedEntry);
+      
+      // Save to preferences
+      await _saveTimersToPrefs();
     } catch (e) {
       if (kDebugMode) {
         print('Error handling timer expiration: $e');
@@ -137,6 +156,9 @@ class TimerService {
       // Add to active timers
       _activeTimers.add(updatedEntry);
 
+      // Save to preferences
+      await _saveTimersToPrefs();
+
       return updatedEntry;
     } catch (e) {
       if (kDebugMode) {
@@ -157,6 +179,9 @@ class TimerService {
 
       // Remove from active timers
       _activeTimers.removeWhere((e) => e.id == entry.id);
+
+      // Save to preferences
+      await _saveTimersToPrefs();
 
       return updatedEntry;
     } catch (e) {
@@ -199,11 +224,18 @@ class TimerService {
 
   // Get remaining time for entry
   Duration? getRemainingTime(String entryId) {
-    final entry = _activeTimers.firstWhere(
-      (e) => e.id == entryId,
-      orElse: () => throw StateError('Timer not found'),
-    );
-    return entry.remainingTime;
+    try {
+      final entry = _activeTimers.firstWhere(
+        (e) => e.id == entryId,
+        orElse: () => throw StateError('Timer not found'),
+      );
+      return entry.remainingTime;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting remaining time: $e');
+      }
+      return null;
+    }
   }
 
   // Get timer progress for entry
@@ -213,6 +245,20 @@ class TimerService {
       return entry.timerProgress;
     } catch (e) {
       return 0.0;
+    }
+  }
+
+  // Check if timer with this ID already exists to prevent duplicates
+  bool hasTimerWithId(String entryId) {
+    return _activeTimers.any((timer) => timer.id == entryId);
+  }
+
+  // Safe way to get timer by ID
+  Entry? getTimerById(String entryId) {
+    try {
+      return _activeTimers.firstWhere((timer) => timer.id == entryId);
+    } catch (e) {
+      return null;
     }
   }
 
@@ -273,6 +319,9 @@ class TimerService {
         _activeTimers[index] = updatedEntry;
       }
 
+      // Save to preferences
+      await _saveTimersToPrefs();
+
       return updatedEntry;
     } catch (e) {
       if (kDebugMode) {
@@ -282,9 +331,105 @@ class TimerService {
     }
   }
 
+  // Save timers to SharedPreferences for persistence
+  Future<void> _saveTimersToPrefs() async {
+    if (_prefs == null) return;
+    
+    try {
+      await _prefs!.setInt(_activeTimerCountKey, _activeTimers.length);
+      
+      for (int i = 0; i < _activeTimers.length; i++) {
+        final entry = _activeTimers[i];
+        await _prefs!.setString('${_activeTimerKeyPrefix}${i}_id', entry.id);
+        await _prefs!.setString('${_activeTimerKeyPrefix}${i}_substance', entry.substanceName);
+        await _prefs!.setString('${_activeTimerKeyPrefix}${i}_start_time', entry.timerStartTime?.toIso8601String() ?? '');
+        await _prefs!.setString('${_activeTimerKeyPrefix}${i}_end_time', entry.timerEndTime?.toIso8601String() ?? '');
+        await _prefs!.setBool('${_activeTimerKeyPrefix}${i}_completed', entry.timerCompleted);
+        await _prefs!.setBool('${_activeTimerKeyPrefix}${i}_notification_sent', entry.timerNotificationSent);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving timers to prefs: $e');
+      }
+    }
+  }
+
+  // Restore timers from SharedPreferences
+  Future<void> _restoreTimersFromPrefs() async {
+    if (_prefs == null) return;
+    
+    try {
+      final count = _prefs!.getInt(_activeTimerCountKey) ?? 0;
+      if (count == 0) return;
+
+      for (int i = 0; i < count; i++) {
+        final id = _prefs!.getString('${_activeTimerKeyPrefix}${i}_id');
+        final substance = _prefs!.getString('${_activeTimerKeyPrefix}${i}_substance');
+        final startTimeStr = _prefs!.getString('${_activeTimerKeyPrefix}${i}_start_time');
+        final endTimeStr = _prefs!.getString('${_activeTimerKeyPrefix}${i}_end_time');
+        final completed = _prefs!.getBool('${_activeTimerKeyPrefix}${i}_completed') ?? false;
+        final notificationSent = _prefs!.getBool('${_activeTimerKeyPrefix}${i}_notification_sent') ?? false;
+
+        if (id != null && substance != null && startTimeStr != null && endTimeStr != null) {
+          final startTime = DateTime.tryParse(startTimeStr);
+          final endTime = DateTime.tryParse(endTimeStr);
+
+          if (startTime != null && endTime != null && !completed) {
+            // Check if timer is still active (not expired)
+            final now = DateTime.now();
+            if (now.isBefore(endTime)) {
+              // Try to get the full entry from database
+              try {
+                final allEntries = await _entryService.getAllEntries();
+                final entry = allEntries.firstWhere((e) => e.id == id);
+                
+                if (!_activeTimers.any((e) => e.id == id)) {
+                  _activeTimers.add(entry);
+                }
+              } catch (e) {
+                if (kDebugMode) {
+                  print('Could not restore timer entry $id: $e');
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error restoring timers from prefs: $e');
+      }
+    }
+  }
+
+  // Clear timer preferences
+  Future<void> _clearTimerPrefs() async {
+    if (_prefs == null) return;
+    
+    try {
+      final count = _prefs!.getInt(_activeTimerCountKey) ?? 0;
+      await _prefs!.remove(_activeTimerCountKey);
+      
+      for (int i = 0; i < count; i++) {
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_id');
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_substance');
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_start_time');
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_end_time');
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_completed');
+        await _prefs!.remove('${_activeTimerKeyPrefix}${i}_notification_sent');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error clearing timer prefs: $e');
+      }
+    }
+  }
+
   // Dispose timer service
   void dispose() {
     _timerCheckTimer?.cancel();
+    _timerCheckTimer = null;
     _activeTimers.clear();
+    _clearTimerPrefs();
   }
 }

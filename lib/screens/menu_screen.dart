@@ -8,6 +8,7 @@ import '../services/psychedelic_theme_service.dart';
 import '../widgets/glass_card.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/safe_navigation.dart';
 import 'substance_management_screen.dart';
 import 'calendar_screen.dart';
 import 'data_export_screen.dart';
@@ -529,76 +530,36 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   void _navigateToSubstanceManagement() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SubstanceManagementScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const SubstanceManagementScreen());
   }
 
   void _navigateToCalendar() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const CalendarScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const CalendarScreen());
   }
 
   void _navigateToAdvancedSearch() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const AdvancedSearchScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const AdvancedSearchScreen());
   }
 
   void _navigateToPatternAnalysis() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const PatternAnalysisScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const PatternAnalysisScreen());
   }
 
   void _navigateToTimerDashboard() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const TimerDashboardScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const TimerDashboardScreen());
   }
 
   void _navigateToDataExport() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const DataExportScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const DataExportScreen());
   }
 
   // New navigation methods for security and notifications
   void _navigateToSecuritySettings() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const SecuritySettingsScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const SecuritySettingsScreen());
   }
 
   void _navigateToNotificationSettings() {
-    if (!mounted) return;
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const NotificationSettingsScreen(),
-      ),
-    );
+    SafeNavigation.pushSafe(context, const NotificationSettingsScreen());
   }
 
   void _showDatabaseInfo(BuildContext context) async {

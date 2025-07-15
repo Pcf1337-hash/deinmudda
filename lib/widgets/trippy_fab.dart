@@ -61,10 +61,10 @@ class _TrippyFABState extends State<TrippyFAB>
 
     _rotationAnimation = Tween<double>(
       begin: 0.0,
-      end: 0.1,
+      end: 4.0, // 4x rotation as mentioned in problem statement
     ).animate(CurvedAnimation(
       parent: _animationController,
-      curve: Curves.easeInOut,
+      curve: Curves.elasticOut, // Elastic bounce as mentioned
     ));
 
     // Start continuous animation
@@ -99,7 +99,7 @@ class _TrippyFABState extends State<TrippyFAB>
         return Transform.scale(
           scale: _scaleAnimation.value,
           child: Transform.rotate(
-            angle: _rotationAnimation.value,
+            angle: _rotationAnimation.value * 3.14159 / 180, // Convert to radians
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(widget.isExtended ? 28 : 28),

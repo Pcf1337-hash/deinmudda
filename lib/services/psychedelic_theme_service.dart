@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 
@@ -86,20 +87,39 @@ class PsychedelicThemeService extends ChangeNotifier {
     notifyListeners();
   }
   
-  // Get current substance colors
+  // Get current substance colors safely
   Map<String, Color> getCurrentSubstanceColors() {
-    return DesignTokens.getSubstanceColor(_currentSubstance);
+    try {
+      return DesignTokens.getSubstanceColor(_currentSubstance);
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting substance colors: $e');
+      }
+      return {
+        'primary': const Color(0xFFff00ff),
+        'secondary': const Color(0xFF00f7ff),
+        'accent': const Color(0xFFffff00),
+      };
+    }
   }
-  
-  // Get appropriate theme based on settings
+
+  // Get appropriate theme based on settings with error handling
   ThemeData getTheme() {
-    switch (_currentThemeMode) {
-      case ThemeMode.light:
-        return _buildLightTheme();
-      case ThemeMode.dark:
-        return _buildDarkTheme();
-      case ThemeMode.trippy:
-        return _buildTrippyTheme();
+    try {
+      switch (_currentThemeMode) {
+        case ThemeMode.light:
+          return _buildLightTheme();
+        case ThemeMode.dark:
+          return _buildDarkTheme();
+        case ThemeMode.trippy:
+          return _buildTrippyTheme();
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error building theme: $e');
+      }
+      // Fallback to light theme
+      return _buildLightTheme();
     }
   }
   
@@ -424,5 +444,29 @@ class PsychedelicThemeService extends ChangeNotifier {
         spreadRadius: (radius * 0.4) * _glowIntensity,
       ),
     ];
+  }
+
+  // Safe way to get theme provider from context
+  static PsychedelicThemeService? of(BuildContext context) {
+    try {
+      return context.read<PsychedelicThemeService>();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting PsychedelicThemeService: $e');
+      }
+      return null;
+    }
+  }
+
+  // Safe way to watch theme provider from context
+  static PsychedelicThemeService? watch(BuildContext context) {
+    try {
+      return context.watch<PsychedelicThemeService>();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error watching PsychedelicThemeService: $e');
+      }
+      return null;
+    }
   }
 }
