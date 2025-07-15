@@ -7,6 +7,7 @@ import '../services/timer_service.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/safe_navigation.dart';
 
 class ActiveTimerBar extends StatefulWidget {
   final Entry timer;
@@ -101,6 +102,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     
     return Consumer<PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
+        // Safe access to psychedelic service
         final progressColor = _getProgressBasedColor(progress, psychedelicService);
         final textColor = _getTextColorForBackground(progressColor);
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
@@ -111,7 +113,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
             return Transform.scale(
               scale: _pulseAnimation.value,
               child: GestureDetector(
-                onTap: widget.onTap,
+                onTap: () {
+                  if (widget.onTap != null) {
+                    widget.onTap!();
+                  }
+                },
                 child: Container(
                   margin: const EdgeInsets.all(Spacing.md),
                   decoration: BoxDecoration(
@@ -189,11 +195,16 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text(
-                                        widget.timer.substanceName,
-                                        style: theme.textTheme.titleMedium?.copyWith(
-                                          color: textColor,
-                                          fontWeight: FontWeight.w600,
+                                      FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Text(
+                                          widget.timer.substanceName,
+                                          style: theme.textTheme.titleMedium?.copyWith(
+                                            color: textColor,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                       Text(
@@ -215,9 +226,11 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                 const SizedBox(width: Spacing.sm),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() {
-                                      _showTimerInput = !_showTimerInput;
-                                    });
+                                    if (mounted) {
+                                      setState(() {
+                                        _showTimerInput = !_showTimerInput;
+                                      });
+                                    }
                                   },
                                   icon: Icon(
                                     _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
@@ -437,7 +450,9 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   }
 
   void _onTimerInputChanged(String value) {
-    setState(() {}); // Trigger rebuild to update conversion display
+    if (mounted) {
+      setState(() {}); // Trigger rebuild to update conversion display
+    }
   }
 
   String _formatInputTime(String input) {
@@ -470,10 +485,12 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       await _timerService.updateTimerDuration(widget.timer, newDuration);
       
       // Hide input field and clear text
-      setState(() {
-        _showTimerInput = false;
-        _timerInputController.clear();
-      });
+      if (mounted) {
+        setState(() {
+          _showTimerInput = false;
+          _timerInputController.clear();
+        });
+      }
       
       // Unfocus the text field
       _focusNode.unfocus();
@@ -495,11 +512,17 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   void _showErrorMessage(String message) {
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
+      SafeNavigation.showDialogSafe(
+        context,
+        AlertDialog(
+          title: const Text('Timer Fehler'),
           content: Text(message),
-          backgroundColor: DesignTokens.errorRed,
-          duration: const Duration(seconds: 3),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     }

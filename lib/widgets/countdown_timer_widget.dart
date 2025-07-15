@@ -54,7 +54,10 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
   @override
   void dispose() {
     _timer?.cancel();
-    _pulseController.dispose();
+    _timer = null;
+    if (mounted) {
+      _pulseController.dispose();
+    }
     super.dispose();
   }
 
@@ -70,6 +73,11 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
 
   void _startTimer() {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (!mounted) {
+        _timer?.cancel();
+        return;
+      }
+      
       _calculateRemainingTime();
       
       if (_remainingTime.inSeconds <= 0) {
@@ -77,7 +85,9 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
         if (!_isCompleted) {
           _isCompleted = true;
           widget.onComplete?.call();
-          _pulseController.repeat(reverse: true);
+          if (mounted) {
+            _pulseController.repeat(reverse: true);
+          }
         }
       }
       
@@ -126,10 +136,15 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            widget.title,
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.title,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
                           const SizedBox(height: 2),
