@@ -101,239 +101,138 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   @override
   void dispose() {
-    _animationController.dispose();
-    _timerInputController.dispose();
-    _focusNode.dispose();
+    if (kDebugMode) {
+      print('🧹 ActiveTimerBar dispose gestartet...');
+    }
+    
+    try {
+      _animationController.dispose();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des AnimationController: $e');
+      }
+    }
+    
+    try {
+      _timerInputController.dispose();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des TextEditingController: $e');
+      }
+    }
+    
+    try {
+      _focusNode.dispose();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des FocusNode: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      print('✅ ActiveTimerBar dispose abgeschlossen');
+    }
+    
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-    final progress = widget.timer.timerProgress;
+    if (!mounted) {
+      return const SizedBox.shrink();
+    }
     
-    return Consumer<PsychedelicThemeService>(
-      builder: (context, psychedelicService, child) {
-        // Safe access to psychedelic service
-        final progressColor = _getProgressBasedColor(progress, psychedelicService);
-        final textColor = _getTextColorForBackground(progressColor);
-        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
-        
-        return AnimatedBuilder(
-          animation: _pulseAnimation,
-          builder: (context, child) {
-            return Transform.scale(
-              scale: _pulseAnimation.value,
-              child: GestureDetector(
-                onTap: () {
-                  if (widget.onTap != null) {
-                    widget.onTap!();
-                  }
-                },
-                child: Container(
-                  margin: const EdgeInsets.all(Spacing.md),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        progressColor.withOpacity(0.15),
-                        progressColor.withOpacity(0.05),
-                      ],
-                    ),
-                    borderRadius: Spacing.borderRadiusLg,
-                    border: Border.all(
-                      color: progressColor.withOpacity(0.3),
-                      width: 1.5,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: progressColor.withOpacity(0.2),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+    try {
+      final theme = Theme.of(context);
+      final isDark = theme.brightness == Brightness.dark;
+      final progress = widget.timer.timerProgress;
+      
+      return Consumer<PsychedelicThemeService>(
+        builder: (context, psychedelicService, child) {
+          if (!mounted) {
+            return const SizedBox.shrink();
+          }
+          
+          // Safe access to psychedelic service
+          final progressColor = _getProgressBasedColor(progress, psychedelicService);
+          final textColor = _getTextColorForBackground(progressColor);
+          final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+          
+          return AnimatedBuilder(
+            animation: _pulseAnimation,
+            builder: (context, child) {
+              if (!mounted) {
+                return const SizedBox.shrink();
+              }
+              
+              return Transform.scale(
+                scale: _pulseAnimation.value,
+                child: GestureDetector(
+                  onTap: () {
+                    if (mounted && widget.onTap != null) {
+                      widget.onTap!();
+                    }
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.all(Spacing.md),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          progressColor.withOpacity(0.15),
+                          progressColor.withOpacity(0.05),
+                        ],
                       ),
-                      if (isPsychedelicMode) ...[
+                      borderRadius: Spacing.borderRadiusLg,
+                      border: Border.all(
+                        color: progressColor.withOpacity(0.3),
+                        width: 1.5,
+                      ),
+                      boxShadow: [
                         BoxShadow(
-                          color: progressColor.withOpacity(0.1),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
+                          color: progressColor.withOpacity(0.2),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
                         ),
+                        if (isPsychedelicMode) ...[
+                          BoxShadow(
+                            color: progressColor.withOpacity(0.1),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ],
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      // Animated progress background
-                      AnimatedBuilder(
-                        animation: _progressAnimation,
-                        builder: (context, child) {
-                          return Container(
-                            height: double.infinity,
-                            decoration: BoxDecoration(
-                              borderRadius: Spacing.borderRadiusLg,
-                              gradient: LinearGradient(
-                                begin: Alignment.centerLeft,
-                                end: Alignment.centerRight,
-                                colors: [
-                                  progressColor.withOpacity(0.3),
-                                  progressColor.withOpacity(0.1),
-                                ],
-                                stops: [0.0, progress],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                      // Content
-                      Padding(
-                        padding: const EdgeInsets.all(Spacing.md),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(Spacing.sm),
-                                  decoration: BoxDecoration(
-                                    color: progressColor.withOpacity(0.2),
-                                    borderRadius: Spacing.borderRadiusMd,
-                                  ),
-                                  child: Icon(
-                                    Icons.timer_rounded,
-                                    color: progressColor,
-                                    size: 20,
-                                  ),
-                                ),
-                                const SizedBox(width: Spacing.sm),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Text(
-                                          widget.timer.substanceName,
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            color: textColor,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                      Text(
-                                        'Timer läuft',
-                                        style: theme.textTheme.bodySmall?.copyWith(
-                                          color: textColor.withOpacity(0.7),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Text(
-                                  widget.timer.formattedRemainingTime,
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                                const SizedBox(width: Spacing.sm),
-                                IconButton(
-                                  onPressed: () {
-                                    if (mounted) {
-                                      setState(() {
-                                        _showTimerInput = !_showTimerInput;
-                                      });
-                                    }
-                                  },
-                                  icon: Icon(
-                                    _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
-                                    color: textColor,
-                                    size: 20,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: Spacing.sm),
-                            // Enhanced progress bar with animation
-                            TweenAnimationBuilder<double>(
-                              duration: const Duration(milliseconds: 800),
-                              tween: Tween(begin: 0.0, end: progress),
-                              builder: (context, animatedProgress, child) {
-                                return Container(
-                                  height: 6,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(3),
-                                    color: progressColor.withOpacity(0.2),
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      // Background progress
-                                      Container(
-                                        height: 6,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(3),
-                                          gradient: LinearGradient(
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                            colors: [
-                                              progressColor,
-                                              progressColor.withOpacity(0.8),
-                                            ],
-                                            stops: [0.0, animatedProgress],
-                                          ),
-                                        ),
-                                      ),
-                                      // Animated shine effect
-                                      if (isPsychedelicMode)
-                                        AnimatedBuilder(
-                                          animation: _animationController,
-                                          builder: (context, child) {
-                                            return Container(
-                                              height: 6,
-                                              decoration: BoxDecoration(
-                                                borderRadius: BorderRadius.circular(3),
-                                                gradient: LinearGradient(
-                                                  begin: Alignment.centerLeft,
-                                                  end: Alignment.centerRight,
-                                                  colors: [
-                                                    Colors.white.withOpacity(0.0),
-                                                    Colors.white.withOpacity(0.3 * _pulseAnimation.value),
-                                                    Colors.white.withOpacity(0.0),
-                                                  ],
-                                                  stops: [
-                                                    (animatedProgress - 0.1).clamp(0.0, 1.0),
-                                                    animatedProgress.clamp(0.0, 1.0),
-                                                    (animatedProgress + 0.1).clamp(0.0, 1.0),
-                                                  ],
-                                                ),
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                    ],
-                                  ),
-                                );
-                              },
-                            ),
-                            
-                            // Timer input field with animation
-                            AnimatedSize(
-                              duration: const Duration(milliseconds: 300),
-                              curve: Curves.easeInOut,
-                              child: _showTimerInput ? _buildTimerInputField(progressColor, textColor) : const SizedBox.shrink(),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                    ),
+                    child: _buildTimerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
                   ),
                 ),
-              ),
-            );
-          },
-        );
-      },
-    );
+              );
+            },
+          );
+        },
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Erstellen der ActiveTimerBar: $e');
+      }
+      
+      // Fallback widget
+      return Container(
+        margin: const EdgeInsets.all(Spacing.md),
+        padding: const EdgeInsets.all(Spacing.md),
+        decoration: BoxDecoration(
+          color: Colors.grey.withOpacity(0.1),
+          borderRadius: Spacing.borderRadiusLg,
+          border: Border.all(color: Colors.grey.withOpacity(0.3)),
+        ),
+        child: const Row(
+          children: [
+            Icon(Icons.timer_rounded, color: Colors.grey),
+            SizedBox(width: Spacing.sm),
+            Text('Timer nicht verfügbar', style: TextStyle(color: Colors.grey)),
+          ],
+        ),
+      );
+    }
   }
 
   Widget _buildTimerInputField(Color progressColor, Color textColor) {
@@ -549,5 +448,179 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         ),
       );
     }
+  }
+
+  Widget _buildTimerContent(ThemeData theme, Color progressColor, Color textColor, bool isPsychedelicMode, double progress) {
+    if (!mounted) {
+      return const SizedBox.shrink();
+    }
+    
+    return Stack(
+      children: [
+        // Animated progress background
+        AnimatedBuilder(
+          animation: _progressAnimation,
+          builder: (context, child) {
+            return Container(
+              height: double.infinity,
+              decoration: BoxDecoration(
+                borderRadius: Spacing.borderRadiusLg,
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    progressColor.withOpacity(0.3),
+                    progressColor.withOpacity(0.1),
+                  ],
+                  stops: [0.0, progress],
+                ),
+              ),
+            );
+          },
+        ),
+        // Content
+        Padding(
+          padding: const EdgeInsets.all(Spacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(Spacing.sm),
+                    decoration: BoxDecoration(
+                      color: progressColor.withOpacity(0.2),
+                      borderRadius: Spacing.borderRadiusMd,
+                    ),
+                    child: Icon(
+                      Icons.timer_rounded,
+                      color: progressColor,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            widget.timer.substanceName,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              color: textColor,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(
+                          'Timer läuft',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: textColor.withOpacity(0.7),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Text(
+                    widget.timer.formattedRemainingTime,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: textColor,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(width: Spacing.sm),
+                  IconButton(
+                    onPressed: () {
+                      if (mounted) {
+                        setState(() {
+                          _showTimerInput = !_showTimerInput;
+                        });
+                      }
+                    },
+                    icon: Icon(
+                      _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
+                      color: textColor,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: Spacing.sm),
+              // Enhanced progress bar with animation
+              TweenAnimationBuilder<double>(
+                duration: const Duration(milliseconds: 800),
+                tween: Tween(begin: 0.0, end: progress),
+                builder: (context, animatedProgress, child) {
+                  return Container(
+                    height: 6,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(3),
+                      color: progressColor.withOpacity(0.2),
+                    ),
+                    child: Stack(
+                      children: [
+                        // Background progress
+                        Container(
+                          height: 6,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            gradient: LinearGradient(
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              colors: [
+                                progressColor,
+                                progressColor.withOpacity(0.8),
+                              ],
+                              stops: [0.0, animatedProgress],
+                            ),
+                          ),
+                        ),
+                        // Animated shine effect
+                        if (isPsychedelicMode)
+                          AnimatedBuilder(
+                            animation: _animationController,
+                            builder: (context, child) {
+                              return Container(
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Colors.white.withOpacity(0.0),
+                                      Colors.white.withOpacity(0.3 * _pulseAnimation.value),
+                                      Colors.white.withOpacity(0.0),
+                                    ],
+                                    stops: [
+                                      (animatedProgress - 0.1).clamp(0.0, 1.0),
+                                      animatedProgress.clamp(0.0, 1.0),
+                                      (animatedProgress + 0.1).clamp(0.0, 1.0),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+              
+              // Timer input field with animation
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                child: _showTimerInput ? _buildTimerInputField(progressColor, textColor) : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
