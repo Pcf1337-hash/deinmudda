@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
+import '../utils/error_handler.dart';
 import 'entry_service.dart';
 import 'substance_service.dart';
 import 'notification_service.dart';
@@ -27,31 +28,24 @@ class TimerService {
   // Initialize timer service
   Future<void> init() async {
     try {
-      if (kDebugMode) {
-        print('⏰ TimerService init gestartet...');
-      }
+      ErrorHandler.logTimer('INIT', 'TimerService Initialisierung gestartet');
       
       _prefs = await SharedPreferences.getInstance();
       await _loadActiveTimers();
       await _restoreTimersFromPrefs();
       _startTimerCheckLoop();
       
-      if (kDebugMode) {
-        print('✅ TimerService erfolgreich initialisiert');
-      }
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService erfolgreich initialisiert');
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler bei TimerService init: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler bei TimerService init: $e');
       
       // Fallback initialization
       try {
         _prefs = await SharedPreferences.getInstance();
         _startTimerCheckLoop();
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Fallback-Initialisierung erfolgreich');
       } catch (fallbackError) {
-        if (kDebugMode) {
-          print('❌ Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
-        }
+        ErrorHandler.logError('TIMER_SERVICE', 'Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
       }
     }
   }
@@ -76,9 +70,7 @@ class TimerService {
         print('✅ ${_activeTimers.length} aktive Timer geladen');
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Laden aktiver Timer: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Laden aktiver Timer: $e');
       
       // Ensure the list is cleared on error
       _activeTimers.clear();
@@ -93,13 +85,9 @@ class TimerService {
         _checkTimers();
       });
       
-      if (kDebugMode) {
-        print('✅ Timer-Check-Loop gestartet');
-      }
+      ErrorHandler.logTimer('CHECK_LOOP', 'Timer-Check-Loop gestartet');
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Starten des Timer-Check-Loops: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Starten des Timer-Check-Loops: $e');
     }
   }
 
@@ -132,13 +120,11 @@ class TimerService {
       // Remove expired timers from active list
       _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
       
-      if (expiredTimers.isNotEmpty && kDebugMode) {
-        print('✅ ${expiredTimers.length} Timer abgelaufen und verarbeitet');
+      if (expiredTimers.isNotEmpty) {
+        ErrorHandler.logTimer('CHECK', '${expiredTimers.length} Timer abgelaufen und verarbeitet');
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Überprüfen der Timer: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Überprüfen der Timer: $e');
     }
   }
 
@@ -268,9 +254,7 @@ class TimerService {
     try {
       return _activeTimers.isNotEmpty ? _activeTimers.first : null;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Abrufen des aktiven Timers: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Abrufen des aktiven Timers: $e');
       return null;
     }
   }
@@ -498,21 +482,15 @@ class TimerService {
   // Dispose timer service
   void dispose() {
     try {
-      if (kDebugMode) {
-        print('🧹 TimerService dispose gestartet...');
-      }
+      ErrorHandler.logDispose('TIMER_SERVICE', 'TimerService dispose gestartet');
       
       _timerCheckTimer?.cancel();
       _timerCheckTimer = null;
       _activeTimers.clear();
       
-      if (kDebugMode) {
-        print('✅ TimerService dispose abgeschlossen');
-      }
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService dispose abgeschlossen');
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Dispose des TimerService: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Dispose des TimerService: $e');
     }
   }
       print('🧹 TimerService dispose gestartet...');

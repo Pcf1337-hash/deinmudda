@@ -6,18 +6,19 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'utils/performance_helper.dart';
 import 'utils/platform_helper.dart';
 import 'utils/error_handler.dart';
+import 'utils/app_initialization_manager.dart';
 
-import 'screens/auth/auth_screen.dart'; // Import the auth screen
+import 'screens/auth/auth_screen.dart';
 import 'screens/main_navigation.dart';
 import 'services/database_service.dart';
 import 'services/entry_service.dart';
 import 'services/substance_service.dart';
 import 'services/settings_service.dart';
 import 'services/quick_button_service.dart';
-import 'services/auth_service.dart'; // Import the auth service
-import 'services/notification_service.dart'; // Import the notification service
-import 'services/timer_service.dart'; // Import the timer service
-import 'services/psychedelic_theme_service.dart'; // Import the psychedelic theme service
+import 'services/auth_service.dart';
+import 'services/notification_service.dart';
+import 'services/timer_service.dart';
+import 'services/psychedelic_theme_service.dart';
 import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
@@ -45,50 +46,6 @@ void main() async {
   // Initialize locale data for German
   await initializeDateFormatting('de_DE', null);
   
-  // Initialize services with proper error handling
-  late DatabaseService databaseService;
-  late NotificationService notificationService;
-  late TimerService timerService;
-  late PsychedelicThemeService psychedelicThemeService;
-  
-  try {
-    // Initialize database
-    ErrorHandler.logStartup('DATABASE', 'Initialisiere Database...');
-    databaseService = DatabaseService();
-    await databaseService.database;
-    ErrorHandler.logSuccess('DATABASE', 'Database erfolgreich initialisiert');
-    
-    // Initialize notification service
-    ErrorHandler.logStartup('NOTIFICATIONS', 'Initialisiere Notifications...');
-    notificationService = NotificationService();
-    await notificationService.init();
-    ErrorHandler.logSuccess('NOTIFICATIONS', 'Notifications erfolgreich initialisiert');
-    
-    // Initialize timer service
-    ErrorHandler.logStartup('TIMER', 'Initialisiere TimerService...');
-    timerService = TimerService();
-    await timerService.init();
-    ErrorHandler.logSuccess('TIMER', 'TimerService erfolgreich initialisiert');
-    
-    // Initialize psychedelic theme service
-    ErrorHandler.logStartup('THEME', 'Initialisiere PsychedelicThemeService...');
-    psychedelicThemeService = PsychedelicThemeService();
-    await psychedelicThemeService.init();
-    ErrorHandler.logSuccess('THEME', 'PsychedelicThemeService erfolgreich initialisiert');
-    
-    ErrorHandler.logSuccess('MAIN', 'Alle Services erfolgreich initialisiert');
-  } catch (e) {
-    ErrorHandler.logError('MAIN', 'Fehler bei Service-Initialisierung: $e');
-    
-    // Create fallback services to prevent white screen
-    databaseService = DatabaseService();
-    notificationService = NotificationService();
-    timerService = TimerService();
-    psychedelicThemeService = PsychedelicThemeService();
-    
-    ErrorHandler.logWarning('MAIN', 'Fallback-Services erstellt');
-  }
-    
   // Set platform-appropriate system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     PlatformHelper.getStatusBarStyle(
@@ -100,52 +57,63 @@ void main() async {
   // Set edge-to-edge display for modern look
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
+  // Initialize app with proper initialization manager
+  final initManager = AppInitializationManager();
+  
   ErrorHandler.logStartup('MAIN', 'Starte KonsumTrackerApp...');
   
   runApp(KonsumTrackerApp(
-    psychedelicThemeService: psychedelicThemeService,
+    initManager: initManager,
   ));
 }
 
 class KonsumTrackerApp extends StatelessWidget {
-  final PsychedelicThemeService psychedelicThemeService;
+  final AppInitializationManager initManager;
   
   const KonsumTrackerApp({
     super.key,
-    required this.psychedelicThemeService,
+    required this.initManager,
   });
 
   @override
   Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: initManager.initialize(),
+      builder: (context, snapshot) {
+        // Show initialization screen while loading
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return MaterialApp(
+            home: InitializationScreen(initManager: initManager),
+            debugShowCheckedModeBanner: false,
+          );
+        }
+        
+        // Handle initialization completion
+        if (snapshot.hasData) {
+          return _buildMainApp();
+        }
+        
+        // Handle initialization errors
+        return MaterialApp(
+          home: InitializationScreen(initManager: initManager),
+          debugShowCheckedModeBanner: false,
+        );
+      },
+    );
+  }
+
+  Widget _buildMainApp() {
     return MultiProvider(
       providers: [
-        Provider<DatabaseService>(
-          create: (_) => DatabaseService(),
-        ),
-        ProxyProvider<DatabaseService, EntryService>(
-          update: (_, db, __) => EntryService(),
-        ),
-        ProxyProvider<DatabaseService, SubstanceService>(
-          update: (_, db, __) => SubstanceService(),
-        ),
-        ProxyProvider<DatabaseService, QuickButtonService>(
-          update: (_, db, __) => QuickButtonService(),
-        ),
-        ChangeNotifierProvider<SettingsService>(
-          create: (_) => SettingsService(),
-        ),
-        ChangeNotifierProvider<PsychedelicThemeService>.value(
-          value: psychedelicThemeService,
-        ),
-        Provider<AuthService>(
-          create: (_) => AuthService(),
-        ),
-        Provider<NotificationService>(
-          create: (_) => NotificationService(),
-        ),
-        Provider<TimerService>(
-          create: (_) => TimerService(),
-        ),
+        Provider<DatabaseService>.value(value: initManager.databaseService),
+        Provider<EntryService>.value(value: initManager.entryService),
+        Provider<SubstanceService>.value(value: initManager.substanceService),
+        Provider<QuickButtonService>.value(value: initManager.quickButtonService),
+        ChangeNotifierProvider<SettingsService>.value(value: initManager.settingsService),
+        ChangeNotifierProvider<PsychedelicThemeService>.value(value: initManager.psychedelicThemeService),
+        Provider<AuthService>.value(value: initManager.authService),
+        Provider<NotificationService>.value(value: initManager.notificationService),
+        Provider<TimerService>.value(value: initManager.timerService),
       ],
       child: Consumer2<SettingsService, PsychedelicThemeService>(
         builder: (context, settingsService, psychedelicService, child) {

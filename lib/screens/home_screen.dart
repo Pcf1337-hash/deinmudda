@@ -17,6 +17,7 @@ import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
 import '../widgets/consistent_fab.dart';
+import '../utils/error_handler.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -898,6 +899,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildStatsLoading();
             } else if (snapshot.hasError) {
+              ErrorHandler.logError('HOME_SCREEN', 'Fehler beim Laden der Statistiken: ${snapshot.error}');
               return _buildStatsError(context, isDark);
             } else {
               final stats = snapshot.data ?? {};
@@ -905,66 +907,71 @@ class _HomeScreenState extends State<HomeScreen> {
               final todayCost = stats['todayCost'] ?? 0.0;
               final todaySubstances = stats['todaySubstances'] ?? 0;
 
-              return Row(
-                children: [
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Einträge',
-                      todayEnt.toString(),
-                      Icons.note_rounded,
-                      DesignTokens.primaryIndigo,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1200),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+              try {
+                return Row(
+                  children: [
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Einträge',
+                        todayEnt.toString(),
+                        Icons.note_rounded,
+                        DesignTokens.primaryIndigo,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1200),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                  Spacing.horizontalSpaceMd,
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Kosten',
-                      '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
-                      Icons.euro_rounded,
-                      DesignTokens.accentEmerald,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1300),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+                    Spacing.horizontalSpaceMd,
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Kosten',
+                        '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                        Icons.euro_rounded,
+                        DesignTokens.accentEmerald,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1300),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                  Spacing.horizontalSpaceMd,
-                  Expanded(
-                    child: _buildStatCard(
-                      context,
-                      isDark,
-                      'Substanzen',
-                      todaySubstances.toString(),
-                      Icons.science_rounded,
-                      DesignTokens.accentCyan,
-                    ).animate().fadeIn(
-                      duration: DesignTokens.animationMedium,
-                      delay: const Duration(milliseconds: 1400),
-                    ).slideY(
-                      begin: 0.3,
-                      end: 0,
-                      duration: DesignTokens.animationMedium,
-                      curve: DesignTokens.curveEaseOut,
+                    Spacing.horizontalSpaceMd,
+                    Expanded(
+                      child: _buildStatCard(
+                        context,
+                        isDark,
+                        'Substanzen',
+                        todaySubstances.toString(),
+                        Icons.science_rounded,
+                        DesignTokens.accentCyan,
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationMedium,
+                        delay: const Duration(milliseconds: 1400),
+                      ).slideY(
+                        begin: 0.3,
+                        end: 0,
+                        duration: DesignTokens.animationMedium,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
                     ),
-                  ),
-                ],
-              );
+                  ],
+                );
+              } catch (e) {
+                ErrorHandler.logError('HOME_SCREEN', 'Fehler beim Rendern der Statistik-Karten: $e');
+                return _buildStatsError(context, isDark);
+              }
             }
           },
         ),
