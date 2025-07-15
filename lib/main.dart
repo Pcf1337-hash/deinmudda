@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'utils/performance_helper.dart';
+import 'utils/platform_helper.dart';
 
 import 'screens/auth/auth_screen.dart'; // Import the auth screen
 import 'screens/main_navigation.dart';
@@ -56,15 +57,16 @@ void main() async {
   final psychedelicThemeService = PsychedelicThemeService();
   await psychedelicThemeService.init();
     
-  // Set system UI overlay style
+  // Set platform-appropriate system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.light,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
+    PlatformHelper.getStatusBarStyle(
+      isDark: true, // Will be updated dynamically in the app
+      isPsychedelicMode: false,
     ),
   );
+  
+  // Set edge-to-edge display for modern look
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   
   runApp(KonsumTrackerApp(
     psychedelicThemeService: psychedelicThemeService,
@@ -116,7 +118,15 @@ class KonsumTrackerApp extends StatelessWidget {
           return MaterialApp(
             title: 'Konsum Tracker Pro',
             debugShowCheckedModeBanner: false,
-            theme: psychedelicService.getTheme(),
+            // Platform-specific theme with page transitions
+            theme: psychedelicService.getTheme().copyWith(
+              pageTransitionsTheme: PageTransitionsTheme(
+                builders: {
+                  TargetPlatform.android: PlatformHelper.getPageTransitionsBuilder(),
+                  TargetPlatform.iOS: PlatformHelper.getPageTransitionsBuilder(),
+                },
+              ),
+            ),
             home: FutureBuilder<bool>(
               future: _shouldShowAuthScreen(context),
               builder: (context, snapshot) {

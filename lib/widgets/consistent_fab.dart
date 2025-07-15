@@ -3,7 +3,9 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../widgets/trippy_fab.dart';
+import '../widgets/platform_adaptive_fab.dart';
 import '../theme/design_tokens.dart';
+import '../utils/platform_helper.dart';
 
 class ConsistentFAB extends StatelessWidget {
   final List<SpeedDialChild> speedDialChildren;
@@ -39,20 +41,38 @@ class ConsistentFAB extends StatelessWidget {
           );
         }
         
-        // Use SpeedDial for normal mode
+        // Use platform-adaptive SpeedDial for normal mode
         return SpeedDial(
           tooltip: 'Aktionen',
           backgroundColor: backgroundColor ?? DesignTokens.accentPink,
           overlayOpacity: 0.4,
           overlayColor: Colors.black,
           spaceBetweenChildren: 12,
-          buttonSize: const Size(56, 56),
-          childrenButtonSize: const Size(48, 48),
+          buttonSize: Size(
+            PlatformHelper.isIOS ? 52 : 56,
+            PlatformHelper.isIOS ? 52 : 56,
+          ),
+          childrenButtonSize: Size(
+            PlatformHelper.isIOS ? 44 : 48,
+            PlatformHelper.isIOS ? 44 : 48,
+          ),
           direction: SpeedDialDirection.up,
           switchLabelPosition: false,
           closeManually: false,
+          elevation: PlatformHelper.getPlatformElevation(),
+          shape: RoundedRectangleBorder(
+            borderRadius: PlatformHelper.getPlatformBorderRadius(),
+          ),
           children: speedDialChildren,
-          child: Icon(mainIcon),
+          child: Icon(
+            mainIcon,
+            size: PlatformHelper.getPlatformIconSize(),
+          ),
+          // Add platform-specific animation curves
+          animationCurve: PlatformHelper.isIOS ? Curves.easeInOut : Curves.fastOutSlowIn,
+          // Add haptic feedback on tap
+          onOpen: () => PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact),
+          onClose: () => PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact),
         );
       },
     );
