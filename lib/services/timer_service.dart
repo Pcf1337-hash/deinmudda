@@ -186,6 +186,12 @@ class TimerService {
     try {
       ErrorHandler.logTimer('START', 'Timer wird für ${entry.substanceName} gestartet');
       
+      // Check for duplicate timer instances
+      if (hasTimerWithId(entry.id)) {
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für ${entry.substanceName} bereits aktiv - stoppe zuerst den vorhandenen');
+        await stopTimer(entry);
+      }
+      
       // Stop any existing active timer first (only one timer allowed)
       if (_activeTimers.isNotEmpty) {
         for (final activeTimer in List.from(_activeTimers)) {
@@ -223,7 +229,8 @@ class TimerService {
         // Save to preferences
         await _saveTimersToPrefs();
         
-        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName}');
+        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName} (${_formatDuration(duration)})');
+        ErrorHandler.logTimer('STATUS', 'Aktive Timer: ${_activeTimers.length}, End-Zeit: ${timerEndTime.toIso8601String()}');
       }
 
       return updatedEntry;
@@ -384,6 +391,18 @@ class TimerService {
     return const Duration(hours: 4);
   }
 
+  // Format duration for display
+  String _formatDuration(Duration duration) {
+    final hours = duration.inHours;
+    final minutes = duration.inMinutes.remainder(60);
+    
+    if (hours > 0) {
+      return '${hours}h ${minutes}min';
+    } else {
+      return '${minutes}min';
+    }
+  }
+
   // Update timer duration for an active timer
   Future<Entry> updateTimerDuration(Entry entry, Duration newDuration) async {
     if (_isDisposed) {
@@ -459,7 +478,12 @@ class TimerService {
     
     try {
       final count = _prefs!.getInt(_activeTimerCountKey) ?? 0;
-      if (count == 0) return;
+      if (count == 0) {
+        ErrorHandler.logTimer('RESTORE', 'Keine Timer in Preferences gefunden');
+        return;
+      }
+
+      ErrorHandler.logTimer('RESTORE', 'Wiederherstellen von $count Timer(n) aus Preferences...');
 
       for (int i = 0; i < count; i++) {
         final id = _prefs!.getString('${_activeTimerKeyPrefix}${i}_id');
@@ -484,20 +508,21 @@ class TimerService {
                 
                 if (!_activeTimers.any((e) => e.id == id)) {
                   _activeTimers.add(entry);
+                  ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer für $substance erfolgreich wiederhergestellt');
                 }
               } catch (e) {
-                if (kDebugMode) {
-                  print('Could not restore timer entry $id: $e');
-                }
+                ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timer-Eintrags $id: $e');
               }
+            } else {
+              ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für $substance bereits abgelaufen - überspringe');
             }
           }
         }
       }
+      
+      ErrorHandler.logTimer('RESTORE', 'Timer-Wiederherstellung abgeschlossen. Aktive Timer: ${_activeTimers.length}');
     } catch (e) {
-      if (kDebugMode) {
-        print('Error restoring timers from prefs: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen der Timer aus Preferences: $e');
     }
   }
 
