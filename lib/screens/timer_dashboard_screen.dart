@@ -9,6 +9,7 @@ import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/trippy_fab.dart';
 import '../widgets/header_bar.dart';
+import '../widgets/consistent_fab.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 
@@ -116,26 +117,19 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
               ],
             ),
           ),
-          floatingActionButton: isPsychedelicMode
-              ? TrippyFAB(
-                  onPressed: _showAddCustomTimerDialog,
-                  icon: Icons.add_rounded,
-                  label: 'Neuer Timer',
-                  isExtended: true,
-                )
-              : FloatingActionButton.extended(
-                  onPressed: _showAddCustomTimerDialog,
-                  backgroundColor: DesignTokens.accentCyan,
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text(
-                    'Neuer Timer',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
+          floatingActionButton: ConsistentFAB(
+            speedDialChildren: [
+              FABHelper.createSpeedDialChild(
+                icon: Icons.add_rounded,
+                label: 'Neuer Timer',
+                backgroundColor: DesignTokens.accentCyan,
+                onTap: _showAddCustomTimerDialog,
+              ),
+            ],
+            mainIcon: Icons.timer_rounded,
+            backgroundColor: DesignTokens.accentCyan,
+            onMainAction: _showAddCustomTimerDialog,
+          ),
         );
       },
     );

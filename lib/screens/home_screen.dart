@@ -16,6 +16,7 @@ import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
+import '../widgets/consistent_fab.dart';
 import 'entry_list_screen.dart';
 import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
@@ -438,82 +439,65 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       floatingActionButton: Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
-          final speedDial = SpeedDial(
-            tooltip: 'Aktionen',
-            backgroundColor: DesignTokens.accentPink,
-            overlayOpacity: 0.4,
-            overlayColor: Colors.black,
-            spaceBetweenChildren: 12,
-            buttonSize: const Size(56, 56),
-            childrenButtonSize: const Size(48, 48),
-            direction: SpeedDialDirection.up,
-            switchLabelPosition: false,
-            closeManually: false,
-            children: [
-              SpeedDialChild(
-                child: const Icon(Icons.add_rounded),
-                label: 'Neuer Eintrag',
-                backgroundColor: DesignTokens.primaryIndigo,
-                foregroundColor: Colors.white,
-                labelStyle: const TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
-                ),
-                labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddEntryScreen(),
-                    ),
-                  ).then((result) {
-                    if (result == true) {
-                      setState(() {}); // Refresh the screen
-                    }
-                  });
-                },
+          final speedDialChildren = <SpeedDialChild>[
+            FABHelper.createSpeedDialChild(
+              icon: Icons.add_rounded,
+              label: 'Neuer Eintrag',
+              backgroundColor: DesignTokens.primaryIndigo,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const AddEntryScreen(),
+                  ),
+                ).then((result) {
+                  if (result == true) {
+                    setState(() {}); // Refresh the screen
+                  }
+                });
+              },
+            ),
+            if (_activeTimer == null)
+              FABHelper.createSpeedDialChild(
+                icon: Icons.timer_rounded,
+                label: 'Timer starten',
+                backgroundColor: DesignTokens.accentPurple,
+                onTap: () => _showTimerStartDialog(context, isDark),
               ),
-              if (_activeTimer == null)
-                SpeedDialChild(
-                  child: const Icon(Icons.timer_rounded),
-                  label: 'Timer starten',
-                  backgroundColor: DesignTokens.accentPurple,
-                  foregroundColor: Colors.white,
-                  labelStyle: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
-                  onTap: () => _showTimerStartDialog(context, isDark),
+            if (_activeTimer != null)
+              FABHelper.createSpeedDialChild(
+                icon: Icons.timer_off_rounded,
+                label: 'Timer stoppen',
+                backgroundColor: DesignTokens.warningYellow,
+                onTap: () => _stopActiveTimer(),
+              ),
+          ];
+
+          final fab = ConsistentFAB(
+            speedDialChildren: speedDialChildren,
+            mainIcon: Icons.speed_rounded,
+            backgroundColor: DesignTokens.accentPink,
+            onMainAction: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AddEntryScreen(),
                 ),
-              if (_activeTimer != null)
-                SpeedDialChild(
-                  child: const Icon(Icons.timer_off_rounded),
-                  label: 'Timer stoppen',
-                  backgroundColor: DesignTokens.warningYellow,
-                  foregroundColor: Colors.white,
-                  labelStyle: const TextStyle(
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                  labelBackgroundColor: DesignTokens.warningYellow.withOpacity(0.9),
-                  onTap: () => _stopActiveTimer(),
-                ),
-            ],
-            child: const Icon(Icons.speed_rounded),
+              ).then((result) {
+                if (result == true) {
+                  setState(() {}); // Refresh the screen
+                }
+              });
+            },
           );
 
           // Only wrap with animation in trippy mode
           if (psychedelicService.isPsychedelicMode) {
             return AnimatedRotationFAB(
               isTrippyMode: true,
-              child: speedDial,
+              child: fab,
             );
           }
           
-          return speedDial;
+          return fab;
         },
       ),
             ), // Close the Container

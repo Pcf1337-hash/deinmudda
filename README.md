@@ -33,7 +33,18 @@
 
 ### **📅 Juli 2025**
 
-1. **🛠️ agent_ui_overflow_fixes - Comprehensive UI Overflow Fixes** (14. Juli 2025)
+1. **🛠️ agent_ui_consistency_details - UI Consistency & Database Fixes** (15. Juli 2025)
+   - **⚡ Lightning Icon Implementation**: Added `DesignTokens.lightningIcon` for consistent branding
+   - **🎯 Unified HeaderBar**: Created shared `HeaderBar` widget for QuickButtonConfig, Timer, Settings, and DosageCalculator screens
+   - **⚡ Lightning Icon Integration**: Added lightning symbols to all header bars with proper centering and visibility
+   - **🌙 Dark Mode Contrast**: Improved contrast for trippy/dark mode with psychedelic color adaptations
+   - **🎨 Consistent FAB Design**: Created `ConsistentFAB` widget extending HomeScreen FAB pattern to all screens
+   - **🛠️ Database Migration Safety**: Added `_addColumnIfNotExists` helper for safe column additions
+   - **⚡ Timestamp Column Fixes**: Implemented `_ensureTimestampColumns` for comprehensive created_at/updated_at checks
+   - **🔧 SQLITE_ERROR[1] Resolution**: Fixed database schema inconsistencies with fallback-safe migrations
+   - **🚀 Shared Widget System**: Extracted common UI patterns into reusable components for better maintainability
+
+2. **🛠️ agent_ui_overflow_fixes - Comprehensive UI Overflow Fixes** (14. Juli 2025)
    - **🎯 Target Screens**: DosageCalculatorScreen, TimerDashboardScreen, SettingsScreen
    - **🔧 Layout Improvements**: Replaced fixed heights with flexible constraints (BoxConstraints)
    - **📱 Responsive Design**: Implemented FittedBox, Flexible, and SingleChildScrollView
@@ -304,10 +315,12 @@ lib/
 │       ├── quick_entry_management_screen.dart # ✅ Verwaltung aller Quick Buttons
 │       ├── quick_button_config_screen.dart # ✅ Konfiguration einzelner Buttons
 │       └── quick_entry_dialog.dart # ✅ Dialog für schnelle Eingabe
-├── widgets/                     # ✅ PHASE 6 - ABGESCHLOSSEN + TRIPPY FAB
+├── widgets/                     # ✅ PHASE 6 - ABGESCHLOSSEN + TRIPPY FAB + CONSISTENCY
 │   ├── glass_card.dart         # ✅ Glasmorphismus-Karten
 │   ├── modern_fab.dart         # ✅ Moderner Floating Action Button
 │   ├── trippy_fab.dart         # ✅ Zentraler FAB für Trippy-Mode mit Neon-Pink-Grau-Gradient
+│   ├── consistent_fab.dart     # ✅ Einheitlicher FAB für alle Screens mit SpeedDial-Integration
+│   ├── header_bar.dart         # ✅ Einheitliche HeaderBar mit Lightning-Icon für alle Screens
 │   ├── animated_entry_card.dart # ✅ Animierte Entry-Darstellung mit Swipe
 │   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken und Pulsing-Animation
 │   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen mit Expand/Collapse-Animation
@@ -332,8 +345,8 @@ lib/
 │   └── quick_entry/            # ✅ Quick Entry Widgets
 │       ├── quick_entry_bar.dart # ✅ Horizontale Scrollbar mit Quick Buttons
 │       └── quick_button_widget.dart # ✅ Einzelner Quick Button mit Animationen
-├── theme/                       # ✅ PHASE 1 - Komplettes Design System
-│   ├── design_tokens.dart      # ✅ Farben, Konstanten, Gradients
+├── theme/                       # ✅ PHASE 1 - Komplettes Design System + UI CONSISTENCY
+│   ├── design_tokens.dart      # ✅ Farben, Konstanten, Gradients + Lightning Icon
 │   ├── modern_theme.dart       # ✅ Light/Dark Theme Implementation
 │   ├── spacing.dart            # ✅ Konsistentes Spacing System
 │   └── typography.dart         # 📋 Typography System
