@@ -138,6 +138,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   @override
   Widget build(BuildContext context) {
+    // Early return if widget is not mounted
     if (!mounted) {
       return const SizedBox.shrink();
     }
@@ -149,6 +150,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       
       return Consumer<PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
+          // Early return if widget is not mounted
           if (!mounted) {
             return const SizedBox.shrink();
           }
@@ -161,6 +163,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           return AnimatedBuilder(
             animation: _pulseAnimation,
             builder: (context, child) {
+              // Early return if widget is not mounted
               if (!mounted) {
                 return const SizedBox.shrink();
               }
