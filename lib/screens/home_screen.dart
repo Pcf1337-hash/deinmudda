@@ -437,70 +437,71 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: Consumer<PsychedelicThemeService>(
-        builder: (context, psychedelicService, child) {
-          final speedDialChildren = <SpeedDialChild>[
-            FABHelper.createSpeedDialChild(
-              icon: Icons.add_rounded,
-              label: 'Neuer Eintrag',
-              backgroundColor: DesignTokens.primaryIndigo,
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const AddEntryScreen(),
-                  ),
-                ).then((result) {
-                  if (result == true) {
-                    setState(() {}); // Refresh the screen
-                  }
-                });
-              },
-            ),
-            if (_activeTimer == null)
-              FABHelper.createSpeedDialChild(
-                icon: Icons.timer_rounded,
-                label: 'Timer starten',
-                backgroundColor: DesignTokens.accentPurple,
-                onTap: () => _showTimerStartDialog(context, isDark),
-              ),
-            if (_activeTimer != null)
-              FABHelper.createSpeedDialChild(
-                icon: Icons.timer_off_rounded,
-                label: 'Timer stoppen',
-                backgroundColor: DesignTokens.warningYellow,
-                onTap: () => _stopActiveTimer(),
-              ),
-          ];
-
-          final fab = ConsistentFAB(
-            speedDialChildren: speedDialChildren,
-            mainIcon: Icons.speed_rounded,
-            backgroundColor: DesignTokens.accentPink,
-            onMainAction: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const AddEntryScreen(),
-                ),
-              ).then((result) {
-                if (result == true) {
-                  setState(() {}); // Refresh the screen
-                }
-              });
-            },
-          );
-
-          // Only wrap with animation in trippy mode
-          if (psychedelicService.isPsychedelicMode) {
-            return AnimatedRotationFAB(
-              isTrippyMode: true,
-              child: fab,
-            );
-          }
-          
-          return fab;
-        },
-      ),
             ), // Close the Container
+          ),
+          floatingActionButton: Consumer<PsychedelicThemeService>(
+            builder: (context, psychedelicService, child) {
+              final speedDialChildren = <SpeedDialChild>[
+                FABHelper.createSpeedDialChild(
+                  icon: Icons.add_rounded,
+                  label: 'Neuer Eintrag',
+                  backgroundColor: DesignTokens.primaryIndigo,
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const AddEntryScreen(),
+                      ),
+                    ).then((result) {
+                      if (result == true) {
+                        setState(() {}); // Refresh the screen
+                      }
+                    });
+                  },
+                ),
+                if (_activeTimer == null)
+                  FABHelper.createSpeedDialChild(
+                    icon: Icons.timer_rounded,
+                    label: 'Timer starten',
+                    backgroundColor: DesignTokens.accentPurple,
+                    onTap: () => _showTimerStartDialog(context, isDark),
+                  ),
+                if (_activeTimer != null)
+                  FABHelper.createSpeedDialChild(
+                    icon: Icons.timer_off_rounded,
+                    label: 'Timer stoppen',
+                    backgroundColor: DesignTokens.warningYellow,
+                    onTap: () => _stopActiveTimer(),
+                  ),
+              ];
+
+              final fab = ConsistentFAB(
+                speedDialChildren: speedDialChildren,
+                mainIcon: Icons.speed_rounded,
+                backgroundColor: DesignTokens.accentPink,
+                onMainAction: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const AddEntryScreen(),
+                    ),
+                  ).then((result) {
+                    if (result == true) {
+                      setState(() {}); // Refresh the screen
+                    }
+                  });
+                },
+              );
+
+              // Only wrap with animation in trippy mode
+              if (psychedelicService.isPsychedelicMode) {
+                return AnimatedRotationFAB(
+                  isTrippyMode: true,
+                  child: fab,
+                );
+              }
+              
+              return fab;
+            },
+          ),
     );
       }, // End of Consumer builder
     );
