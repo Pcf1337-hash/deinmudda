@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 import '../utils/error_handler.dart';
@@ -80,45 +81,6 @@ class PsychedelicThemeService extends ChangeNotifier {
       ErrorHandler.logTheme('LOAD_SETTINGS', 'Theme-Einstellungen geladen: $_currentThemeMode');
     } catch (e) {
       ErrorHandler.logError('THEME_SERVICE', 'Fehler beim Laden der Theme-Einstellungen: $e');
-    }
-  }
-      _isAnimatedBackgroundEnabled = true;
-      _isPulsingButtonsEnabled = true;
-      _glowIntensity = 1.0;
-      _currentSubstance = 'default';
-      
-      // Try to get SharedPreferences again
-      try {
-        _prefs = await SharedPreferences.getInstance();
-      } catch (prefsError) {
-        if (kDebugMode) {
-          print('❌ Fehler beim Laden der SharedPreferences: $prefsError');
-        }
-      }
-    }
-  }
-  
-  Future<void> _loadSettings() async {
-    try {
-      final themeModeIndex = _prefs?.getInt(_themeModeKey) ?? 0;
-      _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
-      _isAnimatedBackgroundEnabled = _prefs?.getBool(_animatedBackgroundKey) ?? true;
-      _isPulsingButtonsEnabled = _prefs?.getBool(_pulsingButtonsKey) ?? true;
-      _glowIntensity = _prefs?.getDouble(_glowIntensityKey) ?? 1.0;
-      _currentSubstance = _prefs?.getString(_currentSubstanceKey) ?? 'default';
-      
-      if (kDebugMode) {
-        print('📱 Theme geladen: $_currentThemeMode, Substanz: $_currentSubstance');
-      }
-      
-      notifyListeners();
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Laden der Theme-Einstellungen: $e');
-      }
-      
-      // Keep defaults and notify listeners anyway
-      notifyListeners();
     }
   }
   
@@ -400,6 +362,7 @@ class PsychedelicThemeService extends ChangeNotifier {
       ),
     );
   }
+  
   ElevatedButtonThemeData _buildStandardElevatedButtonTheme(Color primaryColor) {
     return ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
