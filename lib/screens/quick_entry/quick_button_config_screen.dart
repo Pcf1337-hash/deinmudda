@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../../models/quick_button_config.dart';
 import '../../models/substance.dart';
 import '../../services/quick_button_service.dart';
 import '../../services/substance_service.dart';
+import '../../services/psychedelic_theme_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/modern_fab.dart';
+import '../../widgets/trippy_fab.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
@@ -272,41 +275,57 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final isEdit = widget.existingConfig != null; 
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildAppBar(context, isDark, isEdit),
-          Expanded(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              padding: Spacing.paddingHorizontalMd,
-              child: Column(
-                children: [
-                  if (_errorMessage != null) ...[
-                    Spacing.verticalSpaceMd,
-                    _buildErrorCard(context, isDark),
-                    Spacing.verticalSpaceMd,
-                  ],
-                  if (_isLoading)
-                    _buildLoadingState()
-                  else
-                    _buildForm(context, isDark),
-                  if (isEdit) ...[
-                    Spacing.verticalSpaceLg,
-                    _buildDeleteButton(context, isDark),
-                  ],
-                  const SizedBox(height: 120), // Bottom padding
-                ],
-              ),
+    return Consumer<PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
+        return Scaffold(
+          backgroundColor: isPsychedelicMode 
+            ? DesignTokens.psychedelicBackground 
+            : null,
+          body: Container(
+            decoration: isPsychedelicMode 
+              ? const BoxDecoration(
+                  gradient: DesignTokens.psychedelicBackground1,
+                ) 
+              : null,
+            child: Column(
+              children: [
+                _buildAppBar(context, isDark, isEdit, psychedelicService),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: _scrollController,
+                    padding: Spacing.paddingHorizontalMd,
+                    child: Column(
+                      children: [
+                        if (_errorMessage != null) ...[
+                          Spacing.verticalSpaceMd,
+                          _buildErrorCard(context, isDark, psychedelicService),
+                          Spacing.verticalSpaceMd,
+                        ],
+                        if (_isLoading)
+                          _buildLoadingState(psychedelicService)
+                        else
+                          _buildForm(context, isDark, psychedelicService),
+                        if (isEdit) ...[
+                          Spacing.verticalSpaceLg,
+                          _buildDeleteButton(context, isDark, psychedelicService),
+                        ],
+                        const SizedBox(height: 120), // Bottom padding
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
-      floatingActionButton: _buildSaveButton(context, isDark, isEdit),
+          floatingActionButton: _buildSaveButton(context, isDark, isEdit, psychedelicService),
+        );
+      },
     );
   }
 
-  Widget _buildAppBar(BuildContext context, bool isDark, bool isEdit) {
+  Widget _buildAppBar(BuildContext context, bool isDark, bool isEdit, PsychedelicThemeService psychedelicService) {
     final theme = Theme.of(context);
 
     return Container(
@@ -377,7 +396,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
-  Widget _buildErrorCard(BuildContext context, bool isDark) {
+  Widget _buildErrorCard(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return GlassCard(
       child: Row(
         children: [
@@ -400,7 +419,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(PsychedelicThemeService psychedelicService) {
     return Column(
       children: List.generate(3, (index) {
         return Padding(
@@ -420,7 +439,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
-  Widget _buildForm(BuildContext context, bool isDark) {
+  Widget _buildForm(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Form(
       key: _formKey,
       child: Column(
@@ -807,7 +826,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
-  Widget _buildDeleteButton(BuildContext context, bool isDark) {
+  Widget _buildDeleteButton(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return GlassCard(
       child: ListTile(
         leading: Icon(
@@ -840,11 +859,31 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     );
   }
 
-  Widget _buildSaveButton(BuildContext context, bool isDark, bool isEdit) {
+  Widget _buildSaveButton(BuildContext context, bool isDark, bool isEdit, PsychedelicThemeService psychedelicService) {
     final hasValidData = _selectedSubstance != null &&
         _dosageController.text.isNotEmpty &&
         (_selectedUnit.isNotEmpty || _unitController.text.isNotEmpty) &&
         _priceController.text.isNotEmpty;
+
+    final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+    
+    if (isPsychedelicMode) {
+      return TrippyFAB(
+        onPressed: (_isSaving || !hasValidData) ? null : _saveQuickButton,
+        icon: _isSaving ? null : Icons.save_rounded,
+        label: _isSaving ? 'Speichern...' : (isEdit ? 'Aktualisieren' : 'Erstellen'),
+        isLoading: _isSaving,
+        isExtended: true,
+      ).animate().fadeIn(
+        duration: DesignTokens.animationSlow,
+        delay: const Duration(milliseconds: 1100),
+      ).scale(
+        begin: const Offset(0.8, 0.8),
+        end: const Offset(1.0, 1.0),
+        duration: DesignTokens.animationSlow,
+        curve: DesignTokens.curveBack,
+      );
+    }
 
     return ModernFAB(
       onPressed: (_isSaving || !hasValidData) ? null : _saveQuickButton,

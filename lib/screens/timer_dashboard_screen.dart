@@ -4,8 +4,10 @@ import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../services/entry_service.dart';
 import '../services/timer_service.dart';
+import '../services/psychedelic_theme_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
+import '../widgets/trippy_fab.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 
@@ -84,34 +86,57 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildAppBar(context, isDark),
-          Expanded(
-            child: _isLoading
-                ? _buildLoadingState()
-                : _buildTimersList(context, isDark),
+    return Consumer<PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
+        return Scaffold(
+          backgroundColor: isPsychedelicMode 
+            ? DesignTokens.psychedelicBackground 
+            : null,
+          body: Container(
+            decoration: isPsychedelicMode 
+              ? const BoxDecoration(
+                  gradient: DesignTokens.psychedelicBackground1,
+                ) 
+              : null,
+            child: Column(
+              children: [
+                _buildAppBar(context, isDark, psychedelicService),
+                Expanded(
+                  child: _isLoading
+                      ? _buildLoadingState(psychedelicService)
+                      : _buildTimersList(context, isDark, psychedelicService),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddCustomTimerDialog,
-        backgroundColor: DesignTokens.accentCyan,
-        foregroundColor: Colors.white,
-        icon: const Icon(Icons.add_rounded),
-        label: const Text(
-          'Neuer Timer',
-          style: TextStyle(fontWeight: FontWeight.w600),
-        ),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-      ),
+          floatingActionButton: isPsychedelicMode
+              ? TrippyFAB(
+                  onPressed: _showAddCustomTimerDialog,
+                  icon: Icons.add_rounded,
+                  label: 'Neuer Timer',
+                  isExtended: true,
+                )
+              : FloatingActionButton.extended(
+                  onPressed: _showAddCustomTimerDialog,
+                  backgroundColor: DesignTokens.accentCyan,
+                  foregroundColor: Colors.white,
+                  icon: const Icon(Icons.add_rounded),
+                  label: const Text(
+                    'Neuer Timer',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+        );
+      },
     );
   }
 
-  Widget _buildAppBar(BuildContext context, bool isDark) {
+  Widget _buildAppBar(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     final theme = Theme.of(context);
 
     return Container(
@@ -181,13 +206,13 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
     );
   }
 
-  Widget _buildLoadingState() {
+  Widget _buildLoadingState(PsychedelicThemeService psychedelicService) {
     return const Center(
       child: CircularProgressIndicator(),
     );
   }
 
-  Widget _buildTimersList(BuildContext context, bool isDark) {
+  Widget _buildTimersList(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     if (_activeEntries.isEmpty && _customTimers.isEmpty) {
       return _buildEmptyState(context, isDark);
     }
