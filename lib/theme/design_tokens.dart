@@ -204,6 +204,9 @@ class DesignTokens {
   static const Color categoryHallucinogens = Color(0xFFDB2777);
   static const Color categoryOther = Color(0xFF6B7280);
   
+  // Lightning Icon
+  static const IconData lightningIcon = Icons.flash_on_rounded;
+
   // Animation Durations
   static const Duration animationFast = Duration(milliseconds: 200);
   static const Duration animationMedium = Duration(milliseconds: 300);

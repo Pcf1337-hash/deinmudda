@@ -13,6 +13,7 @@ import '../../services/psychedelic_theme_service.dart' as service;
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/trippy_fab.dart';
+import '../../widgets/header_bar.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
@@ -111,7 +112,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               : null,
             child: Column(
               children: [
-                _buildModernAppBar(context, isDark, psychedelicService),
+                HeaderBar(
+                  title: 'Dosisrechner',
+                  subtitle: 'Sichere Dosierung berechnen',
+                  showBackButton: false,
+                  showLightningIcon: true,
+                ),
                 Expanded(
                   child: _isLoading 
                       ? _buildLoadingState()

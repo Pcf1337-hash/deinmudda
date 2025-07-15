@@ -11,6 +11,7 @@ import '../../services/psychedelic_theme_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/modern_fab.dart';
 import '../../widgets/trippy_fab.dart';
+import '../../widgets/header_bar.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
@@ -291,7 +292,11 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
               : null,
             child: Column(
               children: [
-                _buildAppBar(context, isDark, isEdit, psychedelicService),
+                HeaderBar(
+                  title: isEdit ? 'Quick Button bearbeiten' : 'Quick Button erstellen',
+                  subtitle: 'Schnellzugriff konfigurieren',
+                  showLightningIcon: true,
+                ),
                 Expanded(
                   child: SingleChildScrollView(
                     controller: _scrollController,
@@ -322,77 +327,6 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           floatingActionButton: _buildSaveButton(context, isDark, isEdit, psychedelicService),
         );
       },
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isDark, bool isEdit, PsychedelicThemeService psychedelicService) {
-    final theme = Theme.of(context);
-
-    return Container(
-      height: 120,
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF16213E),
-                  Color(0xFF0F3460),
-                ],
-              )
-            : DesignTokens.primaryGradient,
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Stack(
-            children: [
-              Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                ),
-              ),
-              Align(
-                alignment: Alignment.bottomLeft,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 56.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Text(
-                          isEdit ? 'Quick Button bearbeiten' : 'Quick Button erstellen',
-                          style: theme.textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(Spacing.xs),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: Spacing.borderRadiusSm,
-                        ),
-                        child: Icon(
-                          Icons.flash_on_rounded,
-                          color: Colors.white,
-                          size: Spacing.iconMd,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    ).animate().fadeIn(
-      duration: DesignTokens.animationSlow,
-      delay: const Duration(milliseconds: 200),
     );
   }
 
