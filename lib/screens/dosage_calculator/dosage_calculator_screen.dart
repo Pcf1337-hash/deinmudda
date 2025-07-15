@@ -941,6 +941,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center, // Center the content
+                    mainAxisAlignment: MainAxisAlignment.center, // Center vertically too
                     children: [
                       FittedBox(
                         fit: BoxFit.scaleDown,
@@ -950,24 +951,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             color: substanceColor,
                             fontWeight: FontWeight.w600,
                             fontSize: 11,
+                            letterSpacing: 0.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 6),
+                      const SizedBox(height: 8),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
                           '${recommendedDose.toStringAsFixed(1)} mg',
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: substanceColor,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 16,
+                            letterSpacing: 0.2,
                           ),
                           textAlign: TextAlign.center,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
@@ -975,6 +978,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: isDark ? Colors.white60 : Colors.grey[600],
                             fontSize: 10,
+                            fontStyle: FontStyle.italic,
+                            letterSpacing: 0.1,
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -1901,6 +1906,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center, // Center the content
+              mainAxisAlignment: MainAxisAlignment.center, // Center vertically too
               children: [
                 FittedBox(
                   fit: BoxFit.scaleDown,
@@ -1909,26 +1915,33 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: color,
+                      letterSpacing: 0.5,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
+                const SizedBox(height: 8),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '${dose.toStringAsFixed(1)} mg',
                     style: theme.textTheme.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: color,
+                      letterSpacing: 0.2,
                     ),
                     textAlign: TextAlign.center,
                   ),
                 ),
+                const SizedBox(height: 4),
                 FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
                     '${_selectedIntensity.displayName} Intensität',
-                    style: theme.textTheme.bodyMedium,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontStyle: FontStyle.italic,
+                      letterSpacing: 0.1,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 ),
