@@ -137,23 +137,13 @@ class DatabaseService {
     // Handle database migrations here
     if (oldVersion < 2) {
       // Add timer fields to entries table
-      await db.execute('''
-        ALTER TABLE entries ADD COLUMN timerStartTime TEXT;
-      ''');
-      await db.execute('''
-        ALTER TABLE entries ADD COLUMN timerEndTime TEXT;
-      ''');
-      await db.execute('''
-        ALTER TABLE entries ADD COLUMN timerCompleted INTEGER NOT NULL DEFAULT 0;
-      ''');
-      await db.execute('''
-        ALTER TABLE entries ADD COLUMN timerNotificationSent INTEGER NOT NULL DEFAULT 0;
-      ''');
+      await _addColumnIfNotExists(db, 'entries', 'timerStartTime', 'TEXT');
+      await _addColumnIfNotExists(db, 'entries', 'timerEndTime', 'TEXT');
+      await _addColumnIfNotExists(db, 'entries', 'timerCompleted', 'INTEGER NOT NULL DEFAULT 0');
+      await _addColumnIfNotExists(db, 'entries', 'timerNotificationSent', 'INTEGER NOT NULL DEFAULT 0');
       
       // Add duration field to substances table
-      await db.execute('''
-        ALTER TABLE substances ADD COLUMN duration INTEGER;
-      ''');
+      await _addColumnIfNotExists(db, 'substances', 'duration', 'INTEGER');
       
       // Update existing substances with default durations
       await db.execute('''
@@ -204,6 +194,48 @@ class DatabaseService {
         WHERE name = 'Paracetamol';
       '''); // 4 hours
     }
+    
+    // Migration for any version that doesn't have created_at/updated_at columns
+    await _ensureTimestampColumns(db);
+  }
+
+  /// Safely add a column if it doesn't exist
+  Future<void> _addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
+    try {
+      final result = await db.rawQuery('PRAGMA table_info($tableName)');
+      final columnExists = result.any((column) => column['name'] == columnName);
+      
+      if (!columnExists) {
+        await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
+        print('Added column $columnName to table $tableName');
+      }
+    } catch (e) {
+      print('Error adding column $columnName to table $tableName: $e');
+    }
+  }
+
+  /// Ensure created_at and updated_at columns exist in all tables
+  Future<void> _ensureTimestampColumns(Database db) async {
+    final now = DateTime.now().toIso8601String();
+    
+    // Check and add created_at/updated_at to entries table
+    await _addColumnIfNotExists(db, 'entries', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    await _addColumnIfNotExists(db, 'entries', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    
+    // Check and add created_at/updated_at to substances table
+    await _addColumnIfNotExists(db, 'substances', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    await _addColumnIfNotExists(db, 'substances', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    
+    // Check and add created_at/updated_at to quick_buttons table
+    await _addColumnIfNotExists(db, 'quick_buttons', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    await _addColumnIfNotExists(db, 'quick_buttons', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    
+    // Check and add created_at to dosage_calculator_users table
+    await _addColumnIfNotExists(db, 'dosage_calculator_users', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    
+    // Check and add created_at/updated_at to dosage_calculator_substances table
+    await _addColumnIfNotExists(db, 'dosage_calculator_substances', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    await _addColumnIfNotExists(db, 'dosage_calculator_substances', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
   }
 
   Future<void> _insertDefaultData(Database db) async {

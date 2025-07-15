@@ -5,6 +5,7 @@ import '../services/settings_service.dart';
 import '../services/psychedelic_theme_service.dart' as service;
 import '../services/database_service.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'substance_management_screen.dart';
@@ -26,7 +27,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return Scaffold(
       body: Column(
         children: [
-          _buildAppBar(context, isDark),
+          HeaderBar(
+            title: 'Einstellungen',
+            subtitle: 'App-Konfiguration',
+            showBackButton: false,
+            showLightningIcon: true,
+          ),
           Expanded(
             child: SingleChildScrollView(
               padding: Spacing.paddingHorizontalMd,
@@ -46,59 +52,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isDark) {
-    final theme = Theme.of(context);
-
-    return Container(
-      constraints: const BoxConstraints(
-        minHeight: 100,
-        maxHeight: 160,
-      ),
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF16213E),
-                  Color(0xFF0F3460),
-                ],
-              )
-            : DesignTokens.primaryGradient,
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Einstellungen',
-                  style: theme.textTheme.headlineMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ).animate().fadeIn(
-                  duration: DesignTokens.animationSlow,
-                  delay: const Duration(milliseconds: 200),
-                ).slideX(
-                  begin: -0.3,
-                  end: 0,
-                  duration: DesignTokens.animationSlow,
-                  curve: DesignTokens.curveEaseOut,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

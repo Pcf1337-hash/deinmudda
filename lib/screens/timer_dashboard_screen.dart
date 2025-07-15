@@ -8,6 +8,8 @@ import '../services/psychedelic_theme_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/trippy_fab.dart';
+import '../widgets/header_bar.dart';
+import '../widgets/consistent_fab.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 
@@ -102,7 +104,11 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
               : null,
             child: Column(
               children: [
-                _buildAppBar(context, isDark, psychedelicService),
+                HeaderBar(
+                  title: 'Timer Dashboard',
+                  subtitle: 'Aktive Timer & Countdowns',
+                  showLightningIcon: true,
+                ),
                 Expanded(
                   child: _isLoading
                       ? _buildLoadingState(psychedelicService)
@@ -111,109 +117,21 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
               ],
             ),
           ),
-          floatingActionButton: isPsychedelicMode
-              ? TrippyFAB(
-                  onPressed: _showAddCustomTimerDialog,
-                  icon: Icons.add_rounded,
-                  label: 'Neuer Timer',
-                  isExtended: true,
-                )
-              : FloatingActionButton.extended(
-                  onPressed: _showAddCustomTimerDialog,
-                  backgroundColor: DesignTokens.accentCyan,
-                  foregroundColor: Colors.white,
-                  icon: const Icon(Icons.add_rounded),
-                  label: const Text(
-                    'Neuer Timer',
-                    style: TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-        );
-      },
-    );
-  }
-
-  Widget _buildAppBar(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
-    final theme = Theme.of(context);
-
-    return Container(
-      constraints: const BoxConstraints(
-        minHeight: 80,
-        maxHeight: 120,
-      ),
-      decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF16213E),
-                  Color(0xFF0F3460),
-                ],
-              )
-            : DesignTokens.primaryGradient,
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-              ),
-              const SizedBox(width: 16),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.timer_rounded,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        'Timer Dashboard',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          'Aktive Timer & Countdowns',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.8),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+          floatingActionButton: ConsistentFAB(
+            speedDialChildren: [
+              FABHelper.createSpeedDialChild(
+                icon: Icons.add_rounded,
+                label: 'Neuer Timer',
+                backgroundColor: DesignTokens.accentCyan,
+                onTap: _showAddCustomTimerDialog,
               ),
             ],
+            mainIcon: Icons.timer_rounded,
+            backgroundColor: DesignTokens.accentCyan,
+            onMainAction: _showAddCustomTimerDialog,
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

@@ -13,6 +13,8 @@ import '../../services/psychedelic_theme_service.dart' as service;
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/trippy_fab.dart';
+import '../../widgets/header_bar.dart';
+import '../../widgets/consistent_fab.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
@@ -111,7 +113,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               : null,
             child: Column(
               children: [
-                _buildModernAppBar(context, isDark, psychedelicService),
+                HeaderBar(
+                  title: 'Dosisrechner',
+                  subtitle: 'Sichere Dosierung berechnen',
+                  showBackButton: false,
+                  showLightningIcon: true,
+                ),
                 Expanded(
                   child: _isLoading 
                       ? _buildLoadingState()
@@ -1393,58 +1400,26 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   Widget _buildSpeedDial(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
-    final isPsychedelicMode = psychedelicService.isPsychedelicMode;
-    
-    if (isPsychedelicMode) {
-      // Use TrippyFAB for psychedelic mode
-      return TrippyFAB(
-        onPressed: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
-        icon: Icons.calculate_rounded,
-        label: 'Dosierung berechnen',
-        isExtended: true,
-      );
-    }
-    
-    return SpeedDial(
-      tooltip: 'Aktionen',
+    final speedDialChildren = <SpeedDialChild>[
+      FABHelper.createSpeedDialChild(
+        icon: Icons.add_rounded,
+        label: 'Neuer Eintrag',
+        backgroundColor: DesignTokens.primaryIndigo,
+        onTap: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
+      ),
+      FABHelper.createSpeedDialChild(
+        icon: Icons.timer_rounded,
+        label: 'Timer starten',
+        backgroundColor: DesignTokens.accentPurple,
+        onTap: () => _showTimerDialogWithBlur(context, isDark, psychedelicService),
+      ),
+    ];
+
+    return ConsistentFAB(
+      speedDialChildren: speedDialChildren,
+      mainIcon: Icons.calculate_rounded,
       backgroundColor: DesignTokens.accentPink,
-      overlayOpacity: 0.4,
-      overlayColor: Colors.black,
-      spaceBetweenChildren: 12,
-      buttonSize: const Size(56, 56),
-      childrenButtonSize: const Size(48, 48),
-      direction: SpeedDialDirection.up,
-      switchLabelPosition: false,
-      closeManually: false,
-      children: [
-        SpeedDialChild(
-          child: const Icon(Icons.add_rounded),
-          label: 'Neuer Eintrag',
-          backgroundColor: DesignTokens.primaryIndigo,
-          foregroundColor: Colors.white,
-          labelStyle: const TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-          labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
-          onTap: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
-        ),
-        SpeedDialChild(
-          child: const Icon(Icons.timer_rounded),
-          label: 'Timer starten',
-          backgroundColor: DesignTokens.accentPurple,
-          foregroundColor: Colors.white,
-          labelStyle: const TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-          ),
-          labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
-          onTap: () => _showTimerDialogWithBlur(context, isDark, psychedelicService),
-        ),
-      ],
-      child: const Icon(Icons.speed_rounded),
+      onMainAction: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
     );
   }
 
