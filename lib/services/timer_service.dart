@@ -26,10 +26,34 @@ class TimerService {
 
   // Initialize timer service
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
-    await _loadActiveTimers();
-    await _restoreTimersFromPrefs();
-    _startTimerCheckLoop();
+    try {
+      if (kDebugMode) {
+        print('⏰ TimerService init gestartet...');
+      }
+      
+      _prefs = await SharedPreferences.getInstance();
+      await _loadActiveTimers();
+      await _restoreTimersFromPrefs();
+      _startTimerCheckLoop();
+      
+      if (kDebugMode) {
+        print('✅ TimerService erfolgreich initialisiert');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler bei TimerService init: $e');
+      }
+      
+      // Fallback initialization
+      try {
+        _prefs = await SharedPreferences.getInstance();
+        _startTimerCheckLoop();
+      } catch (fallbackError) {
+        if (kDebugMode) {
+          print('❌ Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
+        }
+      }
+    }
   }
 
   // Load active timers from database
@@ -212,10 +236,28 @@ class TimerService {
   List<Entry> get activeTimers => List.unmodifiable(_activeTimers);
 
   // Get current active timer (since only one is allowed)
-  Entry? get currentActiveTimer => _activeTimers.isNotEmpty ? _activeTimers.first : null;
+  Entry? get currentActiveTimer {
+    try {
+      return _activeTimers.isNotEmpty ? _activeTimers.first : null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Abrufen des aktiven Timers: $e');
+      }
+      return null;
+    }
+  }
 
   // Check if there's any active timer
-  bool get hasAnyActiveTimer => _activeTimers.isNotEmpty;
+  bool get hasAnyActiveTimer {
+    try {
+      return _activeTimers.isNotEmpty;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Prüfen auf aktive Timer: $e');
+      }
+      return false;
+    }
+  }
 
   // Check if entry has active timer
   bool hasActiveTimer(String entryId) {
@@ -427,9 +469,37 @@ class TimerService {
 
   // Dispose timer service
   void dispose() {
-    _timerCheckTimer?.cancel();
-    _timerCheckTimer = null;
-    _activeTimers.clear();
-    _clearTimerPrefs();
+    if (kDebugMode) {
+      print('🧹 TimerService dispose gestartet...');
+    }
+    
+    try {
+      _timerCheckTimer?.cancel();
+      _timerCheckTimer = null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Stoppen des Timer-Checks: $e');
+      }
+    }
+    
+    try {
+      _activeTimers.clear();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Löschen der aktiven Timer: $e');
+      }
+    }
+    
+    try {
+      _clearTimerPrefs();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Löschen der Timer-Präferenzen: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      print('✅ TimerService dispose abgeschlossen');
+    }
   }
 }

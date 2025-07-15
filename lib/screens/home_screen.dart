@@ -66,31 +66,69 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
+    if (kDebugMode) {
+      print('🧹 HomeScreen dispose gestartet...');
+    }
+    
+    try {
+      _scrollController.removeListener(_onScroll);
+      _scrollController.dispose();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Dispose des ScrollController: $e');
+      }
+    }
+    
+    if (kDebugMode) {
+      print('✅ HomeScreen dispose abgeschlossen');
+    }
+    
     super.dispose();
   }
 
   void _onScroll() {
-    final isScrolled = _scrollController.offset > 50;
-    if (isScrolled != _isScrolled) {
-      setState(() {
-        _isScrolled = isScrolled;
-      });
+    if (!mounted) return;
+    
+    try {
+      final isScrolled = _scrollController.offset > 50;
+      if (isScrolled != _isScrolled) {
+        setState(() {
+          _isScrolled = isScrolled;
+        });
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Scroll-Handling: $e');
+      }
     }
   }
 
   Future<void> _loadActiveTimer() async {
     try {
+      if (kDebugMode) {
+        print('🏠 Lade aktiven Timer...');
+      }
+      
       final activeTimer = _timerService.currentActiveTimer;
       if (mounted) {
         setState(() {
           _activeTimer = activeTimer;
         });
+        
+        if (kDebugMode) {
+          print('✅ Active Timer geladen: ${activeTimer?.substanceName ?? 'Keiner'}');
+        }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('Error loading active timer: $e');
+        print('❌ Fehler beim Laden des aktiven Timers: $e');
+      }
+      
+      // Ensure state is reset on error
+      if (mounted) {
+        setState(() {
+          _activeTimer = null;
+        });
       }
     }
   }
@@ -131,13 +169,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final entryWithTimer = await _timerService.startTimer(entry, customDuration: timerDuration);
       
       // Update active timer state using addPostFrameCallback to avoid setState during build
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _activeTimer = entryWithTimer;
-          });
-        }
-      });
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _activeTimer = entryWithTimer;
+            });
+          }
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -174,29 +214,36 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _stopActiveTimer() async {
-    if (_activeTimer == null) return;
+    if (_activeTimer == null || !mounted) return;
     
     try {
-      await _timerService.stopTimer(_activeTimer!);
+      final timerToStop = _activeTimer!;
+      await _timerService.stopTimer(timerToStop);
       
       // Update state using addPostFrameCallback
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _activeTimer = null;
-          });
-        }
-      });
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _activeTimer = null;
+            });
+          }
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Timer für ${_activeTimer!.substanceName} gestoppt'),
+            content: Text('Timer für ${timerToStop.substanceName} gestoppt'),
             backgroundColor: DesignTokens.warningYellow,
           ),
         );
       }
     } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Stoppen des Timers: $e');
+      }
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -296,13 +343,15 @@ class _HomeScreenState extends State<HomeScreen> {
       final timerEntry = await _timerService.startTimer(entry, customDuration: duration);
       
       // Update active timer state
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          setState(() {
-            _activeTimer = timerEntry;
-          });
-        }
-      });
+      if (mounted) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _activeTimer = timerEntry;
+            });
+          }
+        });
+      }
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -365,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Active Timer Bar (only shown when timer is active)
-                    if (_activeTimer != null)
+                    if (_activeTimer != null && mounted)
                       ActiveTimerBar(
                         timer: _activeTimer!,
                         onTap: () => _navigateToTimerDashboard(),

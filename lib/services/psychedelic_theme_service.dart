@@ -30,18 +30,62 @@ class PsychedelicThemeService extends ChangeNotifier {
   String get currentSubstance => _currentSubstance;
   
   Future<void> init() async {
-    _prefs = await SharedPreferences.getInstance();
-    await _loadSettings();
+    try {
+      if (kDebugMode) {
+        print('🎨 PsychedelicThemeService init gestartet...');
+      }
+      
+      _prefs = await SharedPreferences.getInstance();
+      await _loadSettings();
+      
+      if (kDebugMode) {
+        print('✅ PsychedelicThemeService erfolgreich initialisiert');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler bei PsychedelicThemeService init: $e');
+      }
+      
+      // Fallback to defaults
+      _currentThemeMode = ThemeMode.light;
+      _isAnimatedBackgroundEnabled = true;
+      _isPulsingButtonsEnabled = true;
+      _glowIntensity = 1.0;
+      _currentSubstance = 'default';
+      
+      // Try to get SharedPreferences again
+      try {
+        _prefs = await SharedPreferences.getInstance();
+      } catch (prefsError) {
+        if (kDebugMode) {
+          print('❌ Fehler beim Laden der SharedPreferences: $prefsError');
+        }
+      }
+    }
   }
   
   Future<void> _loadSettings() async {
-    final themeModeIndex = _prefs?.getInt(_themeModeKey) ?? 0;
-    _currentThemeMode = ThemeMode.values[themeModeIndex];
-    _isAnimatedBackgroundEnabled = _prefs?.getBool(_animatedBackgroundKey) ?? true;
-    _isPulsingButtonsEnabled = _prefs?.getBool(_pulsingButtonsKey) ?? true;
-    _glowIntensity = _prefs?.getDouble(_glowIntensityKey) ?? 1.0;
-    _currentSubstance = _prefs?.getString(_currentSubstanceKey) ?? 'default';
-    notifyListeners();
+    try {
+      final themeModeIndex = _prefs?.getInt(_themeModeKey) ?? 0;
+      _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
+      _isAnimatedBackgroundEnabled = _prefs?.getBool(_animatedBackgroundKey) ?? true;
+      _isPulsingButtonsEnabled = _prefs?.getBool(_pulsingButtonsKey) ?? true;
+      _glowIntensity = _prefs?.getDouble(_glowIntensityKey) ?? 1.0;
+      _currentSubstance = _prefs?.getString(_currentSubstanceKey) ?? 'default';
+      
+      if (kDebugMode) {
+        print('📱 Theme geladen: $_currentThemeMode, Substanz: $_currentSubstance');
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Laden der Theme-Einstellungen: $e');
+      }
+      
+      // Keep defaults and notify listeners anyway
+      notifyListeners();
+    }
   }
   
   Future<void> setThemeMode(ThemeMode mode) async {

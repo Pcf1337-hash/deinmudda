@@ -21,7 +21,12 @@ import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
 void main() async {
+  // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  
+  if (kDebugMode) {
+    print('🚀 Initialisiere Theme...');
+  }
   
   // Initialize performance optimizations
   PerformanceHelper.init();
@@ -41,21 +46,55 @@ void main() async {
   // Initialize locale data for German
   await initializeDateFormatting('de_DE', null);
   
-  // Initialize database
-  final databaseService = DatabaseService();
-  await databaseService.database;
+  // Initialize services with proper error handling
+  late DatabaseService databaseService;
+  late NotificationService notificationService;
+  late TimerService timerService;
+  late PsychedelicThemeService psychedelicThemeService;
   
-  // Initialize notification service
-  final notificationService = NotificationService();
-  await notificationService.init();
-  
-  // Initialize timer service
-  final timerService = TimerService();
-  await timerService.init();
-  
-  // Initialize psychedelic theme service
-  final psychedelicThemeService = PsychedelicThemeService();
-  await psychedelicThemeService.init();
+  try {
+    // Initialize database
+    if (kDebugMode) {
+      print('🗄️ Initialisiere Database...');
+    }
+    databaseService = DatabaseService();
+    await databaseService.database;
+    
+    // Initialize notification service
+    if (kDebugMode) {
+      print('🔔 Initialisiere Notifications...');
+    }
+    notificationService = NotificationService();
+    await notificationService.init();
+    
+    // Initialize timer service
+    if (kDebugMode) {
+      print('⏰ Initialisiere TimerService...');
+    }
+    timerService = TimerService();
+    await timerService.init();
+    
+    // Initialize psychedelic theme service
+    if (kDebugMode) {
+      print('🎨 Initialisiere PsychedelicThemeService...');
+    }
+    psychedelicThemeService = PsychedelicThemeService();
+    await psychedelicThemeService.init();
+    
+    if (kDebugMode) {
+      print('✅ Alle Services initialisiert');
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Fehler bei Service-Initialisierung: $e');
+    }
+    
+    // Create fallback services to prevent white screen
+    databaseService = DatabaseService();
+    notificationService = NotificationService();
+    timerService = TimerService();
+    psychedelicThemeService = PsychedelicThemeService();
+  }
     
   // Set platform-appropriate system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -67,6 +106,10 @@ void main() async {
   
   // Set edge-to-edge display for modern look
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  
+  if (kDebugMode) {
+    print('🏁 Starte App...');
+  }
   
   runApp(KonsumTrackerApp(
     psychedelicThemeService: psychedelicThemeService,
@@ -131,25 +174,37 @@ class KonsumTrackerApp extends StatelessWidget {
               future: _shouldShowAuthScreen(context),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Scaffold(
-                    body: Center(
-                      child: CircularProgressIndicator(),
+                  return Scaffold(
+                    backgroundColor: psychedelicService.isPsychedelicMode 
+                      ? const Color(0xFF2c2c2c) 
+                      : null,
+                    body: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          CircularProgressIndicator(),
+                          SizedBox(height: 16),
+                          Text(
+                            'Lade Konsum Tracker Pro...',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
                 
-                final showAuth = snapshot.data ?? false;
-                final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
-                
-                // Wrap with psychedelic background if enabled and in trippy mode
-                if (psychedelicService.isPsychedelicMode) {
-                  return PsychedelicBackground(
-                    isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
-                    child: mainContent,
-                  );
+                // Handle errors gracefully
+                if (snapshot.hasError) {
+                  if (kDebugMode) {
+                    print('❌ Fehler beim Laden der Auth-Einstellungen: ${snapshot.error}');
+                  }
+                  // Default to main navigation on error
+                  return _buildMainContent(psychedelicService, false);
                 }
                 
-                return mainContent;
+                final showAuth = snapshot.data ?? false;
+                return _buildMainContent(psychedelicService, showAuth);
               },
             ),
             builder: (context, child) {
@@ -166,11 +221,43 @@ class KonsumTrackerApp extends StatelessWidget {
     );
   }
   
-  // Determine if auth screen should be shown
+  // Helper method to build main content with error handling
+  Widget _buildMainContent(PsychedelicThemeService psychedelicService, bool showAuth) {
+    try {
+      final mainContent = showAuth ? const AuthScreen() : const MainNavigation();
+      
+      // Wrap with psychedelic background if enabled and in trippy mode
+      if (psychedelicService.isPsychedelicMode) {
+        return PsychedelicBackground(
+          isEnabled: psychedelicService.isAnimatedBackgroundEnabled,
+          child: mainContent,
+        );
+      }
+      
+      return mainContent;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Erstellen des Hauptinhalts: $e');
+      }
+      
+      // Fallback to basic navigation
+      return const MainNavigation();
+    }
+  }
+  
+  // Determine if auth screen should be shown with error handling
   Future<bool> _shouldShowAuthScreen(BuildContext context) async {
-    final authService = Provider.of<AuthService>(context, listen: false);
-    final isAppLockEnabled = await authService.isAppLockEnabled();
-    return isAppLockEnabled;
+    try {
+      final authService = Provider.of<AuthService>(context, listen: false);
+      final isAppLockEnabled = await authService.isAppLockEnabled();
+      return isAppLockEnabled;
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ Fehler beim Prüfen der Auth-Einstellungen: $e');
+      }
+      // Default to false (no auth screen) on error
+      return false;
+    }
   }
   
 }
