@@ -33,7 +33,18 @@
 
 ### **📅 Juli 2025**
 
-1. **🎨 agent_ui_polish_finalpass - Visual Design Finalization & UI Polish** (15. Juli 2025)
+1. **🔧 agent_timer_crash_fix - Critical Timer Crash Fixes & Stability** (aktuell)
+   - **🐛 Timer Crash Prevention**: Added `mounted` checks before all setState calls to prevent "setState() called after dispose()" errors
+   - **⏱️ Timer Persistence**: Added SharedPreferences saving/loading for app restart timer recovery
+   - **🛡️ Safe Navigation**: Created SafeNavigation utility to prevent context crashes during screen transitions
+   - **📱 Overflow Protection**: Added FittedBox for long substance names to prevent UI overflow
+   - **🎨 Enhanced Progress Colors**: Improved color transitions (green → cyan → orange → red) based on timer progress
+   - **🌀 Trippy FAB Animation**: Enhanced with 4x rotation and elastic bounce effect in trippy mode
+   - **🔧 Service Reliability**: Enhanced error handling in TimerService and PsychedelicThemeService
+   - **💾 Data Persistence**: Timer state survives app restarts and screen navigation
+   - **🚫 Crash Prevention**: Eliminated setState after dispose crashes through proper lifecycle management
+
+2. **🎨 agent_ui_polish_finalpass - Visual Design Finalization & UI Polish** (15. Juli 2025)
    - **⚡ Enhanced TimerBar Animation**: Added progress-based color transitions (green → cyan → orange → red)
    - **🌈 Luminance-Based Text Color**: Implemented automatic text color adaptation based on background luminance
    - **✨ Animated Progress Effects**: Added animated background fill and shine effects in trippy mode

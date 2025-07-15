@@ -69,20 +69,33 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     return luminance > 0.5 ? Colors.black87 : Colors.white;
   }
 
-  // Helper method to get progress-based color
+  // Helper method to get progress-based color with enhanced color transitions
   Color _getProgressBasedColor(double progress, PsychedelicThemeService? psychedelicService) {
     if (psychedelicService?.isPsychedelicMode == true) {
       final substanceColors = psychedelicService!.getCurrentSubstanceColors();
-      return substanceColors['primary'] ?? DesignTokens.accentCyan;
+      final baseColor = substanceColors['primary'] ?? DesignTokens.accentCyan;
+      
+      // Apply progress-based intensity in trippy mode
+      if (progress < 0.3) {
+        return Color.lerp(baseColor, DesignTokens.successGreen, 0.3)!;
+      } else if (progress < 0.7) {
+        return Color.lerp(baseColor, DesignTokens.warningOrange, 0.3)!;
+      } else {
+        return Color.lerp(baseColor, DesignTokens.errorRed, 0.3)!;
+      }
     }
     
-    // Color transitions based on progress
-    if (progress < 0.3) {
-      return Color.lerp(DesignTokens.successGreen, DesignTokens.accentCyan, progress / 0.3)!;
-    } else if (progress < 0.7) {
-      return Color.lerp(DesignTokens.accentCyan, DesignTokens.warningOrange, (progress - 0.3) / 0.4)!;
+    // Enhanced color transitions based on progress (smooth gradients)
+    if (progress < 0.2) {
+      return DesignTokens.successGreen;
+    } else if (progress < 0.4) {
+      return Color.lerp(DesignTokens.successGreen, DesignTokens.accentCyan, (progress - 0.2) / 0.2)!;
+    } else if (progress < 0.6) {
+      return Color.lerp(DesignTokens.accentCyan, DesignTokens.warningYellow, (progress - 0.4) / 0.2)!;
+    } else if (progress < 0.8) {
+      return Color.lerp(DesignTokens.warningYellow, DesignTokens.warningOrange, (progress - 0.6) / 0.2)!;
     } else {
-      return Color.lerp(DesignTokens.warningOrange, DesignTokens.errorRed, (progress - 0.7) / 0.3)!;
+      return Color.lerp(DesignTokens.warningOrange, DesignTokens.errorRed, (progress - 0.8) / 0.2)!;
     }
   }
 
@@ -499,9 +512,19 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Timer auf ${_formatInputTime(inputText)} angepasst'),
+            content: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Text('Timer auf ${_formatInputTime(inputText)} angepasst'),
+              ],
+            ),
             backgroundColor: DesignTokens.successGreen,
             duration: const Duration(seconds: 2),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
           ),
         );
       }
