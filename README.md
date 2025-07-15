@@ -33,7 +33,17 @@
 
 ### **📅 Juli 2025**
 
-1. **🏠 agent_home_layout_transfer - Home Layout Restructuring & Timer Features** (14. Juli 2025)
+1. **🛠️ agent_ui_overflow_fixes - Comprehensive UI Overflow Fixes** (14. Juli 2025)
+   - **🎯 Target Screens**: DosageCalculatorScreen, TimerDashboardScreen, SettingsScreen
+   - **🔧 Layout Improvements**: Replaced fixed heights with flexible constraints (BoxConstraints)
+   - **📱 Responsive Design**: Implemented FittedBox, Flexible, and SingleChildScrollView
+   - **🔤 Text Overflow Handling**: Added maxLines, ellipsis, and text scaling
+   - **♿ Accessibility Support**: Large font sizes and dynamic text scaling
+   - **📐 Dynamic Sizing**: LayoutBuilder for responsive card layouts
+   - **🧪 Testing**: Comprehensive test suite for overflow scenarios
+   - **📖 Documentation**: Updated README with overflow fix methodology
+
+2. **🏠 agent_home_layout_transfer - Home Layout Restructuring & Timer Features** (14. Juli 2025)
    - **🔀 HomeScreen Layout**: Bestätigte korrekte Komponentenreihenfolge (Quick-Buttons → Timer → Statistiken → Einträge)
    - **🧩 FAB-Funktionen Transfer**: Timer-Start-Funktionalität vom DosageCalculator übernommen
    - **⏱️ Timer-Eingabe Erweiterung**: Erweiterte ActiveTimerBar mit ausklappbarem Eingabefeld
@@ -354,6 +364,16 @@ lib/
 ---
 
 ## 🔧 TECHNISCHE IMPLEMENTIERUNGSDETAILS
+
+### **🛠️ Overflow Fixes & Responsive Design**
+- **Flexible Container Heights**: Replaced fixed heights with BoxConstraints (minHeight, maxHeight)
+- **Text Scaling**: FittedBox implementation for dynamic text sizing with accessibility support
+- **Responsive Layouts**: LayoutBuilder for dynamic content sizing based on screen constraints
+- **Scrollable Content**: SingleChildScrollView with ClampingScrollPhysics for proper scrolling
+- **Text Overflow Prevention**: maxLines, ellipsis, and Flexible widgets for text content
+- **Accessibility Support**: Large font size testing and dynamic text scaling (TextScaler.linear)
+- **Screen Size Adaptation**: Responsive design patterns for various screen sizes (320px to 800px+)
+- **Widget Hierarchy**: Proper Flexible/Expanded usage to prevent layout overflow
 
 ### **Timer-System**
 - **Database-Schema**: Neue Timer-Spalten in `entries` Tabelle und `duration` in `substances` Tabelle

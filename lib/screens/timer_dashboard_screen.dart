@@ -140,7 +140,10 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
     final theme = Theme.of(context);
 
     return Container(
-      height: 90, // Consistent with dosage calculator
+      constraints: const BoxConstraints(
+        minHeight: 80,
+        maxHeight: 120,
+      ),
       decoration: BoxDecoration(
         gradient: isDark
             ? const LinearGradient(
@@ -177,23 +180,31 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
                 ),
               ),
               const SizedBox(width: 16),
-              Expanded(
+              Flexible(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      'Timer Dashboard',
-                      style: theme.textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Timer Dashboard',
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 4),
-                    Text(
-                      'Aktive Timer & Countdowns',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.8),
+                    Flexible(
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Aktive Timer & Countdowns',
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.8),
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -340,80 +351,97 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(24),
-                border: Border.all(
-                  color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade300,
-                  width: 1,
+    return SingleChildScrollView(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                constraints: const BoxConstraints(
+                  minHeight: 200,
+                  maxHeight: 400,
+                ),
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white10 : Colors.grey.shade100,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: isDark ? Colors.white.withOpacity(0.2) : Colors.grey.shade300,
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.timer_outlined,
+                      size: 64,
+                      color: DesignTokens.accentCyan,
+                    ),
+                    const SizedBox(height: 16),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Keine aktiven Timer',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          color: DesignTokens.accentCyan,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Flexible(
+                      child: Text(
+                        'Erstellen Sie einen benutzerdefinierten Timer oder starten Sie einen Timer bei einem Eintrag',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: isDark ? Colors.white70 : Colors.grey.shade600,
+                        ),
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ElevatedButton.icon(
+                            onPressed: _showAddCustomTimerDialog,
+                            icon: const Icon(Icons.add_rounded),
+                            label: const Text('Timer erstellen'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: DesignTokens.accentCyan,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          OutlinedButton.icon(
+                            onPressed: () => Navigator.of(context).pop(),
+                            icon: const Icon(Icons.home_rounded),
+                            label: const Text('Zurück'),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(color: DesignTokens.accentCyan),
+                              foregroundColor: DesignTokens.accentCyan,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.timer_outlined,
-                    size: 64,
-                    color: DesignTokens.accentCyan,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Keine aktiven Timer',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      color: DesignTokens.accentCyan,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Erstellen Sie einen benutzerdefinierten Timer oder starten Sie einen Timer bei einem Eintrag',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: isDark ? Colors.white70 : Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      ElevatedButton.icon(
-                        onPressed: _showAddCustomTimerDialog,
-                        icon: const Icon(Icons.add_rounded),
-                        label: const Text('Timer erstellen'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: DesignTokens.accentCyan,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      OutlinedButton.icon(
-                        onPressed: () => Navigator.of(context).pop(),
-                        icon: const Icon(Icons.home_rounded),
-                        label: const Text('Zurück'),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: DesignTokens.accentCyan),
-                          foregroundColor: DesignTokens.accentCyan,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -487,112 +515,127 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
 
     return AlertDialog(
       backgroundColor: isDark ? const Color(0xFF1A1A2E) : Colors.white,
-      title: Text(
-        'Neuer Timer',
-        style: theme.textTheme.headlineSmall?.copyWith(
-          fontWeight: FontWeight.w600,
+      title: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          'Neuer Timer',
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _titleController,
-            decoration: const InputDecoration(
-              labelText: 'Timer Name',
-              hintText: 'z.B. Pause, Meditation, etc.',
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(
+                labelText: 'Timer Name',
+                hintText: 'z.B. Pause, Meditation, etc.',
+              ),
             ),
-          ),
-          const SizedBox(height: 16),
-          TextFormField(
-            controller: _minutesController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              labelText: 'Minuten',
-              hintText: 'z.B. 64',
-              suffixText: 'min',
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _minutesController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Minuten',
+                hintText: 'z.B. 64',
+                suffixText: 'min',
+              ),
+              onChanged: (value) {
+                _updateDurationFromText();
+              },
             ),
-            onChanged: (value) {
-              _updateDurationFromText();
-            },
-          ),
-          const SizedBox(height: 8),
-          Text(
-            _formatDuration(_duration),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: _selectedColor,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Oder wähle eine Voreinstellung:',
-            style: theme.textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [15, 30, 45, 60, 90, 120].map((minutes) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _duration = Duration(minutes: minutes);
-                    _minutesController.text = minutes.toString();
-                  });
-                },
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: _duration.inMinutes == minutes ? _selectedColor.withOpacity(0.2) : Colors.transparent,
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: _duration.inMinutes == minutes ? _selectedColor : Colors.grey,
-                      width: 1,
-                    ),
-                  ),
-                  child: Text(
-                    '${minutes}min',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: _duration.inMinutes == minutes ? _selectedColor : null,
-                      fontWeight: _duration.inMinutes == minutes ? FontWeight.w600 : null,
-                    ),
-                  ),
+            const SizedBox(height: 8),
+            Flexible(
+              child: Text(
+                _formatDuration(_duration),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: _selectedColor,
+                  fontWeight: FontWeight.w500,
                 ),
-              );
-            }).toList(),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Farbe:',
-            style: theme.textTheme.bodyMedium,
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: _colors.map((color) {
-              return GestureDetector(
-                onTap: () {
-                  setState(() {
-                    _selectedColor = color;
-                  });
-                },
-                child: Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: color,
-                    borderRadius: BorderRadius.circular(16),
-                    border: _selectedColor == color
-                        ? Border.all(color: Colors.white, width: 2)
-                        : null,
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ],
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Oder wähle eine Voreinstellung:',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: [15, 30, 45, 60, 90, 120].map((minutes) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _duration = Duration(minutes: minutes);
+                        _minutesController.text = minutes.toString();
+                      });
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: _duration.inMinutes == minutes ? _selectedColor.withOpacity(0.2) : Colors.transparent,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(
+                          color: _duration.inMinutes == minutes ? _selectedColor : Colors.grey,
+                          width: 1,
+                        ),
+                      ),
+                      child: Text(
+                        '${minutes}min',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _duration.inMinutes == minutes ? _selectedColor : null,
+                          fontWeight: _duration.inMinutes == minutes ? FontWeight.w600 : null,
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Farbe:',
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Wrap(
+                spacing: 8,
+                children: _colors.map((color) {
+                  return GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _selectedColor = color;
+                      });
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        color: color,
+                        borderRadius: BorderRadius.circular(16),
+                        border: _selectedColor == color
+                            ? Border.all(color: Colors.white, width: 2)
+                            : null,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
       ),
       actions: [
         TextButton(

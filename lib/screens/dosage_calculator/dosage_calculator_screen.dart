@@ -153,7 +153,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
     return Container(
-      height: 80, // Reduced from 90 to 80 for less vertical space
+      constraints: const BoxConstraints(
+        minHeight: 80,
+        maxHeight: 120,
+      ),
       decoration: BoxDecoration(
         gradient: isPsychedelicMode
             ? LinearGradient(
@@ -256,30 +259,38 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                     ),
                   ),
                   const SizedBox(width: 12), // Reduced spacing
-                  Expanded(
+                  Flexible(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          'Dosisrechner Pro',
-                          style: theme.textTheme.titleLarge?.copyWith( // Changed from headlineMedium to titleLarge
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            shadows: [
-                              Shadow(
-                                color: DesignTokens.accentCyan.withOpacity(0.5),
-                                blurRadius: 10,
-                              ),
-                            ],
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            'Dosisrechner Pro',
+                            style: theme.textTheme.titleLarge?.copyWith( // Changed from headlineMedium to titleLarge
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                              shadows: [
+                                Shadow(
+                                  color: DesignTokens.accentCyan.withOpacity(0.5),
+                                  blurRadius: 10,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                         const SizedBox(height: 2), // Reduced from 4 to 2
-                        Text(
-                          'Präzise Dosierungsempfehlungen',
-                          style: theme.textTheme.bodySmall?.copyWith( // Changed from bodyMedium to bodySmall
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w500,
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              'Präzise Dosierungsempfehlungen',
+                              style: theme.textTheme.bodySmall?.copyWith( // Changed from bodyMedium to bodySmall
+                                color: Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ),
                       ],
@@ -710,23 +721,29 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           LayoutBuilder(
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 165.0); // Slightly reduced max width
+              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 200.0); // Increased max width for better display
               
-              return Wrap(
-                spacing: 16, // Increased spacing from 12 to 16
-                runSpacing: 16,
-                children: _popularSubstances.take(4).map((substance) {
-                  return RepaintBoundary(
-                    key: ValueKey(substance.name), // Add key for better performance
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 300),
-                      curve: Curves.easeInOut,
-                      width: cardWidth,
-                      height: 240, // Increased height to accommodate more padding
-                      child: _buildEnhancedSubstanceCard(context, substance, isDark),
-                    ),
-                  );
-                }).toList(),
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                child: Wrap(
+                  spacing: 16, // Increased spacing from 12 to 16
+                  runSpacing: 16,
+                  children: _popularSubstances.take(4).map((substance) {
+                    return RepaintBoundary(
+                      key: ValueKey(substance.name), // Add key for better performance
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        width: cardWidth,
+                        constraints: const BoxConstraints(
+                          minHeight: 240, // Minimum height
+                          maxHeight: 280, // Maximum height to prevent overflow
+                        ),
+                        child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                      ),
+                    );
+                  }).toList(),
+                ),
               );
             },
           )
@@ -854,21 +871,27 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 const SizedBox(height: 12),
                 
                 // Substance name with glow effect
-                Text(
-                  substance.name,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: substanceColor,
-                    fontSize: 16,
-                    shadows: [
-                      Shadow(
-                        color: substanceColor.withOpacity(0.5),
-                        blurRadius: 4,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      substance.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: substanceColor,
+                        fontSize: 16,
+                        shadows: [
+                          Shadow(
+                            color: substanceColor.withOpacity(0.5),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
-                    ],
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
                 
                 const SizedBox(height: 8),
