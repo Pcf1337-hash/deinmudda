@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/database_service.dart';
+import '../services/psychedelic_theme_service.dart';
 import '../widgets/glass_card.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
@@ -33,38 +34,54 @@ class _MenuScreenState extends State<MenuScreen> {
     // Determine if we should use animations based on device capabilities
     final useAnimations = PerformanceHelper.shouldEnableAnimations();
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildAppBar(context, isDark),
-          Expanded(
-            child: SingleChildScrollView(
-              padding: Spacing.paddingHorizontalMd,
-              child: Column(
-                children: [
-                  Spacing.verticalSpaceLg,
-                  _buildToolsSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  _buildSecuritySection(context, isDark), // New security section
-                  Spacing.verticalSpaceLg,
-                  _buildAppearanceSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  _buildDataSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  _buildAboutSection(context, isDark),
-                  Spacing.verticalSpaceLg,
-                  _buildCreditsSection(context, isDark),
-                  const SizedBox(height: 120), // Bottom padding
-                ],
-              ),
+    return Consumer<PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
+        return Scaffold(
+          backgroundColor: isPsychedelicMode 
+            ? DesignTokens.psychedelicBackground 
+            : null,
+          body: Container(
+            decoration: isPsychedelicMode 
+              ? const BoxDecoration(
+                  gradient: DesignTokens.psychedelicBackground1,
+                ) 
+              : null,
+            child: Column(
+              children: [
+                _buildAppBar(context, isDark, psychedelicService),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: Spacing.paddingHorizontalMd,
+                    child: Column(
+                      children: [
+                        Spacing.verticalSpaceLg,
+                        _buildToolsSection(context, isDark, psychedelicService),
+                        Spacing.verticalSpaceLg,
+                        _buildSecuritySection(context, isDark, psychedelicService), // New security section
+                        Spacing.verticalSpaceLg,
+                        _buildAppearanceSection(context, isDark, psychedelicService),
+                        Spacing.verticalSpaceLg,
+                        _buildDataSection(context, isDark, psychedelicService),
+                        Spacing.verticalSpaceLg,
+                        _buildAboutSection(context, isDark, psychedelicService),
+                        Spacing.verticalSpaceLg,
+                        _buildCreditsSection(context, isDark, psychedelicService),
+                        const SizedBox(height: 120), // Bottom padding
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildAppBar(BuildContext context, bool isDark) {
+  Widget _buildAppBar(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     final theme = Theme.of(context);
 
     return Container(
@@ -134,7 +151,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildToolsSection(BuildContext context, bool isDark) {
+  Widget _buildToolsSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -221,7 +238,7 @@ class _MenuScreenState extends State<MenuScreen> {
   }
 
   // New security section
-  Widget _buildSecuritySection(BuildContext context, bool isDark) {
+  Widget _buildSecuritySection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -274,7 +291,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildAppearanceSection(BuildContext context, bool isDark) {
+  Widget _buildAppearanceSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -325,7 +342,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildDataSection(BuildContext context, bool isDark) {
+  Widget _buildDataSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -389,7 +406,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildAboutSection(BuildContext context, bool isDark) {
+  Widget _buildAboutSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -447,7 +464,7 @@ class _MenuScreenState extends State<MenuScreen> {
     );
   }
 
-  Widget _buildCreditsSection(BuildContext context, bool isDark) {
+  Widget _buildCreditsSection(BuildContext context, bool isDark, PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

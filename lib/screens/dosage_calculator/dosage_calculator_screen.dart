@@ -12,6 +12,7 @@ import '../../services/dosage_calculator_service.dart';
 import '../../services/psychedelic_theme_service.dart' as service;
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
+import '../../widgets/trippy_fab.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
 import '../../theme/design_tokens.dart';
@@ -94,72 +95,102 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Scaffold(
-      body: Column(
-        children: [
-          _buildModernAppBar(context, isDark),
-          Expanded(
-            child: _isLoading 
-                ? _buildLoadingState()
-                : _errorMessage != null
-                    ? _buildErrorCard(context, isDark)
-                    : SingleChildScrollView(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 16),
-                            _buildUserProfileSection(context, isDark),
-                            const SizedBox(height: 24),
-                            _buildSearchSection(context, isDark),
-                            const SizedBox(height: 24),
-                            _buildPopularSubstancesSection(context, isDark),
-                            const SizedBox(height: 24),
-                            _buildSafetyWarningSection(context, isDark),
-                            if (_recentCalculations.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              _buildRecentCalculationsSection(context, isDark),
-                            ],
-                            const SizedBox(height: 120), // Space for FAB
-                          ],
-                        ),
-                      ),
+    return Consumer<service.PsychedelicThemeService>(
+      builder: (context, psychedelicService, child) {
+        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
+        return Scaffold(
+          backgroundColor: isPsychedelicMode 
+            ? DesignTokens.psychedelicBackground 
+            : null,
+          body: Container(
+            decoration: isPsychedelicMode 
+              ? const BoxDecoration(
+                  gradient: DesignTokens.psychedelicBackground1,
+                ) 
+              : null,
+            child: Column(
+              children: [
+                _buildModernAppBar(context, isDark, psychedelicService),
+                Expanded(
+                  child: _isLoading 
+                      ? _buildLoadingState()
+                      : _errorMessage != null
+                          ? _buildErrorCard(context, isDark, psychedelicService)
+                          : SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: Column(
+                                children: [
+                                  const SizedBox(height: 16),
+                                  _buildUserProfileSection(context, isDark, psychedelicService),
+                                  const SizedBox(height: 24),
+                                  _buildSearchSection(context, isDark, psychedelicService),
+                                  const SizedBox(height: 24),
+                                  _buildPopularSubstancesSection(context, isDark, psychedelicService),
+                                  const SizedBox(height: 24),
+                                  _buildSafetyWarningSection(context, isDark, psychedelicService),
+                                  if (_recentCalculations.isNotEmpty) ...[
+                                    const SizedBox(height: 24),
+                                    _buildRecentCalculationsSection(context, isDark, psychedelicService),
+                                  ],
+                                  const SizedBox(height: 120), // Space for FAB
+                                ],
+                              ),
+                            ),
+                ),
+              ],
+            ),
           ),
-        ],
-      ),
-      floatingActionButton: _buildSpeedDial(context, isDark),
+          floatingActionButton: _buildSpeedDial(context, isDark, psychedelicService),
+        );
+      },
     );
   }
 
-  Widget _buildModernAppBar(BuildContext context, bool isDark) {
+  Widget _buildModernAppBar(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     final theme = Theme.of(context);
+    final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+    final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
     return Container(
       height: 80, // Reduced from 90 to 80 for less vertical space
       decoration: BoxDecoration(
-        gradient: isDark
-            ? const LinearGradient(
+        gradient: isPsychedelicMode
+            ? LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  Color(0xFF1A1A2E),
-                  Color(0xFF16213E),
-                  Color(0xFF0F3460),
-                  Color(0xFF533483),
+                  DesignTokens.psychedelicBackground,
+                  substanceColors['primary']!.withOpacity(0.3),
+                  DesignTokens.psychedelicBackground,
                 ],
               )
-            : LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  DesignTokens.accentCyan,
-                  DesignTokens.accentPurple,
-                  DesignTokens.accentPink,
-                ],
-              ),
+            : isDark
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0xFF1A1A2E),
+                      Color(0xFF16213E),
+                      Color(0xFF0F3460),
+                      Color(0xFF533483),
+                    ],
+                  )
+                : LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      DesignTokens.accentCyan,
+                      DesignTokens.accentPurple,
+                      DesignTokens.accentPink,
+                    ],
+                  ),
         boxShadow: [
           BoxShadow(
-            color: DesignTokens.accentCyan.withOpacity(0.3),
-            blurRadius: 20,
+            color: isPsychedelicMode
+                ? substanceColors['glow']!.withOpacity(0.5)
+                : DesignTokens.accentCyan.withOpacity(0.3),
+            blurRadius: isPsychedelicMode ? 30 : 20,
             offset: const Offset(0, 10),
           ),
         ],
@@ -383,7 +414,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     }
   }
 
-  Widget _buildErrorCard(BuildContext context, bool isDark) {
+  Widget _buildErrorCard(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return Padding(
       padding: Spacing.paddingMd,
       child: GlassCard(
@@ -431,7 +462,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildUserProfileSection(BuildContext context, bool isDark) {
+  Widget _buildUserProfileSection(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -558,7 +589,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildSearchSection(BuildContext context, bool isDark) {
+  Widget _buildSearchSection(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -655,7 +686,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildPopularSubstancesSection(BuildContext context, bool isDark) {
+  Widget _buildPopularSubstancesSection(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -1113,7 +1144,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     return Icons.science_rounded;
   }
 
-  Widget _buildSafetyWarningSection(BuildContext context, bool isDark) {
+  Widget _buildSafetyWarningSection(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return GlassCard(
       borderColor: DesignTokens.errorRed.withOpacity(0.3),
       child: Column(
@@ -1192,7 +1223,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildRecentCalculationsSection(BuildContext context, bool isDark) {
+  Widget _buildRecentCalculationsSection(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1338,7 +1369,19 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  Widget _buildSpeedDial(BuildContext context, bool isDark) {
+  Widget _buildSpeedDial(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
+    final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+    
+    if (isPsychedelicMode) {
+      // Use TrippyFAB for psychedelic mode
+      return TrippyFAB(
+        onPressed: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
+        icon: Icons.calculate_rounded,
+        label: 'Dosierung berechnen',
+        isExtended: true,
+      );
+    }
+    
     return SpeedDial(
       tooltip: 'Aktionen',
       backgroundColor: DesignTokens.accentPink,
@@ -1362,7 +1405,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             color: Colors.white,
           ),
           labelBackgroundColor: DesignTokens.primaryIndigo.withOpacity(0.9),
-          onTap: () => _showAddEntryDialogWithBlur(context, isDark),
+          onTap: () => _showAddEntryDialogWithBlur(context, isDark, psychedelicService),
         ),
         SpeedDialChild(
           child: const Icon(Icons.timer_rounded),
@@ -1375,14 +1418,14 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             color: Colors.white,
           ),
           labelBackgroundColor: DesignTokens.accentPurple.withOpacity(0.9),
-          onTap: () => _showTimerDialogWithBlur(context, isDark),
+          onTap: () => _showTimerDialogWithBlur(context, isDark, psychedelicService),
         ),
       ],
       child: const Icon(Icons.speed_rounded),
     );
   }
 
-  void _showAddEntryDialogWithBlur(BuildContext context, bool isDark) {
+  void _showAddEntryDialogWithBlur(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -1402,7 +1445,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     );
   }
 
-  void _showTimerDialogWithBlur(BuildContext context, bool isDark) {
+  void _showTimerDialogWithBlur(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

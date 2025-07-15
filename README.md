@@ -222,6 +222,25 @@ Erwachsene für verantwortungsvolles Substanz-Monitoring in medizinischen/therap
 - **Stabile Render-Performance** - Optimierte Widget-Struktur ohne UI-Overflow
 - **Visuelle Hierarchie** - Klare Informationsstruktur durch Kontraste
 
+### **🔮 Trippy-Theme-System**
+- **PsychedelicThemeService** - Zentraler Service für Trippy-Mode-Aktivierung mit `isPsychedelicMode`
+- **Adaptive Farbschemata** - Automatische Anpassung aller UI-Elemente an Trippy-Mode
+- **Substanz-spezifische Visualisierung** - Dynamische Farbpalette je nach aktueller Substanz
+- **Animierte Hintergründe** - Psychedelische Gradients und Partikel-Effekte
+- **Glow-Intensität-Steuerung** - Anpassbare Leuchteffekte für verschiedene Zustände
+- **Pulsing-Widgets** - Rhythmische Animationen für immersive Erfahrung
+- **Shader-basierte Effekte** - GPU-accelerierte Visualisierungen für optimale Performance
+- **Responsive Activation** - Automatische Aktivierung auf allen relevanten Screens
+
+### **🎯 Zentraler FAB-Stil**
+- **TrippyFAB-Widget** - Einheitliches FAB-Design für alle Screens
+- **Neon-Pink zu Grau Gradient** - Charakteristische Farbverläufe von außen nach innen
+- **Multi-Layer-Glow-Effekte** - Cyan, Pink und weiße Leuchteffekte mit verschiedenen Intensitäten
+- **Kontinuierliche Animationen** - Skalierung, Rotation und Pulsing-Effekte
+- **Adaptive Darstellung** - Automatischer Wechsel zwischen Standard- und Trippy-Mode
+- **Substanz-spezifische Farbakzente** - Farbanpassung basierend auf aktueller Substanz
+- **Performance-optimiert** - Efficient GPU-Rendering mit minimal CPU-Load
+
 ---
 
 ## 🏗️ VOLLSTÄNDIGE ARCHITEKTUR
@@ -275,9 +294,10 @@ lib/
 │       ├── quick_entry_management_screen.dart # ✅ Verwaltung aller Quick Buttons
 │       ├── quick_button_config_screen.dart # ✅ Konfiguration einzelner Buttons
 │       └── quick_entry_dialog.dart # ✅ Dialog für schnelle Eingabe
-├── widgets/                     # ✅ PHASE 6 - ABGESCHLOSSEN
+├── widgets/                     # ✅ PHASE 6 - ABGESCHLOSSEN + TRIPPY FAB
 │   ├── glass_card.dart         # ✅ Glasmorphismus-Karten
 │   ├── modern_fab.dart         # ✅ Moderner Floating Action Button
+│   ├── trippy_fab.dart         # ✅ Zentraler FAB für Trippy-Mode mit Neon-Pink-Grau-Gradient
 │   ├── animated_entry_card.dart # ✅ Animierte Entry-Darstellung mit Swipe
 │   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken und Pulsing-Animation
 │   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen mit Expand/Collapse-Animation

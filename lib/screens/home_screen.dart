@@ -343,11 +343,22 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Consumer<PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
+        final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
         return Scaffold(
-          body: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
+          backgroundColor: isPsychedelicMode 
+            ? DesignTokens.psychedelicBackground 
+            : null,
+          body: Container(
+            decoration: isPsychedelicMode 
+              ? const BoxDecoration(
+                  gradient: DesignTokens.psychedelicBackground1,
+                ) 
+              : null,
+            child: CustomScrollView(
+              controller: _scrollController,
+              slivers: [
+                _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
               SliverPadding(
                 padding: Spacing.paddingHorizontalMd,
                 sliver: SliverList(
@@ -505,6 +516,7 @@ class _HomeScreenState extends State<HomeScreen> {
           return speedDial;
         },
       ),
+            ), // Close the Container
     );
       }, // End of Consumer builder
     );
