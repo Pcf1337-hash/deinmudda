@@ -7,6 +7,7 @@ import 'utils/performance_helper.dart';
 import 'utils/platform_helper.dart';
 import 'utils/error_handler.dart';
 import 'utils/app_initialization_manager.dart';
+import 'utils/impeller_helper.dart';
 
 import 'screens/auth/auth_screen.dart';
 import 'screens/main_navigation.dart';
@@ -31,6 +32,9 @@ void main() async {
   // Initialize performance optimizations
   PerformanceHelper.init();
   
+  // Initialize Impeller detection for rendering optimization
+  await ImpellerHelper.initialize();
+  
   // Enable performance optimization in release mode
   if (kReleaseMode) {
     // Disable debug prints
@@ -41,6 +45,12 @@ void main() async {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
+  } else {
+    // In debug mode, ensure debug prints are enabled
+    debugPrint = (String? message, {int? wrapWidth}) => print(message);
+    
+    // Add additional debug logging for timer issues
+    ErrorHandler.logStartup('MAIN', 'Debug-Modus aktiviert - Vollständige Logs verfügbar');
   }
   
   // Initialize locale data for German

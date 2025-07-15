@@ -20,6 +20,8 @@ class TimerService {
   Timer? _timerCheckTimer;
   final List<Entry> _activeTimers = [];
   SharedPreferences? _prefs;
+  bool _isDisposed = false;
+  bool _isInitialized = false;
 
   // Timer persistence keys
   static const String _activeTimerCountKey = 'active_timer_count';
@@ -27,6 +29,8 @@ class TimerService {
 
   // Initialize timer service
   Future<void> init() async {
+    if (_isInitialized || _isDisposed) return;
+    
     try {
       ErrorHandler.logTimer('INIT', 'TimerService Initialisierung gestartet');
       
@@ -35,6 +39,7 @@ class TimerService {
       await _restoreTimersFromPrefs();
       _startTimerCheckLoop();
       
+      _isInitialized = true;
       ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler bei TimerService init: $e');
@@ -43,6 +48,7 @@ class TimerService {
       try {
         _prefs = await SharedPreferences.getInstance();
         _startTimerCheckLoop();
+        _isInitialized = true;
         ErrorHandler.logWarning('TIMER_SERVICE', 'Fallback-Initialisierung erfolgreich');
       } catch (fallbackError) {
         ErrorHandler.logError('TIMER_SERVICE', 'Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
@@ -79,10 +85,14 @@ class TimerService {
 
   // Start timer check loop with better error handling
   void _startTimerCheckLoop() {
+    if (_isDisposed) return;
+    
     try {
       _timerCheckTimer?.cancel();
       _timerCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
-        _checkTimers();
+        if (!_isDisposed) {
+          _checkTimers();
+        }
       });
       
       ErrorHandler.logTimer('CHECK_LOOP', 'Timer-Check-Loop gestartet');
@@ -93,8 +103,8 @@ class TimerService {
 
   // Check for expired timers with improved error handling
   Future<void> _checkTimers() async {
-    if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
-      return; // Timer was cancelled, don't proceed
+    if (_isDisposed || _timerCheckTimer == null || !_timerCheckTimer!.isActive) {
+      return; // Service was disposed or timer was cancelled, don't proceed
     }
     
     try {
@@ -114,11 +124,15 @@ class TimerService {
       }
 
       for (final entry in expiredTimers) {
-        await _handleTimerExpired(entry);
+        if (!_isDisposed) {
+          await _handleTimerExpired(entry);
+        }
       }
 
       // Remove expired timers from active list
-      _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
+      if (!_isDisposed) {
+        _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
+      }
       
       if (expiredTimers.isNotEmpty) {
         ErrorHandler.logTimer('CHECK', '${expiredTimers.length} Timer abgelaufen und verarbeitet');
@@ -130,11 +144,13 @@ class TimerService {
 
   // Handle timer expiration
   Future<void> _handleTimerExpired(Entry entry) async {
-    if (_timerCheckTimer == null || !_timerCheckTimer!.isActive) {
-      return; // Timer was cancelled, don't proceed
+    if (_isDisposed || _timerCheckTimer == null || !_timerCheckTimer!.isActive) {
+      return; // Service was disposed or timer was cancelled, don't proceed
     }
     
     try {
+      ErrorHandler.logTimer('EXPIRED', 'Timer für ${entry.substanceName} abgelaufen');
+      
       // Send notification
       await _notificationService.showTimerExpiredNotification(
         substanceName: entry.substanceName,
@@ -147,20 +163,29 @@ class TimerService {
         timerCompleted: true,
       );
 
-      await _entryService.updateEntry(updatedEntry);
-      
-      // Save to preferences
-      await _saveTimersToPrefs();
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error handling timer expiration: $e');
+      if (!_isDisposed) {
+        await _entryService.updateEntry(updatedEntry);
+        
+        // Save to preferences
+        await _saveTimersToPrefs();
+        
+        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer-Ablauf erfolgreich verarbeitet');
       }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Verarbeiten des Timer-Ablaufs: $e');
     }
   }
 
   // Start timer for entry
   Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
+    if (_isDisposed) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu starten, aber Service ist disposed');
+      return entry;
+    }
+    
     try {
+      ErrorHandler.logTimer('START', 'Timer wird für ${entry.substanceName} gestartet');
+      
       // Stop any existing active timer first (only one timer allowed)
       if (_activeTimers.isNotEmpty) {
         for (final activeTimer in List.from(_activeTimers)) {
@@ -189,43 +214,54 @@ class TimerService {
         timerNotificationSent: false,
       );
 
-      await _entryService.updateEntry(updatedEntry);
+      if (!_isDisposed) {
+        await _entryService.updateEntry(updatedEntry);
 
-      // Add to active timers
-      _activeTimers.add(updatedEntry);
+        // Add to active timers
+        _activeTimers.add(updatedEntry);
 
-      // Save to preferences
-      await _saveTimersToPrefs();
+        // Save to preferences
+        await _saveTimersToPrefs();
+        
+        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName}');
+      }
 
       return updatedEntry;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error starting timer: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Starten des Timers: $e');
       return entry;
     }
   }
 
   // Stop timer for entry
   Future<Entry> stopTimer(Entry entry) async {
+    if (_isDisposed) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu stoppen, aber Service ist disposed');
+      return entry;
+    }
+    
     try {
+      ErrorHandler.logTimer('STOP', 'Timer wird für ${entry.substanceName} gestoppt');
+      
       final updatedEntry = entry.copyWith(
         timerCompleted: true,
       );
 
-      await _entryService.updateEntry(updatedEntry);
+      if (!_isDisposed) {
+        await _entryService.updateEntry(updatedEntry);
 
-      // Remove from active timers
-      _activeTimers.removeWhere((e) => e.id == entry.id);
+        // Remove from active timers
+        _activeTimers.removeWhere((e) => e.id == entry.id);
 
-      // Save to preferences
-      await _saveTimersToPrefs();
+        // Save to preferences
+        await _saveTimersToPrefs();
+        
+        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestoppt für ${entry.substanceName}');
+      }
 
       return updatedEntry;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error stopping timer: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Stoppen des Timers: $e');
       return entry;
     }
   }
@@ -261,12 +297,12 @@ class TimerService {
 
   // Check if there's any active timer
   bool get hasAnyActiveTimer {
+    if (_isDisposed) return false;
+    
     try {
       return _activeTimers.isNotEmpty;
     } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Prüfen auf aktive Timer: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Prüfen auf aktive Timer: $e');
       return false;
     }
   }
@@ -350,7 +386,14 @@ class TimerService {
 
   // Update timer duration for an active timer
   Future<Entry> updateTimerDuration(Entry entry, Duration newDuration) async {
+    if (_isDisposed) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu aktualisieren, aber Service ist disposed');
+      return entry;
+    }
+    
     try {
+      ErrorHandler.logTimer('UPDATE', 'Timer-Dauer wird für ${entry.substanceName} aktualisiert');
+      
       if (!_activeTimers.any((e) => e.id == entry.id)) {
         throw StateError('Timer not found in active timers');
       }
@@ -365,22 +408,24 @@ class TimerService {
         timerNotificationSent: false,
       );
 
-      await _entryService.updateEntry(updatedEntry);
+      if (!_isDisposed) {
+        await _entryService.updateEntry(updatedEntry);
 
-      // Update the active timer in the list
-      final index = _activeTimers.indexWhere((e) => e.id == entry.id);
-      if (index != -1) {
-        _activeTimers[index] = updatedEntry;
+        // Update the active timer in the list
+        final index = _activeTimers.indexWhere((e) => e.id == entry.id);
+        if (index != -1) {
+          _activeTimers[index] = updatedEntry;
+        }
+
+        // Save to preferences
+        await _saveTimersToPrefs();
+        
+        ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer-Dauer erfolgreich aktualisiert für ${entry.substanceName}');
       }
-
-      // Save to preferences
-      await _saveTimersToPrefs();
 
       return updatedEntry;
     } catch (e) {
-      if (kDebugMode) {
-        print('Error updating timer duration: $e');
-      }
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Aktualisieren der Timer-Dauer: $e');
       return entry;
     }
   }
@@ -481,6 +526,9 @@ class TimerService {
 
   // Dispose timer service
   void dispose() {
+    if (_isDisposed) return;
+    _isDisposed = true;
+    
     try {
       ErrorHandler.logDispose('TIMER_SERVICE', 'TimerService dispose gestartet');
       
@@ -488,41 +536,14 @@ class TimerService {
       _timerCheckTimer = null;
       _activeTimers.clear();
       
+      // Clear timer preferences
+      _clearTimerPrefs();
+      
+      _isInitialized = false;
+      
       ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService dispose abgeschlossen');
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Dispose des TimerService: $e');
-    }
-  }
-      print('🧹 TimerService dispose gestartet...');
-    }
-    
-    try {
-      _timerCheckTimer?.cancel();
-      _timerCheckTimer = null;
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Stoppen des Timer-Checks: $e');
-      }
-    }
-    
-    try {
-      _activeTimers.clear();
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Löschen der aktiven Timer: $e');
-      }
-    }
-    
-    try {
-      _clearTimerPrefs();
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Löschen der Timer-Präferenzen: $e');
-      }
-    }
-    
-    if (kDebugMode) {
-      print('✅ TimerService dispose abgeschlossen');
     }
   }
 }
