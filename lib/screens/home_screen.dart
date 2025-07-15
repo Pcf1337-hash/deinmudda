@@ -438,7 +438,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
             ), // Close the Container
-          ),
           floatingActionButton: Consumer<PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
               final speedDialChildren = <SpeedDialChild>[
@@ -502,7 +501,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return fab;
             },
           ),
-    );
+        );
       }, // End of Consumer builder
     );
   }
