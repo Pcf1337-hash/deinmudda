@@ -22,7 +22,7 @@ class TimerDashboardScreen extends StatefulWidget {
 
 class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
   final EntryService _entryService = EntryService();
-  final TimerService _timerService = TimerService();
+  late TimerService _timerService;
   
   List<Entry> _activeEntries = [];
   List<Map<String, dynamic>> _customTimers = [];
@@ -32,6 +32,10 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
   @override
   void initState() {
     super.initState();
+    
+    // Get TimerService from provider
+    _timerService = Provider.of<TimerService>(context, listen: false);
+    
     _loadActiveTimers();
   }
 

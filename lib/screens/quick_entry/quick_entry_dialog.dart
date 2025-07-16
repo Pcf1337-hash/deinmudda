@@ -45,7 +45,7 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
   // Services
   final EntryService _entryService = EntryService();
   final SubstanceService _substanceService = SubstanceService();
-  final TimerService _timerService = TimerService();
+  late TimerService _timerService;
 
   // Animation
   late AnimationController _animationController;
@@ -54,6 +54,10 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
   @override
   void initState() {
     super.initState();
+    
+    // Get TimerService from provider
+    _timerService = Provider.of<TimerService>(context, listen: false);
+    
     _loadSubstances();
     _initializeForm();
     
