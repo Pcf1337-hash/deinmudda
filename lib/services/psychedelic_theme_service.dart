@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 import '../utils/error_handler.dart';
 
-enum ThemeMode { light, dark, trippy }
+enum ThemeMode { light, dark, trippy, system }
 
 class PsychedelicThemeService extends ChangeNotifier {
   static const String _themeModeKey = 'theme_mode';
@@ -35,6 +35,16 @@ class PsychedelicThemeService extends ChangeNotifier {
   
   // Add getter for trippy mode state
   bool get isTrippyMode => _currentThemeMode == ThemeMode.trippy;
+  
+  // Get the effective theme mode, considering system preference
+  ThemeMode get effectiveThemeMode {
+    if (_currentThemeMode == ThemeMode.system) {
+      // Get system brightness and return appropriate mode
+      final systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+      return systemBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+    }
+    return _currentThemeMode;
+  }
   
   // Add theme getters for MaterialApp
   ThemeData get lightTheme => _buildLightTheme();
@@ -76,9 +86,14 @@ class PsychedelicThemeService extends ChangeNotifier {
     }
     
     try {
-      // Load theme mode
-      final themeModeIndex = _prefs!.getInt(_themeModeKey) ?? ThemeMode.light.index;
-      _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
+      // Load theme mode - default to system if no preference is saved
+      final themeModeIndex = _prefs!.getInt(_themeModeKey);
+      if (themeModeIndex == null) {
+        // No saved preference, use system default
+        _currentThemeMode = ThemeMode.system;
+      } else {
+        _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
+      }
       
       // Load other settings
       _isAnimatedBackgroundEnabled = _prefs!.getBool(_animatedBackgroundKey) ?? true;
@@ -162,13 +177,18 @@ class PsychedelicThemeService extends ChangeNotifier {
   // Get appropriate theme based on settings with error handling
   ThemeData getTheme() {
     try {
-      switch (_currentThemeMode) {
+      final effectiveMode = effectiveThemeMode;
+      switch (effectiveMode) {
         case ThemeMode.light:
           return _buildLightTheme();
         case ThemeMode.dark:
           return _buildDarkTheme();
         case ThemeMode.trippy:
           return _buildTrippyTheme();
+        case ThemeMode.system:
+          // This case should not happen as effectiveThemeMode resolves system
+          final systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
+          return systemBrightness == Brightness.dark ? _buildDarkTheme() : _buildLightTheme();
       }
     } catch (e) {
       if (kDebugMode) {

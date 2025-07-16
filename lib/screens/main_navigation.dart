@@ -163,6 +163,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   Widget _buildBottomNavigationBar(BuildContext context, bool isDark) {
     return Container(
+      height: 80 + MediaQuery.of(context).padding.bottom, // Fixed height with safe area
       decoration: BoxDecoration(
         color: isDark ? DesignTokens.surfaceDark : DesignTokens.surfaceLight,
         boxShadow: [

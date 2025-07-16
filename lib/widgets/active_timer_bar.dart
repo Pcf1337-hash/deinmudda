@@ -33,7 +33,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   late Animation<double> _progressAnimation;
   
   final TextEditingController _timerInputController = TextEditingController();
-  final TimerService _timerService = TimerService();
+  late TimerService _timerService;
   final FocusNode _focusNode = FocusNode();
   
   bool _showTimerInput = false;
@@ -46,6 +46,9 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     
     try {
       ErrorHandler.logTimer('INIT', 'ActiveTimerBar initialisiert für ${widget.timer.substanceName}');
+      
+      // Get TimerService from provider
+      _timerService = Provider.of<TimerService>(context, listen: false);
       
       // Get animation settings based on Impeller status
       final animationSettings = ImpellerHelper.getTimerAnimationSettings();

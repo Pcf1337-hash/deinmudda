@@ -602,6 +602,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
         return 'Helles Design für die tägliche Nutzung';
       case service.ThemeMode.dark:
         return 'Dunkles Design für bessere Augenentspannung';
+      case service.ThemeMode.system:
+        return 'Folgt den Systemeinstellungen automatisch';
       case service.ThemeMode.trippy:
         return 'Psychedelisches Design mit Neon-Effekten';
     }
@@ -637,6 +639,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Icons.dark_mode_rounded,
             'Dark',
             Colors.indigo,
+          ),
+          const SizedBox(width: 4),
+          _buildThemeButton(
+            service.ThemeMode.system,
+            psychedelicService.currentThemeMode,
+            () => psychedelicService.setThemeMode(service.ThemeMode.system),
+            Icons.settings_system_daydream_rounded,
+            'System',
+            Colors.green,
           ),
           const SizedBox(width: 4),
           _buildThemeButton(

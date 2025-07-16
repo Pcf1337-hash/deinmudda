@@ -108,7 +108,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       // Fallback: Create new instances (should not happen in normal circumstances)
       _entryService = EntryService();
       _quickButtonService = QuickButtonService();
-      _timerService = TimerService();
+      _timerService = TimerService(); // This uses the singleton anyway
       _substanceService = SubstanceService();
       
       _loadInitialData();

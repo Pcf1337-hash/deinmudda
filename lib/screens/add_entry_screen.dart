@@ -48,11 +48,15 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   // Services
   final EntryService _entryService = EntryService();
   final SubstanceService _substanceService = SubstanceService();
-  final TimerService _timerService = TimerService();
+  late TimerService _timerService;
 
   @override
   void initState() {
     super.initState();
+    
+    // Get TimerService from provider
+    _timerService = Provider.of<TimerService>(context, listen: false);
+    
     _loadSubstances();
     
     // Add listeners for auto-calculation
