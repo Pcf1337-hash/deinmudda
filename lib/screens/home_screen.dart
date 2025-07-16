@@ -531,6 +531,28 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         
+        // Early return if services are not initialized yet
+        if (_entriesFuture == null) {
+          if (kDebugMode) {
+            print('⏳ HomeScreen: Services noch nicht initialisiert, zeige Loading...');
+          }
+          return Scaffold(
+            backgroundColor: isPsychedelicMode 
+              ? DesignTokens.psychedelicBackground 
+              : null,
+            body: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Initialisiere App...'),
+                ],
+              ),
+            ),
+          );
+        }
+        
         return Scaffold(
           backgroundColor: isPsychedelicMode 
             ? DesignTokens.psychedelicBackground 
