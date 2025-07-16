@@ -559,7 +559,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                         FittedBox(
                           fit: BoxFit.scaleDown,
                           child: Text(
-                            widget.timer.substanceName,
+                            widget.timer.substanceName ?? 'Unbekannte Substanz',
                             style: theme.textTheme.titleMedium?.copyWith(
                               color: textColor,
                               fontWeight: FontWeight.w600,

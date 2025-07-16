@@ -8,7 +8,7 @@ import 'entry_service.dart';
 import 'substance_service.dart';
 import 'notification_service.dart';
 
-class TimerService {
+class TimerService extends ChangeNotifier {
   static final TimerService _instance = TimerService._internal();
   factory TimerService() => _instance;
   TimerService._internal();
@@ -36,7 +36,13 @@ class TimerService {
       
       _prefs = await SharedPreferences.getInstance();
       await _loadActiveTimers();
+      
+      // First try to restore from specific preferences (new format)
+      await restoreTimer();
+      
+      // Then restore from old format if needed (backward compatibility)
       await _restoreTimersFromPrefs();
+      
       _startTimerCheckLoop();
       
       _isInitialized = true;
@@ -132,6 +138,11 @@ class TimerService {
       // Remove expired timers from active list
       if (!_isDisposed) {
         _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
+        
+        // Notify listeners if any timers were removed
+        if (expiredTimers.isNotEmpty) {
+          notifyListeners();
+        }
       }
       
       if (expiredTimers.isNotEmpty) {
@@ -166,8 +177,14 @@ class TimerService {
       if (!_isDisposed) {
         await _entryService.updateEntry(updatedEntry);
         
+        // Clear specific timer preferences when timer expires
+        await _clearSpecificTimerPrefs();
+        
         // Save to preferences
         await _saveTimersToPrefs();
+        
+        // Notify listeners of timer state change
+        notifyListeners();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer-Ablauf erfolgreich verarbeitet');
       }
@@ -226,8 +243,14 @@ class TimerService {
         // Add to active timers
         _activeTimers.add(updatedEntry);
 
-        // Save to preferences
+        // Save to preferences using the specific format requested
+        await _saveTimerToSpecificPrefs(now, duration, entry.substanceId);
+        
+        // Also save to the old format for backward compatibility
         await _saveTimersToPrefs();
+        
+        // Notify listeners of timer state change
+        notifyListeners();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName} (${_formatDuration(duration)})');
         ErrorHandler.logTimer('STATUS', 'Aktive Timer: ${_activeTimers.length}, End-Zeit: ${timerEndTime.toIso8601String()}');
@@ -260,8 +283,14 @@ class TimerService {
         // Remove from active timers
         _activeTimers.removeWhere((e) => e.id == entry.id);
 
+        // Clear specific timer preferences when stopping
+        await _clearSpecificTimerPrefs();
+
         // Save to preferences
         await _saveTimersToPrefs();
+        
+        // Notify listeners of timer state change
+        notifyListeners();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestoppt für ${entry.substanceName}');
       }
@@ -302,6 +331,11 @@ class TimerService {
     }
   }
 
+  // Get current active timer (alternative method name for compatibility)
+  Entry? getActiveTimer() {
+    return currentActiveTimer;
+  }
+
   // Check if there's any active timer
   bool get hasAnyActiveTimer {
     if (_isDisposed) return false;
@@ -312,6 +346,11 @@ class TimerService {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Prüfen auf aktive Timer: $e');
       return false;
     }
+  }
+
+  // Check if timer service has any active timer (for HomeScreen usage)
+  bool isTimerActive() {
+    return hasAnyActiveTimer;
   }
 
   // Check if entry has active timer
@@ -449,6 +488,36 @@ class TimerService {
     }
   }
 
+  // Save timer data to specific SharedPreferences keys as requested
+  Future<void> _saveTimerToSpecificPrefs(DateTime startTime, Duration duration, String substanceId) async {
+    if (_prefs == null) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('timer_startTime', startTime.toIso8601String());
+      await prefs.setInt('timer_duration', duration.inSeconds);
+      await prefs.setString('timer_substanceId', substanceId);
+      
+      ErrorHandler.logTimer('SAVE_SPECIFIC', 'Timer gespeichert: startTime=${startTime.toIso8601String()}, duration=${duration.inSeconds}s, substanceId=$substanceId');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Speichern des Timers in spezifische Preferences: $e');
+    }
+  }
+
+  // Clear specific timer preferences
+  Future<void> _clearSpecificTimerPrefs() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('timer_startTime');
+      await prefs.remove('timer_duration');
+      await prefs.remove('timer_substanceId');
+      
+      ErrorHandler.logTimer('CLEAR_SPECIFIC', 'Spezifische Timer-Preferences geleert');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Löschen der spezifischen Timer-Preferences: $e');
+    }
+  }
+
   // Save timers to SharedPreferences for persistence
   Future<void> _saveTimersToPrefs() async {
     if (_prefs == null) return;
@@ -469,6 +538,84 @@ class TimerService {
       if (kDebugMode) {
         print('Error saving timers to prefs: $e');
       }
+    }
+  }
+
+  // Restore timer from specific SharedPreferences keys as requested
+  Future<void> restoreTimer() async {
+    if (_isDisposed) return;
+    
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final startTimeString = prefs.getString('timer_startTime');
+      final durationSeconds = prefs.getInt('timer_duration');
+      final substanceId = prefs.getString('timer_substanceId');
+      
+      ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Lade Timer: startTime=$startTimeString, duration=${durationSeconds}s, substanceId=$substanceId');
+      
+      // Check if all required data is present
+      if (startTimeString != null && durationSeconds != null && substanceId != null) {
+        final startTime = DateTime.tryParse(startTimeString);
+        final duration = Duration(seconds: durationSeconds);
+        
+        // Validate data
+        if (startTime != null && substanceId.isNotEmpty && duration.inSeconds > 0) {
+          // Check if timer is still valid (not expired)
+          final endTime = startTime.add(duration);
+          final now = DateTime.now();
+          
+          if (now.isBefore(endTime)) {
+            // Timer is still active, restore it
+            try {
+              // Get substance details
+              final substance = await _substanceService.getSubstanceById(substanceId);
+              if (substance != null) {
+                // Create a timer entry with the original start time
+                final entry = Entry.create(
+                  substanceId: substanceId,
+                  substanceName: substance.name,
+                  dosage: 0.0, // Timer-only entry
+                  unit: 'Timer',
+                  dateTime: startTime,
+                  notes: 'Wiederhergestellter Timer',
+                  timerStartTime: startTime,
+                  timerEndTime: endTime,
+                  timerCompleted: false,
+                  timerNotificationSent: false,
+                );
+                
+                // Add directly to database and active timers without calling startTimer
+                // to avoid overwriting the restored times
+                await _entryService.createEntry(entry);
+                _activeTimers.add(entry);
+                
+                // Notify listeners of timer state change
+                notifyListeners();
+                
+                ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich wiederhergestellt für ${substance.name}');
+              } else {
+                ErrorHandler.logWarning('TIMER_SERVICE', 'Substanz nicht gefunden für Timer-Wiederherstellung: $substanceId');
+                await _clearSpecificTimerPrefs();
+              }
+            } catch (e) {
+              ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timers: $e');
+              await _clearSpecificTimerPrefs();
+            }
+          } else {
+            ErrorHandler.logWarning('TIMER_SERVICE', 'Timer bereits abgelaufen - lösche Preferences');
+            await _clearSpecificTimerPrefs();
+          }
+        } else {
+          ErrorHandler.logWarning('TIMER_SERVICE', 'Ungültige Timer-Daten gefunden - lösche Preferences');
+          await _clearSpecificTimerPrefs();
+        }
+      } else {
+        ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Keine Timer-Daten in Preferences gefunden');
+      }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timers aus spezifischen Preferences: $e');
+      // Clear potentially corrupted data
+      await _clearSpecificTimerPrefs();
     }
   }
 
@@ -550,6 +697,7 @@ class TimerService {
   }
 
   // Dispose timer service
+  @override
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
@@ -570,5 +718,7 @@ class TimerService {
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Dispose des TimerService: $e');
     }
+    
+    super.dispose();
   }
 }
