@@ -17,6 +17,7 @@ import '../../widgets/header_bar.dart';
 import '../../widgets/consistent_fab.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
+import '../../widgets/layout_error_boundary.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -169,13 +170,14 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   showLightningIcon: true,
                 ),
                 Expanded(
-                  child: _isLoading 
-                      ? _buildLoadingState()
-                      : _errorMessage != null
-                          ? _buildErrorCard(context, isDark, psychedelicService)
-                          : SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
+                  child: LayoutErrorBoundary(
+                    debugLabel: 'Dosage Calculator Main Content',
+                    child: _isLoading 
+                        ? _buildLoadingState()
+                        : _errorMessage != null
+                            ? _buildErrorCard(context, isDark, psychedelicService)
+                            : SafeScrollableColumn(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
                                 children: [
                                   const SizedBox(height: 16),
                                   _buildUserProfileSection(context, isDark, psychedelicService),
@@ -192,7 +194,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                                   const SizedBox(height: 120), // Space for FAB
                                 ],
                               ),
-                            ),
+                  ),
                 ),
               ],
             ),
@@ -774,7 +776,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
-          LayoutBuilder(
+          SafeLayoutBuilder(
+            debugLabel: 'Popular Substances Grid',
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
               final cardWidth = ((availableWidth - 32) / 2).clamp(150.0, 200.0); // Account for margins
@@ -784,31 +787,37 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   maxHeight: 650, // Increased height to accommodate content
                   maxWidth: availableWidth,
                 ),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Use GridView instead of Wrap for better control
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: cardWidth / 300, // Adjust aspect ratio
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
+                child: LayoutErrorBoundary(
+                  debugLabel: 'Substances Grid Content',
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Use GridView instead of Wrap for better control
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: cardWidth / 300, // Adjust aspect ratio
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                          itemCount: _popularSubstances.take(4).length,
+                          itemBuilder: (context, index) {
+                            final substance = _popularSubstances[index];
+                            return LayoutErrorBoundary(
+                              debugLabel: 'Substance Card ${substance.name}',
+                              child: RepaintBoundary(
+                                key: Key('substance_card_${substance.name}_${substance.hashCode}'), // Make key unique
+                                child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                              ),
+                            );
+                          },
                         ),
-                        itemCount: _popularSubstances.take(4).length,
-                        itemBuilder: (context, index) {
-                          final substance = _popularSubstances[index];
-                          return RepaintBoundary(
-                            key: Key('substance_card_${substance.name}_${substance.hashCode}'), // Make key unique
-                            child: _buildEnhancedSubstanceCard(context, substance, isDark),
-                          );
-                        },
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -1314,52 +1323,58 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           constraints: const BoxConstraints(
             maxHeight: 300, // Constrain height to prevent overflow
           ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _recentCalculations.length.clamp(0, 5), // Limit to 5 items
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final calculation = _recentCalculations[index];
-              final calculationId = calculation['id']?.toString() ?? '';
-              final substanceName = calculation['substance']?.toString() ?? '';
-              final uniqueKey = 'recent_calc_${calculationId}_${substanceName}_$index'; // More unique key
-              
-              return RepaintBoundary(
-                key: Key(uniqueKey),
-                child: GlassCard(
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: DesignTokens.accentCyan.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+          child: LayoutErrorBoundary(
+            debugLabel: 'Recent Calculations List',
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _recentCalculations.length.clamp(0, 5), // Limit to 5 items
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final calculation = _recentCalculations[index];
+                final calculationId = calculation['id']?.toString() ?? '';
+                final substanceName = calculation['substance']?.toString() ?? '';
+                final uniqueKey = 'recent_calc_${calculationId}_${substanceName}_$index'; // More unique key
+                
+                return LayoutErrorBoundary(
+                  debugLabel: 'Recent Calculation Item',
+                  child: RepaintBoundary(
+                    key: Key(uniqueKey),
+                    child: GlassCard(
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: DesignTokens.accentCyan.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.history_rounded,
+                            color: DesignTokens.accentCyan,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          substanceName.isNotEmpty ? substanceName : 'Unbekannt',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          '${calculation['dosage']?.toString() ?? 'N/A'} • ${calculation['date']?.toString() ?? 'N/A'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded),
+                        onTap: () {
+                          // TODO: Show calculation details
+                          print('Tapped on calculation: $substanceName');
+                        },
                       ),
-                      child: const Icon(
-                        Icons.history_rounded,
-                        color: DesignTokens.accentCyan,
-                        size: 20,
-                      ),
                     ),
-                    title: Text(
-                      substanceName.isNotEmpty ? substanceName : 'Unbekannt',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      '${calculation['dosage']?.toString() ?? 'N/A'} • ${calculation['date']?.toString() ?? 'N/A'}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios_rounded),
-                    onTap: () {
-                      // TODO: Show calculation details
-                      print('Tapped on calculation: $substanceName');
-                    },
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
