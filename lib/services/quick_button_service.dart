@@ -1,4 +1,5 @@
 import 'package:sqflite/sqflite.dart';
+import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../models/substance.dart';
 import 'database_service.dart';
