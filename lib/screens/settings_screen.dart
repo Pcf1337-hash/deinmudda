@@ -139,7 +139,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         Spacing.verticalSpaceMd,
         
         // Psychedelic Settings Card
-        Consumer<PsychedelicThemeService>(
+        Consumer<service.PsychedelicThemeService>(
           builder: (context, psychedelicService, child) {
             return GlassCard(
               usePsychedelicEffects: psychedelicService.isPsychedelicMode,

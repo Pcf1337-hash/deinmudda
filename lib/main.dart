@@ -19,7 +19,7 @@ import 'services/quick_button_service.dart';
 import 'services/auth_service.dart';
 import 'services/notification_service.dart';
 import 'services/timer_service.dart';
-import 'services/psychedelic_theme_service.dart';
+import 'services/psychedelic_theme_service.dart' as service;
 import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
@@ -129,25 +129,27 @@ class KonsumTrackerApp extends StatelessWidget {
         Provider<SubstanceService>.value(value: initManager.substanceService),
         Provider<QuickButtonService>.value(value: initManager.quickButtonService),
         ChangeNotifierProvider<SettingsService>.value(value: initManager.settingsService),
-        ChangeNotifierProvider<PsychedelicThemeService>.value(value: initManager.psychedelicThemeService),
+        ChangeNotifierProvider<service.PsychedelicThemeService>.value(value: initManager.psychedelicThemeService),
         Provider<AuthService>.value(value: initManager.authService),
         Provider<NotificationService>.value(value: initManager.notificationService),
-        Provider<TimerService>.value(value: initManager.timerService),
+        ChangeNotifierProvider<TimerService>.value(value: initManager.timerService),
       ],
-      child: Consumer2<SettingsService, PsychedelicThemeService>(
+      child: Consumer2<SettingsService, service.PsychedelicThemeService>(
         builder: (context, settingsService, psychedelicService, child) {
           return MaterialApp(
             title: 'Konsum Tracker Pro',
             debugShowCheckedModeBanner: false,
-            // Platform-specific theme with page transitions
-            theme: psychedelicService.getTheme().copyWith(
-              pageTransitionsTheme: PageTransitionsTheme(
-                builders: {
-                  TargetPlatform.android: PlatformHelper.getPageTransitionsBuilder(),
-                  TargetPlatform.iOS: PlatformHelper.getPageTransitionsBuilder(),
-                },
-              ),
-            ),
+            // Configure theme, darkTheme, and themeMode properly
+            theme: psychedelicService.currentThemeMode == service.ThemeMode.trippy 
+                ? psychedelicService.trippyTheme
+                : psychedelicService.lightTheme,
+            darkTheme: psychedelicService.currentThemeMode == service.ThemeMode.trippy 
+                ? psychedelicService.trippyTheme
+                : psychedelicService.darkTheme,
+            themeMode: psychedelicService.currentThemeMode == service.ThemeMode.light 
+                ? ThemeMode.light 
+                : ThemeMode.dark, // Both dark and trippy modes use dark theme mode
+            // Platform-specific page transitions
             home: FutureBuilder<bool>(
               future: _shouldShowAuthScreen(context),
               builder: (context, snapshot) {
@@ -199,7 +201,7 @@ class KonsumTrackerApp extends StatelessWidget {
   }
   
   // Helper method to build main content with error handling
-  Widget _buildMainContent(PsychedelicThemeService psychedelicService, bool showAuth) {
+  Widget _buildMainContent(service.PsychedelicThemeService psychedelicService, bool showAuth) {
     try {
       ErrorHandler.logUI('MAIN_CONTENT', 'Baue Hauptinhalt, showAuth: $showAuth');
       
