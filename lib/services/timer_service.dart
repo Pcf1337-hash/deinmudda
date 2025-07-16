@@ -26,6 +26,11 @@ class TimerService {
   // Timer persistence keys
   static const String _activeTimerCountKey = 'active_timer_count';
   static const String _activeTimerKeyPrefix = 'active_timer_';
+  
+  // Simple timer persistence keys (as requested in problem statement)
+  static const String _timerStartTimeKey = 'timer_startTime';
+  static const String _timerDurationKey = 'timer_duration';
+  static const String _timerSubstanceIdKey = 'timer_substanceId';
 
   // Initialize timer service
   Future<void> init() async {
@@ -37,6 +42,7 @@ class TimerService {
       _prefs = await SharedPreferences.getInstance();
       await _loadActiveTimers();
       await _restoreTimersFromPrefs();
+      await restoreTimer(); // Add call to restore simple timer values
       _startTimerCheckLoop();
       
       _isInitialized = true;
@@ -169,6 +175,9 @@ class TimerService {
         // Save to preferences
         await _saveTimersToPrefs();
         
+        // Clear simple timer values when timer expires
+        await _clearSimpleTimerPrefs();
+        
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer-Ablauf erfolgreich verarbeitet');
       }
     } catch (e) {
@@ -226,8 +235,11 @@ class TimerService {
         // Add to active timers
         _activeTimers.add(updatedEntry);
 
-        // Save to preferences
+        // Save to preferences (existing complex format)
         await _saveTimersToPrefs();
+        
+        // Save simple timer values to SharedPreferences as requested
+        await _saveSimpleTimerToPrefs(now, duration, entry.substanceId);
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName} (${_formatDuration(duration)})');
         ErrorHandler.logTimer('STATUS', 'Aktive Timer: ${_activeTimers.length}, End-Zeit: ${timerEndTime.toIso8601String()}');
@@ -262,6 +274,9 @@ class TimerService {
 
         // Save to preferences
         await _saveTimersToPrefs();
+        
+        // Clear simple timer values when timer is stopped
+        await _clearSimpleTimerPrefs();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestoppt für ${entry.substanceName}');
       }
@@ -449,6 +464,21 @@ class TimerService {
     }
   }
 
+  // Save simple timer values to SharedPreferences as requested in problem statement
+  Future<void> _saveSimpleTimerToPrefs(DateTime startTime, Duration duration, String substanceId) async {
+    if (_prefs == null) return;
+    
+    try {
+      await _prefs!.setString(_timerStartTimeKey, startTime.toIso8601String());
+      await _prefs!.setInt(_timerDurationKey, duration.inSeconds);
+      await _prefs!.setString(_timerSubstanceIdKey, substanceId);
+      
+      ErrorHandler.logTimer('SIMPLE_SAVE', 'Einfache Timer-Werte gespeichert: Start=${startTime.toIso8601String()}, Duration=${duration.inSeconds}s, SubstanceId=$substanceId');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Speichern einfacher Timer-Werte: $e');
+    }
+  }
+
   // Save timers to SharedPreferences for persistence
   Future<void> _saveTimersToPrefs() async {
     if (_prefs == null) return;
@@ -469,6 +499,75 @@ class TimerService {
       if (kDebugMode) {
         print('Error saving timers to prefs: $e');
       }
+    }
+  }
+
+  // Restore timer from simple SharedPreferences values as requested in problem statement
+  Future<void> restoreTimer() async {
+    if (_prefs == null) return;
+    
+    try {
+      final startTimeStr = _prefs!.getString(_timerStartTimeKey);
+      final durationSeconds = _prefs!.getInt(_timerDurationKey);
+      final substanceId = _prefs!.getString(_timerSubstanceIdKey);
+      
+      if (startTimeStr != null && durationSeconds != null && substanceId != null) {
+        try {
+          final startTime = DateTime.parse(startTimeStr);
+          final duration = Duration(seconds: durationSeconds);
+          
+          ErrorHandler.logTimer('RESTORE', 'Lade Timer-Werte: Start=$startTimeStr, Duration=${durationSeconds}s, SubstanceId=$substanceId');
+          
+          // Check if timer is still active (not expired)
+          final now = DateTime.now();
+          final endTime = startTime.add(duration);
+          
+          if (now.isBefore(endTime)) {
+            // Try to find the entry by substanceId and restart timer
+            try {
+              final allEntries = await _entryService.getAllEntries();
+              final entry = allEntries.firstWhere((e) => e.substanceId == substanceId);
+              
+              // Restart the timer with the original values
+              await startTimer(entry, customDuration: duration);
+              
+              ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich wiederhergestellt für Substanz-ID: $substanceId');
+            } catch (e) {
+              ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timer-Eintrags für Substanz-ID $substanceId: $e');
+              // Clean up invalid timer data
+              await _clearSimpleTimerPrefs();
+            }
+          } else {
+            ErrorHandler.logWarning('TIMER_SERVICE', 'Timer bereits abgelaufen - entferne gespeicherte Werte');
+            await _clearSimpleTimerPrefs();
+          }
+        } catch (e) {
+          ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Parsen der Timer-Werte: $e');
+          // Clean up invalid timer data
+          await _clearSimpleTimerPrefs();
+        }
+      } else {
+        ErrorHandler.logTimer('RESTORE', 'Keine einfachen Timer-Werte in SharedPreferences gefunden');
+      }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timers: $e');
+      // Fallback/Reset: Clean up any corrupted data
+      await _clearSimpleTimerPrefs();
+    }
+  }
+
+  // Clear simple timer preferences
+  Future<void> _clearSimpleTimerPrefs() async {
+    if (_prefs == null) return;
+    
+    try {
+      await _prefs!.remove(_timerStartTimeKey);
+      await _prefs!.remove(_timerDurationKey);
+      await _prefs!.remove(_timerSubstanceIdKey);
+      
+      ErrorHandler.logTimer('CLEAR', 'Einfache Timer-Werte aus SharedPreferences entfernt');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Entfernen einfacher Timer-Werte: $e');
     }
   }
 
@@ -561,8 +660,11 @@ class TimerService {
       _timerCheckTimer = null;
       _activeTimers.clear();
       
-      // Clear timer preferences
+      // Clear timer preferences (fire and forget)
       _clearTimerPrefs();
+      
+      // Clear simple timer preferences (fire and forget)
+      _clearSimpleTimerPrefs();
       
       _isInitialized = false;
       
