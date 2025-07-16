@@ -138,6 +138,64 @@ class _SettingsScreenState extends State<SettingsScreen> {
         
         Spacing.verticalSpaceMd,
         
+        // Add TrippyMode toggle
+        Consumer<service.PsychedelicThemeService>(
+          builder: (context, themeService, child) {
+            return GlassCard(
+              usePsychedelicEffects: themeService.isPsychedelicMode,
+              glowColor: themeService.isPsychedelicMode 
+                  ? const Color(0xFFff00ff) 
+                  : null,
+              child: Column(
+                children: [
+                  SwitchListTile(
+                    title: const Text('Dark Mode'),
+                    value: themeService.currentThemeMode == service.ThemeMode.dark || 
+                           themeService.currentThemeMode == service.ThemeMode.trippy,
+                    onChanged: (value) {
+                      if (value) {
+                        themeService.setThemeMode(service.ThemeMode.dark);
+                      } else {
+                        themeService.setThemeMode(service.ThemeMode.light);
+                      }
+                    },
+                    secondary: Icon(
+                      themeService.currentThemeMode == service.ThemeMode.light 
+                          ? Icons.light_mode_rounded 
+                          : Icons.dark_mode_rounded,
+                      color: themeService.isPsychedelicMode 
+                          ? const Color(0xFFff00ff) 
+                          : DesignTokens.primaryIndigo,
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  SwitchListTile(
+                    title: const Text('Trippy Mode'),
+                    value: themeService.isTrippyMode,
+                    onChanged: (value) => themeService.toggleTrippyMode(value),
+                    secondary: Icon(
+                      Icons.auto_awesome_rounded,
+                      color: themeService.isTrippyMode 
+                          ? const Color(0xFFff00ff) 
+                          : DesignTokens.primaryIndigo,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 450),
+        ).slideY(
+          begin: 0.3,
+          end: 0,
+          duration: DesignTokens.animationMedium,
+          curve: DesignTokens.curveEaseOut,
+        ),
+        
+        Spacing.verticalSpaceMd,
+        
         // Psychedelic Settings Card
         Consumer<service.PsychedelicThemeService>(
           builder: (context, psychedelicService, child) {

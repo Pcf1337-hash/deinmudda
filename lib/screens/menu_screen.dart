@@ -53,25 +53,23 @@ class _MenuScreenState extends State<MenuScreen> {
               children: [
                 _buildAppBar(context, isDark, psychedelicService),
                 Expanded(
-                  child: SingleChildScrollView(
+                  child: ListView(
                     padding: Spacing.paddingHorizontalMd,
-                    child: Column(
-                      children: [
-                        Spacing.verticalSpaceLg,
-                        _buildToolsSection(context, isDark, psychedelicService),
-                        Spacing.verticalSpaceLg,
-                        _buildSecuritySection(context, isDark, psychedelicService), // New security section
-                        Spacing.verticalSpaceLg,
-                        _buildAppearanceSection(context, isDark, psychedelicService),
-                        Spacing.verticalSpaceLg,
-                        _buildDataSection(context, isDark, psychedelicService),
-                        Spacing.verticalSpaceLg,
-                        _buildAboutSection(context, isDark, psychedelicService),
-                        Spacing.verticalSpaceLg,
-                        _buildCreditsSection(context, isDark, psychedelicService),
-                        const SizedBox(height: 120), // Bottom padding
-                      ],
-                    ),
+                    children: [
+                      Spacing.verticalSpaceLg,
+                      _buildToolsSection(context, isDark, psychedelicService),
+                      Spacing.verticalSpaceLg,
+                      _buildSecuritySection(context, isDark, psychedelicService), // New security section
+                      Spacing.verticalSpaceLg,
+                      _buildAppearanceSection(context, isDark, psychedelicService),
+                      Spacing.verticalSpaceLg,
+                      _buildDataSection(context, isDark, psychedelicService),
+                      Spacing.verticalSpaceLg,
+                      _buildAboutSection(context, isDark, psychedelicService),
+                      Spacing.verticalSpaceLg,
+                      _buildCreditsSection(context, isDark, psychedelicService),
+                      const SizedBox(height: 120), // Bottom padding
+                    ],
                   ),
                 ),
               ],

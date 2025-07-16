@@ -134,21 +134,17 @@ class KonsumTrackerApp extends StatelessWidget {
         Provider<NotificationService>.value(value: initManager.notificationService),
         ChangeNotifierProvider<TimerService>.value(value: initManager.timerService),
       ],
-      child: Consumer2<SettingsService, service.PsychedelicThemeService>(
-        builder: (context, settingsService, psychedelicService, child) {
+      child: Consumer<service.PsychedelicThemeService>(
+        builder: (context, psychedelicService, child) {
           return MaterialApp(
             title: 'Konsum Tracker Pro',
             debugShowCheckedModeBanner: false,
-            // Configure theme, darkTheme, and themeMode properly
-            theme: psychedelicService.currentThemeMode == service.ThemeMode.trippy 
-                ? psychedelicService.trippyTheme
-                : psychedelicService.lightTheme,
-            darkTheme: psychedelicService.currentThemeMode == service.ThemeMode.trippy 
-                ? psychedelicService.trippyTheme
-                : psychedelicService.darkTheme,
+            // Use getTheme() method for proper theme handling
+            theme: psychedelicService.getTheme(),
+            darkTheme: psychedelicService.getTheme(),
             themeMode: psychedelicService.currentThemeMode == service.ThemeMode.light 
                 ? ThemeMode.light 
-                : ThemeMode.dark, // Both dark and trippy modes use dark theme mode
+                : ThemeMode.dark,
             // Platform-specific page transitions
             home: FutureBuilder<bool>(
               future: _shouldShowAuthScreen(context),
