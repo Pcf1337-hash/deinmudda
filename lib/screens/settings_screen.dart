@@ -153,34 +153,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ? DesignTokens.neonPurple 
                       : DesignTokens.primaryIndigo,
                 ),
-                title: Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Psychedelic Mode',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        color: psychedelicService.isPsychedelicMode && isDark
-                            ? DesignTokens.textPsychedelicPrimary
-                            : null,
-                      ),
-                    ),
+                title: Text(
+                  'Psychedelic Mode',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: psychedelicService.isPsychedelicMode && isDark
+                        ? DesignTokens.textPsychedelicPrimary
+                        : null,
                   ),
                 ),
-                subtitle: Flexible(
-                  child: Text(
-                    psychedelicService.isPsychedelicMode 
-                        ? 'Aktiv - Optimiert für erweiterte Bewusstseinszustände'
-                        : 'Erweiterte Einstellungen für immersive Erfahrung',
-                    style: TextStyle(
-                      color: psychedelicService.isPsychedelicMode && isDark
-                          ? DesignTokens.textPsychedelicSecondary
-                          : null,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                subtitle: Text(
+                  psychedelicService.isPsychedelicMode 
+                      ? 'Aktiv - Optimiert für erweiterte Bewusstseinszustände'
+                      : 'Erweiterte Einstellungen für immersive Erfahrung',
+                  style: TextStyle(
+                    color: psychedelicService.isPsychedelicMode && isDark
+                        ? DesignTokens.textPsychedelicSecondary
+                        : null,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: Icon(
                   Icons.arrow_forward_ios_rounded,
@@ -234,19 +226,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.science_rounded,
                   color: DesignTokens.primaryIndigo,
                 ),
-                title: const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Substanzen verwalten'),
-                  ),
-                ),
-                subtitle: const Flexible(
-                  child: Text(
-                    'Eigene Substanzen erstellen und bearbeiten',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                title: const Text('Substanzen verwalten'),
+                subtitle: const Text(
+                  'Eigene Substanzen erstellen und bearbeiten',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToSubstanceManagement(),
@@ -257,19 +241,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.settings_rounded,
                   color: DesignTokens.accentEmerald,
                 ),
-                title: const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Dosisrechner-Datenbank'),
-                  ),
-                ),
-                subtitle: const Flexible(
-                  child: Text(
-                    'Substanzen für den Dosisrechner verwalten',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                title: const Text('Dosisrechner-Datenbank'),
+                subtitle: const Text(
+                  'Substanzen für den Dosisrechner verwalten',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToDosageSubstanceManagement(),
@@ -311,19 +287,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.info_outline,
                   color: DesignTokens.infoBlue,
                 ),
-                title: const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Datenbank-Info'),
-                  ),
-                ),
-                subtitle: const Flexible(
-                  child: Text(
-                    'Informationen zur lokalen Datenbank',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                title: const Text('Datenbank-Info'),
+                subtitle: const Text(
+                  'Informationen zur lokalen Datenbank',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _showDatabaseInfo(context),
@@ -334,19 +302,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.download,
                   color: DesignTokens.accentEmerald,
                 ),
-                title: const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Daten exportieren'),
-                  ),
-                ),
-                subtitle: const Flexible(
-                  child: Text(
-                    'Alle Daten als JSON exportieren',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                title: const Text('Daten exportieren'),
+                subtitle: const Text(
+                  'Alle Daten als JSON exportieren',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _exportData(context),
@@ -357,19 +317,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   Icons.delete_forever,
                   color: DesignTokens.errorRed,
                 ),
-                title: const Flexible(
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    alignment: Alignment.centerLeft,
-                    child: Text('Alle Daten löschen'),
-                  ),
-                ),
-                subtitle: const Flexible(
-                  child: Text(
-                    'Vorsicht: Nicht rückgängig machbar',
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+                title: const Text('Alle Daten löschen'),
+                subtitle: const Text(
+                  'Vorsicht: Nicht rückgängig machbar',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _confirmDeleteAllData(context),
@@ -472,60 +424,43 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text('Datenbank-Informationen'),
-        ),
+        title: const Text('Datenbank-Informationen'),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Flexible(
-                child: Text(
-                  'Version: ${info['version'] ?? 'Unbekannt'}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Version: ${info['version'] ?? 'Unbekannt'}',
+                style: const TextStyle(fontSize: 14),
               ),
               const SizedBox(height: 4),
-              Flexible(
-                child: Text(
-                  'Pfad: ${info['path'] ?? 'Unbekannt'}',
-                  style: const TextStyle(fontSize: 14),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
+              Text(
+                'Pfad: ${info['path'] ?? 'Unbekannt'}',
+                style: const TextStyle(fontSize: 14),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
               const SizedBox(height: 16),
-              Flexible(
-                child: Text(
-                  'Einträge: ${info['entriesCount'] ?? 0}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Einträge: ${info['entriesCount'] ?? 0}',
+                style: const TextStyle(fontSize: 14),
               ),
-              Flexible(
-                child: Text(
-                  'Substanzen: ${info['substancesCount'] ?? 0}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Substanzen: ${info['substancesCount'] ?? 0}',
+                style: const TextStyle(fontSize: 14),
               ),
-              Flexible(
-                child: Text(
-                  'Quick Buttons: ${info['quickButtonsCount'] ?? 0}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Quick Buttons: ${info['quickButtonsCount'] ?? 0}',
+                style: const TextStyle(fontSize: 14),
               ),
-              Flexible(
-                child: Text(
-                  'Benutzer: ${info['usersCount'] ?? 0}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Benutzer: ${info['usersCount'] ?? 0}',
+                style: const TextStyle(fontSize: 14),
               ),
-              Flexible(
-                child: Text(
-                  'Dosierungs-Substanzen: ${info['dosageSubstancesCount'] ?? 0}',
-                  style: const TextStyle(fontSize: 14),
-                ),
+              Text(
+                'Dosierungs-Substanzen: ${info['dosageSubstancesCount'] ?? 0}',
+                style: const TextStyle(fontSize: 14),
               ),
             ],
           ),
@@ -552,16 +487,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text('Alle Daten löschen'),
-        ),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Sind Sie sicher, dass Sie alle Daten löschen möchten? '
-            'Diese Aktion kann nicht rückgängig gemacht werden.',
-            style: TextStyle(fontSize: 14),
-          ),
+        title: const Text('Alle Daten löschen'),
+        content: const Text(
+          'Sind Sie sicher, dass Sie alle Daten löschen möchten? '
+          'Diese Aktion kann nicht rückgängig gemacht werden.',
+          style: TextStyle(fontSize: 14),
         ),
         actions: [
           TextButton(
