@@ -55,9 +55,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   List<QuickButtonConfig> _quickButtons = [];
   bool _isLoadingQuickButtons = true;
   
-  // Timer State
-  Entry? _activeTimer;
-  
   // Loading State
   Future<List<Entry>>? _entriesFuture;
   bool _isLoadingEntries = true;
@@ -125,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     
     _loadEntries();
     _loadQuickButtons();
-    _loadActiveTimer();
   }
 
   void _refreshData() {
@@ -135,7 +131,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     
     _loadEntries();
     _loadQuickButtons();
-    _loadActiveTimer();
   }
 
   void _loadEntries() {
@@ -214,36 +209,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
   }
 
-  Future<void> _loadActiveTimer() async {
-    try {
-      if (kDebugMode) {
-        print('⏰ HomeScreen: Lade aktiven Timer...');
-      }
-      
-      final activeTimer = _timerService.currentActiveTimer;
-      if (mounted) {
-        safeSetState(() {
-          _activeTimer = activeTimer;
-        });
-        
-        if (kDebugMode) {
-          print('✅ HomeScreen: Active Timer geladen: ${activeTimer?.substanceName ?? 'Keiner'}');
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ HomeScreen: Fehler beim Laden des aktiven Timers: $e');
-      }
-      
-      // Ensure state is reset on error
-      if (mounted) {
-        safeSetState(() {
-          _activeTimer = null;
-        });
-      }
-    }
-  }
-
   Future<void> _loadQuickButtons() async {
     try {
       if (kDebugMode) {
@@ -300,17 +265,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       // Start timer automatically
       final entryWithTimer = await _timerService.startTimer(entry, customDuration: timerDuration);
       
-      // Update active timer state using addPostFrameCallback to avoid setState during build
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            safeSetState(() {
-              _activeTimer = entryWithTimer;
-            });
-          }
-        });
-      }
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -346,27 +300,16 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   }
 
   Future<void> _stopActiveTimer() async {
-    if (_activeTimer == null || !mounted) return;
-    
     try {
-      final timerToStop = _activeTimer!;
-      await _timerService.stopTimer(timerToStop);
+      final activeTimer = _timerService.getActiveTimer();
+      if (activeTimer == null || !mounted) return;
       
-      // Update state using addPostFrameCallback
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            safeSetState(() {
-              _activeTimer = null;
-            });
-          }
-        });
-      }
+      await _timerService.stopTimer(activeTimer);
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Timer für ${timerToStop.substanceName} gestoppt'),
+            content: Text('Timer für ${activeTimer.substanceName} gestoppt'),
             backgroundColor: DesignTokens.warningYellow,
           ),
         );
@@ -474,17 +417,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       // Start the timer
       final timerEntry = await _timerService.startTimer(entry, customDuration: duration);
       
-      // Update active timer state
-      if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
-            safeSetState(() {
-              _activeTimer = timerEntry;
-            });
-          }
-        });
-      }
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -572,19 +504,26 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Active Timer Bar (only shown when timer is active)
-                    if (_activeTimer != null && mounted)
-                      ActiveTimerBar(
-                        timer: _activeTimer!,
-                        onTap: () => _navigateToTimerDashboard(),
-                      ).animate().fadeIn(
-                        duration: DesignTokens.animationMedium,
-                        delay: const Duration(milliseconds: 200),
-                      ).slideY(
-                        begin: -0.3,
-                        end: 0,
-                        duration: DesignTokens.animationMedium,
-                        curve: DesignTokens.curveEaseOut,
-                      ),
+                    Consumer<TimerService>(
+                      builder: (context, timerService, child) {
+                        final activeTimer = timerService.getActiveTimer();
+                        if (activeTimer != null && mounted) {
+                          return ActiveTimerBar(
+                            timer: activeTimer,
+                            onTap: () => _navigateToTimerDashboard(),
+                          ).animate().fadeIn(
+                            duration: DesignTokens.animationMedium,
+                            delay: const Duration(milliseconds: 200),
+                          ).slideY(
+                            begin: -0.3,
+                            end: 0,
+                            duration: DesignTokens.animationMedium,
+                            curve: DesignTokens.curveEaseOut,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
                     
                     Spacing.verticalSpaceLg,
                     
@@ -675,65 +614,73 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
             ), // Close the Container
           floatingActionButton: Consumer<PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
-              final speedDialChildren = <SpeedDialChild>[
-                FABHelper.createSpeedDialChild(
-                  icon: Icons.add_rounded,
-                  label: 'Neuer Eintrag',
-                  backgroundColor: DesignTokens.primaryIndigo,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const AddEntryScreen(),
-                      ),
-                    ).then((result) {
-                      if (result == true && mounted) {
-                        _refreshData(); // Refresh data instead of just setState
-                      }
-                    });
-                  },
-                ),
-                if (_activeTimer == null)
-                  FABHelper.createSpeedDialChild(
-                    icon: Icons.timer_rounded,
-                    label: 'Timer starten',
-                    backgroundColor: DesignTokens.accentPurple,
-                    onTap: () => _showTimerStartDialog(context, isDark),
-                  ),
-                if (_activeTimer != null)
-                  FABHelper.createSpeedDialChild(
-                    icon: Icons.timer_off_rounded,
-                    label: 'Timer stoppen',
-                    backgroundColor: DesignTokens.warningYellow,
-                    onTap: () => _stopActiveTimer(),
-                  ),
-              ];
-
-              final fab = ConsistentFAB(
-                speedDialChildren: speedDialChildren,
-                mainIcon: Icons.speed_rounded,
-                backgroundColor: DesignTokens.accentPink,
-                onMainAction: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const AddEntryScreen(),
+              return Consumer<TimerService>(
+                builder: (context, timerService, child) {
+                  final theme = Theme.of(context);
+                  final isDark = theme.brightness == Brightness.dark;
+                  final hasActiveTimer = timerService.isTimerActive();
+                  
+                  final speedDialChildren = <SpeedDialChild>[
+                    FABHelper.createSpeedDialChild(
+                      icon: Icons.add_rounded,
+                      label: 'Neuer Eintrag',
+                      backgroundColor: DesignTokens.primaryIndigo,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) => const AddEntryScreen(),
+                          ),
+                        ).then((result) {
+                          if (result == true && mounted) {
+                            _refreshData(); // Refresh data instead of just setState
+                          }
+                        });
+                      },
                     ),
-                  ).then((result) {
-                    if (result == true && mounted) {
-                      _refreshData(); // Refresh data instead of just setState
-                    }
-                  });
+                    if (!hasActiveTimer)
+                      FABHelper.createSpeedDialChild(
+                        icon: Icons.timer_rounded,
+                        label: 'Timer starten',
+                        backgroundColor: DesignTokens.accentPurple,
+                        onTap: () => _showTimerStartDialog(context, isDark),
+                      ),
+                    if (hasActiveTimer)
+                      FABHelper.createSpeedDialChild(
+                        icon: Icons.timer_off_rounded,
+                        label: 'Timer stoppen',
+                        backgroundColor: DesignTokens.warningYellow,
+                        onTap: () => _stopActiveTimer(),
+                      ),
+                  ];
+
+                  final fab = ConsistentFAB(
+                    speedDialChildren: speedDialChildren,
+                    mainIcon: Icons.speed_rounded,
+                    backgroundColor: DesignTokens.accentPink,
+                    onMainAction: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const AddEntryScreen(),
+                        ),
+                      ).then((result) {
+                        if (result == true && mounted) {
+                          _refreshData(); // Refresh data instead of just setState
+                        }
+                      });
+                    },
+                  );
+
+                  // Only wrap with animation in trippy mode
+                  if (psychedelicService.isPsychedelicMode) {
+                    return AnimatedRotationFAB(
+                      isTrippyMode: true,
+                      child: fab,
+                    );
+                  }
+                  
+                  return fab;
                 },
               );
-
-              // Only wrap with animation in trippy mode
-              if (psychedelicService.isPsychedelicMode) {
-                return AnimatedRotationFAB(
-                  isTrippyMode: true,
-                  child: fab,
-                );
-              }
-              
-              return fab;
             },
           ),
         );

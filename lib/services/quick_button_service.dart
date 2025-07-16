@@ -288,6 +288,37 @@ class QuickButtonService {
     }
   }
 
+  // Create entry from quick button with price calculation
+  Future<Entry> createEntryFromQuickButton(QuickButtonConfig config) async {
+    try {
+      // Get substance details for price calculation
+      final substance = await _substanceService.getSubstanceById(config.substanceId);
+      
+      // Create the entry
+      final entry = Entry.create(
+        substanceId: config.substanceId,
+        substanceName: config.substanceName,
+        dosage: config.dosage,
+        unit: config.unit,
+        dateTime: DateTime.now(),
+        notes: 'Erstellt über Quick Button',
+      );
+      
+      // Calculate price if both dosage and substance price are available
+      double calculatedPrice = 0.0;
+      if (config.dosage != null && substance?.pricePerUnit != null) {
+        calculatedPrice = config.dosage * substance!.pricePerUnit;
+      }
+      
+      // Create final entry with calculated price
+      final entryWithPrice = entry.copyWith(cost: calculatedPrice);
+      
+      return entryWithPrice;
+    } catch (e) {
+      throw Exception('Failed to create entry from quick button: $e');
+    }
+  }
+
   // Toggle quick button active state
   Future<void> toggleQuickButtonActive(String id, bool isActive) async {
     try {
