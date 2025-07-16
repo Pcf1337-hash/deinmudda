@@ -551,15 +551,21 @@ class TimerService extends ChangeNotifier {
       final durationSeconds = prefs.getInt('timer_duration');
       final substanceId = prefs.getString('timer_substanceId');
       
-      ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Lade Timer: startTime=$startTimeString, duration=${durationSeconds}s, substanceId=$substanceId');
+      ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Lade Timer: startTime=${startTimeString ?? 'null'}, duration=${durationSeconds ?? 'null'}s, substanceId=${substanceId ?? 'null'}');
       
-      // Check if all required data is present
-      if (startTimeString != null && durationSeconds != null && substanceId != null) {
+      // Check if all required data is present and valid
+      if (startTimeString != null && 
+          startTimeString.isNotEmpty && 
+          durationSeconds != null && 
+          durationSeconds > 0 && 
+          substanceId != null && 
+          substanceId.isNotEmpty) {
+        
         final startTime = DateTime.tryParse(startTimeString);
         final duration = Duration(seconds: durationSeconds);
         
-        // Validate data
-        if (startTime != null && substanceId.isNotEmpty && duration.inSeconds > 0) {
+        // Validate parsed data
+        if (startTime != null && duration.inSeconds > 0) {
           // Check if timer is still valid (not expired)
           final endTime = startTime.add(duration);
           final now = DateTime.now();
@@ -610,7 +616,7 @@ class TimerService extends ChangeNotifier {
           await _clearSpecificTimerPrefs();
         }
       } else {
-        ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Keine Timer-Daten in Preferences gefunden');
+        ErrorHandler.logTimer('RESTORE_SPECIFIC', 'Keine vollständigen Timer-Daten in Preferences gefunden - überspringe Wiederherstellung');
       }
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Wiederherstellen des Timers aus spezifischen Preferences: $e');

@@ -142,9 +142,11 @@ class KonsumTrackerApp extends StatelessWidget {
             // Use getTheme() method for proper theme handling
             theme: psychedelicService.getTheme(),
             darkTheme: psychedelicService.getTheme(),
-            themeMode: psychedelicService.currentThemeMode == service.ThemeMode.light 
-                ? ThemeMode.light 
-                : ThemeMode.dark,
+            themeMode: psychedelicService.currentThemeMode == service.ThemeMode.system 
+                ? ThemeMode.system
+                : (psychedelicService.effectiveThemeMode == service.ThemeMode.light 
+                    ? ThemeMode.light 
+                    : ThemeMode.dark),
             // Platform-specific page transitions
             home: FutureBuilder<bool>(
               future: _shouldShowAuthScreen(context),

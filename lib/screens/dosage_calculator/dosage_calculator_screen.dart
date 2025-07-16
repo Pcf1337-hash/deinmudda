@@ -69,9 +69,23 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     });
 
     try {
+      // Load user profile first
       final user = await _dosageService.getUserProfile();
+      
+      // Load all substances - ensure we don't proceed until substances are loaded
       final allSubstances = await _dosageService.getAllDosageSubstances();
-      final popularSubstances = allSubstances.take(6).toList();
+      
+      // Validate that substances are loaded properly
+      if (allSubstances.isEmpty) {
+        throw Exception('Keine Substanzen gefunden. Bitte prüfen Sie die Datenbank.');
+      }
+      
+      // Take only validated substances with proper data
+      final popularSubstances = allSubstances
+          .where((substance) => substance.name.isNotEmpty && substance.lightDosePerKg > 0)
+          .take(6)
+          .toList();
+      
       final history = await _dosageService.getDosageCalculationHistory();
 
       if (_isDisposed) return;
@@ -88,6 +102,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       setState(() {
         _errorMessage = 'Fehler beim Laden der Daten: $e';
         _isLoading = false;
+        // Ensure we have empty lists on error
+        _popularSubstances = [];
+        _recentCalculations = [];
       });
     }
   }
