@@ -45,11 +45,11 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   bool _isScrolled = false;
   bool _isQuickEntryEditMode = false;
 
-  // Services
-  final EntryService _entryService = EntryService();
-  final QuickButtonService _quickButtonService = QuickButtonService();
-  final TimerService _timerService = TimerService();
-  final SubstanceService _substanceService = SubstanceService();
+  // Services (will be initialized from Provider)
+  late EntryService _entryService;
+  late QuickButtonService _quickButtonService;
+  late TimerService _timerService;
+  late SubstanceService _substanceService;
 
   // Quick Entry State
   List<QuickButtonConfig> _quickButtons = [];
@@ -57,13 +57,122 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   
   // Timer State
   Entry? _activeTimer;
+  
+  // Loading State
+  Future<List<Entry>>? _entriesFuture;
+  bool _isLoadingEntries = true;
 
   @override
   void initState() {
     super.initState();
+    
+    if (kDebugMode) {
+      print('🏠 HomeScreen initState gestartet');
+    }
+    
     _scrollController.addListener(_onScroll);
+    
+    // Initialize services from Provider in the next frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _initializeServices();
+      }
+    });
+  }
+
+  void _initializeServices() {
+    try {
+      if (kDebugMode) {
+        print('🔧 HomeScreen: Initialisiere Services von Provider...');
+      }
+      
+      // Get services from Provider
+      _entryService = Provider.of<EntryService>(context, listen: false);
+      _quickButtonService = Provider.of<QuickButtonService>(context, listen: false);
+      _timerService = Provider.of<TimerService>(context, listen: false);
+      _substanceService = Provider.of<SubstanceService>(context, listen: false);
+      
+      if (kDebugMode) {
+        print('✅ HomeScreen: Services erfolgreich initialisiert');
+        print('📊 EntryService: ${_entryService.toString()}');
+        print('⚡ QuickButtonService: ${_quickButtonService.toString()}');
+        print('⏰ TimerService: ${_timerService.toString()}');
+        print('🧪 SubstanceService: ${_substanceService.toString()}');
+      }
+      
+      // Load initial data
+      _loadInitialData();
+      
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ HomeScreen: Fehler beim Initialisieren der Services: $e');
+      }
+      
+      // Fallback: Create new instances (should not happen in normal circumstances)
+      _entryService = EntryService();
+      _quickButtonService = QuickButtonService();
+      _timerService = TimerService();
+      _substanceService = SubstanceService();
+      
+      _loadInitialData();
+    }
+  }
+
+  void _loadInitialData() {
+    if (kDebugMode) {
+      print('📥 HomeScreen: Lade initiale Daten...');
+    }
+    
+    _loadEntries();
     _loadQuickButtons();
     _loadActiveTimer();
+  }
+
+  void _refreshData() {
+    if (kDebugMode) {
+      print('🔄 HomeScreen: Aktualisiere Daten...');
+    }
+    
+    _loadEntries();
+    _loadQuickButtons();
+    _loadActiveTimer();
+  }
+
+  void _loadEntries() {
+    if (kDebugMode) {
+      print('📋 HomeScreen: Lade Einträge...');
+    }
+    
+    safeSetState(() {
+      _isLoadingEntries = true;
+      _entriesFuture = _entryService.getAllEntries();
+    });
+    
+    // Log the result
+    _entriesFuture?.then((entries) {
+      if (kDebugMode) {
+        print('✅ HomeScreen: ${entries.length} Einträge geladen');
+        for (int i = 0; i < entries.length.clamp(0, 5); i++) {
+          print('  - ${entries[i].substanceName}: ${entries[i].dosage}${entries[i].unit}');
+        }
+      }
+      
+      if (mounted) {
+        safeSetState(() {
+          _isLoadingEntries = false;
+        });
+      }
+    }).catchError((error) {
+      if (kDebugMode) {
+        print('❌ HomeScreen: Fehler beim Laden der Einträge: $error');
+      }
+      
+      if (mounted) {
+        safeSetState(() {
+          _isLoadingEntries = false;
+        });
+      }
+    });
   }
 
   @override
@@ -108,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   Future<void> _loadActiveTimer() async {
     try {
       if (kDebugMode) {
-        print('🏠 Lade aktiven Timer...');
+        print('⏰ HomeScreen: Lade aktiven Timer...');
       }
       
       final activeTimer = _timerService.currentActiveTimer;
@@ -118,12 +227,12 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         });
         
         if (kDebugMode) {
-          print('✅ Active Timer geladen: ${activeTimer?.substanceName ?? 'Keiner'}');
+          print('✅ HomeScreen: Active Timer geladen: ${activeTimer?.substanceName ?? 'Keiner'}');
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Fehler beim Laden des aktiven Timers: $e');
+        print('❌ HomeScreen: Fehler beim Laden des aktiven Timers: $e');
       }
       
       // Ensure state is reset on error
@@ -138,7 +247,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   Future<void> _loadQuickButtons() async {
     try {
       if (kDebugMode) {
-        print('🏠 Lade QuickButtons...');
+        print('⚡ HomeScreen: Lade QuickButtons...');
       }
       
       final buttons = await _quickButtonService.getAllQuickButtons();
@@ -150,12 +259,15 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         });
         
         if (kDebugMode) {
-          print('✅ QuickButtons geladen: ${buttons.length} Buttons');
+          print('✅ HomeScreen: QuickButtons geladen: ${buttons.length} Buttons');
+          for (int i = 0; i < buttons.length.clamp(0, 3); i++) {
+            print('  - ${buttons[i].substanceName}: ${buttons[i].dosage}${buttons[i].unit}');
+          }
         }
       }
     } catch (e) {
       if (kDebugMode) {
-        print('❌ Fehler beim Laden der QuickButtons: $e');
+        print('❌ HomeScreen: Fehler beim Laden der QuickButtons: $e');
       }
       
       if (mounted) {
@@ -219,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         );
         
         // Refresh the home screen to show the new entry
-        safeSetState(() {});
+        _refreshData();
       }
     } catch (e) {
       if (mounted) {
@@ -406,6 +518,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   @override
   Widget build(BuildContext context) {
+    if (kDebugMode) {
+      print('🎨 HomeScreen build() aufgerufen');
+    }
+    
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final now = DateTime.now();
@@ -414,6 +530,28 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     return Consumer<PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
+        
+        // Early return if services are not initialized yet
+        if (_entriesFuture == null) {
+          if (kDebugMode) {
+            print('⏳ HomeScreen: Services noch nicht initialisiert, zeige Loading...');
+          }
+          return Scaffold(
+            backgroundColor: isPsychedelicMode 
+              ? DesignTokens.psychedelicBackground 
+              : null,
+            body: const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Initialisiere App...'),
+                ],
+              ),
+            ),
+          );
+        }
         
         return Scaffold(
           backgroundColor: isPsychedelicMode 
@@ -477,16 +615,26 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                     
                     // Use FutureBuilder for data-dependent sections to improve loading performance
                     FutureBuilder<List<Entry>>(
-                      future: _entryService.getAllEntries(),
+                      future: _entriesFuture,
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
+                        if (kDebugMode) {
+                          print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
+                        }
+                        
+                        if (snapshot.connectionState == ConnectionState.waiting || _isLoadingEntries) {
                           if (kDebugMode) {
-                            print('🔄 HomeScreen: Lade Einträge...');
+                            print('🔄 HomeScreen: Zeige Loading-Zustand');
                           }
                           return const Center(
                             child: Padding(
                               padding: EdgeInsets.all(Spacing.lg),
-                              child: CircularProgressIndicator(),
+                              child: Column(
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 16),
+                                  Text('Lade Einträge...'),
+                                ],
+                              ),
                             ),
                           );
                         }
@@ -501,7 +649,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                         
                         final entries = snapshot.data ?? [];
                         if (kDebugMode) {
-                          print('✅ HomeScreen: ${entries.length} Einträge geladen');
+                          print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
                         }
                         
                         return Column(
@@ -539,7 +687,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ),
                     ).then((result) {
                       if (result == true && mounted) {
-                        safeSetState(() {}); // Refresh the screen
+                        _refreshData(); // Refresh data instead of just setState
                       }
                     });
                   },
@@ -571,7 +719,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                     ),
                   ).then((result) {
                     if (result == true && mounted) {
-                      safeSetState(() {}); // Refresh the screen
+                      _refreshData(); // Refresh data instead of just setState
                     }
                   });
                 },
@@ -813,8 +961,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           _buildEmptyState(
             context,
             isDark,
-            'Noch keine Einträge',
-            'Fügen Sie Ihren ersten Eintrag hinzu',
+            'Noch keine Einträge vorhanden',
+            'Fügen Sie Ihren ersten Eintrag hinzu, um loszulegen',
             Icons.note_add_outlined,
           )
         else
@@ -1295,6 +1443,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   }
 
   Widget _buildErrorFallback(BuildContext context, bool isDark) {
+    if (kDebugMode) {
+      print('❌ HomeScreen: Zeige Error-Fallback');
+    }
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1302,10 +1454,25 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         _buildErrorState(
           context,
           isDark,
-          'Fehler beim Laden',
-          'Die Daten konnten nicht geladen werden. Bitte versuchen Sie es später erneut.',
+          'Fehler beim Laden der Einträge',
+          'Die Einträge konnten nicht geladen werden. Bitte überprüfen Sie die Logs für weitere Details.',
           Icons.error_outline,
         ),
+        Spacing.verticalSpaceLg,
+        
+        // Show a retry button
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: _refreshData,
+            icon: const Icon(Icons.refresh),
+            label: const Text('Erneut versuchen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: DesignTokens.primaryIndigo,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        ),
+        
         Spacing.verticalSpaceLg,
         // Still show today stats and insights even if entries failed
         _buildTodayStatsSection(context, isDark),
@@ -1391,7 +1558,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                 child: ElevatedButton.icon(
                   onPressed: () => _navigateToAddEntry(),
                   icon: const Icon(Icons.add_rounded),
-                  label: const Text('Ersten Button erstellen'),
+                  label: const Text('Ersten Eintrag erstellen'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: DesignTokens.primaryIndigo,
                     foregroundColor: Colors.white,
@@ -1421,7 +1588,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       );
 
       if (result == true && mounted) {
-        safeSetState(() {}); // Refresh the home screen
+        _refreshData(); // Refresh data instead of just setState
       }
     } catch (e) {
       if (kDebugMode) {
@@ -1441,7 +1608,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       );
 
       if (result == true && mounted) {
-        safeSetState(() {}); // Refresh the home screen
+        _refreshData(); // Refresh data instead of just setState
       }
     } catch (e) {
       if (kDebugMode) {
