@@ -33,6 +33,14 @@ class PsychedelicThemeService extends ChangeNotifier {
   String get currentSubstance => _currentSubstance;
   bool get isInitialized => _isInitialized;
   
+  // Add getter for trippy mode state
+  bool get isTrippyMode => _currentThemeMode == ThemeMode.trippy;
+  
+  // Add theme getters for MaterialApp
+  ThemeData get lightTheme => _buildLightTheme();
+  ThemeData get darkTheme => _buildDarkTheme();
+  ThemeData get trippyTheme => _buildTrippyTheme();
+  
   Future<void> init() async {
     try {
       ErrorHandler.logTheme('INIT', 'PsychedelicThemeService Initialisierung gestartet');
@@ -100,6 +108,14 @@ class PsychedelicThemeService extends ChangeNotifier {
       await setThemeMode(ThemeMode.dark);
     } else {
       await setThemeMode(ThemeMode.trippy);
+    }
+  }
+  
+  Future<void> toggleTrippyMode(bool value) async {
+    if (value) {
+      await setThemeMode(ThemeMode.trippy);
+    } else {
+      await setThemeMode(ThemeMode.dark);
     }
   }
   
