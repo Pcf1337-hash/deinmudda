@@ -11,6 +11,7 @@ import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
 import '../utils/platform_helper.dart';
+import '../utils/crash_protection.dart';
 import '../services/psychedelic_theme_service.dart';
 
 class MainNavigation extends StatefulWidget {
@@ -20,7 +21,7 @@ class MainNavigation extends StatefulWidget {
   State<MainNavigation> createState() => _MainNavigationState();
 }
 
-class _MainNavigationState extends State<MainNavigation> {
+class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
   int _currentIndex = 0;
   late PageController _pageController;
 
@@ -103,7 +104,7 @@ class _MainNavigationState extends State<MainNavigation> {
     
     try {
       if (index != _currentIndex) {
-        setState(() {
+        safeSetState(() {
           _currentIndex = index;
         });
         _pageController.animateToPage(
@@ -141,7 +142,7 @@ class _MainNavigationState extends State<MainNavigation> {
             child: PageView(
               controller: _pageController,
               onPageChanged: (index) {
-                setState(() {
+                safeSetState(() {
                   _currentIndex = index;
                 });
                 
