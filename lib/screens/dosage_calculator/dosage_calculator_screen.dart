@@ -17,6 +17,7 @@ import '../../widgets/header_bar.dart';
 import '../../widgets/consistent_fab.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
+import '../../widgets/layout_error_boundary.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
@@ -66,68 +67,79 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     
     print('🔄 Loading dosage calculator data...');
     
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
-
-    try {
-      // Load user profile first
-      print('👤 Loading user profile...');
-      final user = await _dosageService.getUserProfile();
-      print('✅ User profile loaded: ${user != null ? 'Yes' : 'No'}');
+    // Use post-frame callback to avoid setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (_isDisposed) return;
       
-      // Load all substances - ensure we don't proceed until substances are loaded
-      print('💊 Loading substances...');
-      final allSubstances = await _dosageService.getAllDosageSubstances();
-      print('✅ Loaded ${allSubstances.length} substances');
-      
-      // Validate that substances are loaded properly
-      if (allSubstances.isEmpty) {
-        throw Exception('Keine Substanzen gefunden. Bitte prüfen Sie die Datenbank.');
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+          _errorMessage = null;
+        });
       }
-      
-      // Take only validated substances with proper data
-      final popularSubstances = allSubstances
-          .where((substance) => 
-            substance.name.isNotEmpty && 
-            substance.lightDosePerKg > 0 &&
-            substance.normalDosePerKg > 0 &&
-            substance.strongDosePerKg > 0
-          )
-          .take(6)
-          .toList();
-      
-      print('✅ Filtered to ${popularSubstances.length} valid substances');
-      
-      print('📊 Loading calculation history...');
-      final history = await _dosageService.getDosageCalculationHistory();
-      print('✅ Loaded ${history.length} calculation entries');
 
-      if (_isDisposed) return;
+      try {
+        // Load user profile first
+        print('👤 Loading user profile...');
+        final user = await _dosageService.getUserProfile();
+        print('✅ User profile loaded: ${user != null ? 'Yes' : 'No'}');
+        
+        // Load all substances - ensure we don't proceed until substances are loaded
+        print('💊 Loading substances...');
+        final allSubstances = await _dosageService.getAllDosageSubstances();
+        print('✅ Loaded ${allSubstances.length} substances');
+        
+        // Validate that substances are loaded properly
+        if (allSubstances.isEmpty) {
+          throw Exception('Keine Substanzen gefunden. Bitte prüfen Sie die Datenbank.');
+        }
+        
+        // Take only validated substances with proper data
+        final popularSubstances = allSubstances
+            .where((substance) => 
+              substance.name.isNotEmpty && 
+              substance.lightDosePerKg > 0 &&
+              substance.normalDosePerKg > 0 &&
+              substance.strongDosePerKg > 0
+            )
+            .take(6)
+            .toList();
+        
+        print('✅ Filtered to ${popularSubstances.length} valid substances');
+        
+        print('📊 Loading calculation history...');
+        final history = await _dosageService.getDosageCalculationHistory();
+        print('✅ Loaded ${history.length} calculation entries');
 
-      setState(() {
-        _currentUser = user;
-        _popularSubstances = popularSubstances;
-        _recentCalculations = history;
-        _isLoading = false;
-      });
-      
-      print('✅ Data loading completed successfully');
-    } catch (e, stackTrace) {
-      print('❌ Error loading data: $e');
-      print('Stack trace: $stackTrace');
-      
-      if (_isDisposed) return;
-      
-      setState(() {
-        _errorMessage = 'Fehler beim Laden der Daten: $e';
-        _isLoading = false;
-        // Ensure we have empty lists on error
-        _popularSubstances = [];
-        _recentCalculations = [];
-      });
-    }
+        if (_isDisposed) return;
+
+        if (mounted) {
+          setState(() {
+            _currentUser = user;
+            _popularSubstances = popularSubstances;
+            _recentCalculations = history;
+            _isLoading = false;
+          });
+        }
+        
+        print('✅ Data loading completed successfully');
+      } catch (e, stackTrace) {
+        print('❌ Error loading data: $e');
+        print('Stack trace: $stackTrace');
+        
+        if (_isDisposed) return;
+        
+        if (mounted) {
+          setState(() {
+            _errorMessage = 'Fehler beim Laden der Daten: $e';
+            _isLoading = false;
+            // Ensure we have empty lists on error
+            _popularSubstances = [];
+            _recentCalculations = [];
+          });
+        }
+      }
+    });
   }
 
   @override
@@ -158,13 +170,14 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   showLightningIcon: true,
                 ),
                 Expanded(
-                  child: _isLoading 
-                      ? _buildLoadingState()
-                      : _errorMessage != null
-                          ? _buildErrorCard(context, isDark, psychedelicService)
-                          : SingleChildScrollView(
-                              padding: const EdgeInsets.symmetric(horizontal: 16),
-                              child: Column(
+                  child: LayoutErrorBoundary(
+                    debugLabel: 'Dosage Calculator Main Content',
+                    child: _isLoading 
+                        ? _buildLoadingState()
+                        : _errorMessage != null
+                            ? _buildErrorCard(context, isDark, psychedelicService)
+                            : SafeScrollableColumn(
+                                padding: const EdgeInsets.symmetric(horizontal: 16),
                                 children: [
                                   const SizedBox(height: 16),
                                   _buildUserProfileSection(context, isDark, psychedelicService),
@@ -181,7 +194,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                                   const SizedBox(height: 120), // Space for FAB
                                 ],
                               ),
-                            ),
+                  ),
                 ),
               ],
             ),
@@ -763,30 +776,48 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
-          LayoutBuilder(
+          SafeLayoutBuilder(
+            debugLabel: 'Popular Substances Grid',
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - 16) / 2).clamp(150.0, 200.0);
+              final cardWidth = ((availableWidth - 32) / 2).clamp(150.0, 200.0); // Account for margins
               
               return Container(
                 constraints: BoxConstraints(
-                  maxHeight: 600, // Constrain maximum height to prevent overflow
+                  maxHeight: 650, // Increased height to accommodate content
+                  maxWidth: availableWidth,
                 ),
-                child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: _popularSubstances.take(4).map((substance) {
-                      return RepaintBoundary(
-                        key: ValueKey('substance_${substance.name}'), // Make key more unique
-                        child: SizedBox(
-                          width: cardWidth,
-                          height: 280, // Fixed height to prevent layout issues
-                          child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                child: LayoutErrorBoundary(
+                  debugLabel: 'Substances Grid Content',
+                  child: SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Use GridView instead of Wrap for better control
+                        GridView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: cardWidth / 300, // Adjust aspect ratio
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
+                          itemCount: _popularSubstances.take(4).length,
+                          itemBuilder: (context, index) {
+                            final substance = _popularSubstances[index];
+                            return LayoutErrorBoundary(
+                              debugLabel: 'Substance Card ${substance.name}',
+                              child: RepaintBoundary(
+                                key: Key('substance_card_${substance.name}_${substance.hashCode}'), // Make key unique
+                                child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                              ),
+                            );
+                          },
                         ),
-                      );
-                    }).toList(),
+                      ],
+                    ),
                   ),
                 ),
               );
@@ -833,6 +864,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           onTap: () => _calculateDosage(substance),
           borderRadius: BorderRadius.circular(16),
           child: Container(
+            constraints: const BoxConstraints(
+              minHeight: 280,
+              maxHeight: 320,
+            ),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: isDark
@@ -879,25 +914,27 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       ),
                     ),
                     const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: substanceColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: substanceColor.withOpacity(0.3),
-                          width: 1,
+                    Flexible(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: substanceColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: substanceColor.withOpacity(0.3),
+                            width: 1,
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        substance.administrationRoute,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10,
+                        child: Text(
+                          substance.administrationRoute,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],
@@ -906,17 +943,22 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 const SizedBox(height: 12),
                 
                 // Substance name - constrained to prevent overflow
-                SizedBox(
-                  height: 40, // Fixed height to prevent overflow
-                  child: Text(
-                    substance.name,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: substanceColor,
-                      fontSize: 16,
+                Flexible(
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minHeight: 35,
+                      maxHeight: 50,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    child: Text(
+                      substance.name,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: substanceColor,
+                        fontSize: 16,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
                 
@@ -947,48 +989,53 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 const SizedBox(height: 12),
                 
-                // Recommended dose section with fixed height
-                Container(
-                  width: double.infinity,
-                  height: 60, // Fixed height to prevent overflow
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: substanceColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: substanceColor.withOpacity(0.2),
-                      width: 1,
+                // Recommended dose section with flexible height
+                Flexible(
+                  child: Container(
+                    width: double.infinity,
+                    constraints: const BoxConstraints(
+                      minHeight: 60,
+                      maxHeight: 80,
                     ),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Empfohlene Dosis',
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 10,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: substanceColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: substanceColor.withOpacity(0.2),
+                        width: 1,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${recommendedDose.toStringAsFixed(1)} mg',
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: substanceColor,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 14,
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Empfohlene Dosis',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
+                        const SizedBox(height: 4),
+                        Text(
+                          '${recommendedDose.toStringAsFixed(1)} mg',
+                          style: theme.textTheme.titleSmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
                   ),
                 ),
                 
-                const Spacer(),
+                const SizedBox(height: 12),
                 
                 // Action button
                 Consumer<service.PsychedelicThemeService>(
@@ -1276,48 +1323,58 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           constraints: const BoxConstraints(
             maxHeight: 300, // Constrain height to prevent overflow
           ),
-          child: ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: _recentCalculations.length.clamp(0, 5), // Limit to 5 items
-            separatorBuilder: (context, index) => const SizedBox(height: 8),
-            itemBuilder: (context, index) {
-              final calculation = _recentCalculations[index];
-              return RepaintBoundary(
-                key: ValueKey('recent_calc_${calculation['id'] ?? index}'), // Unique key
-                child: GlassCard(
-                  child: ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: DesignTokens.accentCyan.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
+          child: LayoutErrorBoundary(
+            debugLabel: 'Recent Calculations List',
+            child: ListView.separated(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: _recentCalculations.length.clamp(0, 5), // Limit to 5 items
+              separatorBuilder: (context, index) => const SizedBox(height: 8),
+              itemBuilder: (context, index) {
+                final calculation = _recentCalculations[index];
+                final calculationId = calculation['id']?.toString() ?? '';
+                final substanceName = calculation['substance']?.toString() ?? '';
+                final uniqueKey = 'recent_calc_${calculationId}_${substanceName}_$index'; // More unique key
+                
+                return LayoutErrorBoundary(
+                  debugLabel: 'Recent Calculation Item',
+                  child: RepaintBoundary(
+                    key: Key(uniqueKey),
+                    child: GlassCard(
+                      child: ListTile(
+                        leading: Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: DesignTokens.accentCyan.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(
+                            Icons.history_rounded,
+                            color: DesignTokens.accentCyan,
+                            size: 20,
+                          ),
+                        ),
+                        title: Text(
+                          substanceName.isNotEmpty ? substanceName : 'Unbekannt',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        subtitle: Text(
+                          '${calculation['dosage']?.toString() ?? 'N/A'} • ${calculation['date']?.toString() ?? 'N/A'}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        trailing: const Icon(Icons.arrow_forward_ios_rounded),
+                        onTap: () {
+                          // TODO: Show calculation details
+                          print('Tapped on calculation: $substanceName');
+                        },
                       ),
-                      child: const Icon(
-                        Icons.history_rounded,
-                        color: DesignTokens.accentCyan,
-                        size: 20,
-                      ),
                     ),
-                    title: Text(
-                      calculation['substance']?.toString() ?? 'Unbekannt',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    subtitle: Text(
-                      '${calculation['dosage']?.toString() ?? 'N/A'} • ${calculation['date']?.toString() ?? 'N/A'}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: const Icon(Icons.arrow_forward_ios_rounded),
-                    onTap: () {
-                      // TODO: Show calculation details
-                      print('Tapped on calculation: ${calculation['substance']}');
-                    },
                   ),
-                ),
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ],
@@ -1349,11 +1406,19 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   Future<void> _calculateDosage(DosageCalculatorSubstance substance) async {
+    if (_isDisposed) return;
+    
     print('🧮 Starting dosage calculation for: ${substance.name}');
     
     if (_currentUser == null) {
       print('⚠️ No user profile found, showing create profile dialog');
       _showCreateProfileDialog();
+      return;
+    }
+
+    // Prevent multiple simultaneous calculations
+    if (_isModalOpen) {
+      print('⚠️ Modal already open, ignoring calculation request');
       return;
     }
 
@@ -1382,7 +1447,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       print('❌ Error during dosage calculation: $e');
       print('Stack trace: $stackTrace');
       
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fehler bei der Berechnung: $e'),
@@ -1420,6 +1485,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   Future<void> _showDosageResult(DosageCalculatorSubstance substance, DosageCalculation calculation) async {
+    if (_isDisposed) return;
+    
     if (_isModalOpen) {
       print('⚠️ Modal already open, ignoring request');
       return;
@@ -1435,28 +1502,59 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       
       _isModalOpen = true;
       
-      await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        isDismissible: true,
-        enableDrag: true,
-        builder: (context) {
-          print('✅ Modal builder called successfully');
-          return _SimpleDosageResultCard(
-            substance: substance,
-            calculation: calculation,
-            user: _currentUser!,
+      // Use a post-frame callback to ensure the context is ready
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (!mounted || _isDisposed) {
+          _isModalOpen = false;
+          return;
+        }
+        
+        try {
+          await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            backgroundColor: Colors.transparent,
+            isDismissible: true,
+            enableDrag: true,
+            useSafeArea: true,
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.9,
+            ),
+            builder: (BuildContext modalContext) {
+              print('✅ Modal builder called successfully');
+              return _SafeDosageResultCard(
+                substance: substance,
+                calculation: calculation,
+                user: _currentUser!,
+              );
+            },
           );
-        },
-      );
-      
-      print('✅ Modal dismissed successfully');
+          
+          print('✅ Modal dismissed successfully');
+        } catch (e, stackTrace) {
+          print('❌ Error showing modal: $e');
+          print('Stack trace: $stackTrace');
+          
+          if (mounted && !_isDisposed) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Fehler beim Anzeigen der Dosierungsberechnung: $e'),
+                backgroundColor: DesignTokens.errorRed,
+                duration: const Duration(seconds: 5),
+              ),
+            );
+          }
+        } finally {
+          _isModalOpen = false;
+        }
+      });
     } catch (e, stackTrace) {
-      print('❌ Error showing dosage result modal: $e');
+      print('❌ Error setting up dosage result modal: $e');
       print('Stack trace: $stackTrace');
       
-      if (mounted) {
+      _isModalOpen = false;
+      
+      if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fehler beim Anzeigen der Dosierungsberechnung: $e'),
@@ -1465,8 +1563,6 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
           ),
         );
       }
-    } finally {
-      _isModalOpen = false;
     }
   }
 
@@ -1495,6 +1591,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   void _showAddEntryDialogWithBlur(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
+    if (_isDisposed) return;
+    
     try {
       print('🔄 Showing add entry modal...');
       
@@ -1510,15 +1608,21 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         barrierColor: Colors.black.withOpacity(0.5),
         isDismissible: true,
         enableDrag: true,
-        builder: (context) {
+        useSafeArea: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        builder: (modalContext) {
           print('✅ Add entry modal builder called');
           return BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
             child: _AddEntryModal(
               onSubstanceSelected: (substance) {
                 print('✅ Substance selected: ${substance.name}');
-                Navigator.of(context).pop();
-                _calculateDosage(substance);
+                Navigator.of(modalContext).pop();
+                if (mounted && !_isDisposed) {
+                  _calculateDosage(substance);
+                }
               },
               substances: _popularSubstances,
               isDark: isDark,
@@ -1530,7 +1634,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       print('❌ Error showing add entry modal: $e');
       print('Stack trace: $stackTrace');
       
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fehler beim Öffnen des Dialogs: $e'),
@@ -1542,6 +1646,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 
   void _showTimerDialogWithBlur(BuildContext context, bool isDark, service.PsychedelicThemeService psychedelicService) {
+    if (_isDisposed) return;
+    
     try {
       print('🔄 Showing timer modal...');
       
@@ -1557,7 +1663,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         barrierColor: Colors.black.withOpacity(0.5),
         isDismissible: true,
         enableDrag: true,
-        builder: (context) {
+        useSafeArea: true,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        builder: (modalContext) {
           print('✅ Timer modal builder called');
           return BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
@@ -1566,8 +1676,10 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               isDark: isDark,
               onTimerStarted: (substance, duration) {
                 print('✅ Timer started for: ${substance.name}, duration: $duration');
-                Navigator.of(context).pop();
-                _startTimerForSubstance(substance, duration);
+                Navigator.of(modalContext).pop();
+                if (mounted && !_isDisposed) {
+                  _startTimerForSubstance(substance, duration);
+                }
               },
             ),
           );
@@ -1577,7 +1689,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
       print('❌ Error showing timer modal: $e');
       print('Stack trace: $stackTrace');
       
-      if (mounted) {
+      if (mounted && !_isDisposed) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Fehler beim Öffnen des Timer-Dialogs: $e'),
@@ -1591,11 +1703,15 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
 
   void _startTimerForSubstance(DosageCalculatorSubstance substance, Duration duration) {
-    setState(() {
-      _timerSubstance = substance;
-      _timerDuration = duration;
-      _remainingTime = duration;
-    });
+    if (_isDisposed) return;
+    
+    if (mounted) {
+      setState(() {
+        _timerSubstance = substance;
+        _timerDuration = duration;
+        _remainingTime = duration;
+      });
+    }
     
     _activeTimer?.cancel();
     _activeTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -1604,31 +1720,37 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         return;
       }
       
-      setState(() {
-        _remainingTime = _remainingTime - const Duration(seconds: 1);
-        
-        if (_remainingTime.inSeconds <= 0) {
-          _stopTimer();
-        }
-      });
+      if (mounted) {
+        setState(() {
+          _remainingTime = _remainingTime - const Duration(seconds: 1);
+          
+          if (_remainingTime.inSeconds <= 0) {
+            _stopTimer();
+          }
+        });
+      }
     });
     
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Timer für ${substance.name} gestartet (${_formatDuration(duration)})'),
-        backgroundColor: DesignTokens.successGreen,
-      ),
-    );
+    if (mounted && !_isDisposed) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Timer für ${substance.name} gestartet (${_formatDuration(duration)})'),
+          backgroundColor: DesignTokens.successGreen,
+        ),
+      );
+    }
   }
 
   void _stopTimer() {
     _activeTimer?.cancel();
-    setState(() {
-      _activeTimer = null;
-      _timerSubstance = null;
-      _timerDuration = Duration.zero;
-      _remainingTime = Duration.zero;
-    });
+    if (mounted && !_isDisposed) {
+      setState(() {
+        _activeTimer = null;
+        _timerSubstance = null;
+        _timerDuration = Duration.zero;
+        _remainingTime = Duration.zero;
+      });
+    }
   }
 
   Color _getSubstanceColor(String substanceName) {
@@ -1637,23 +1759,23 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   }
 }
 
-// Vereinfachte DosageResultCard
-class _SimpleDosageResultCard extends StatefulWidget {
+// Safer DosageResultCard with better error handling
+class _SafeDosageResultCard extends StatefulWidget {
   final DosageCalculatorSubstance substance;
   final DosageCalculation calculation;
   final DosageCalculatorUser user;
 
-  const _SimpleDosageResultCard({
+  const _SafeDosageResultCard({
     required this.substance,
     required this.calculation,
     required this.user,
   });
 
   @override
-  State<_SimpleDosageResultCard> createState() => _SimpleDosageResultCardState();
+  State<_SafeDosageResultCard> createState() => _SafeDosageResultCardState();
 }
 
-class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
+class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
   DosageIntensity _selectedIntensity = DosageIntensity.light;
 
   @override
@@ -1663,7 +1785,10 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
     final mediaQuery = MediaQuery.of(context);
 
     return Container(
-      height: mediaQuery.size.height * 0.85,
+      constraints: BoxConstraints(
+        maxHeight: mediaQuery.size.height * 0.9,
+        maxWidth: mediaQuery.size.width,
+      ),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[900] : Colors.white,
         borderRadius: const BorderRadius.vertical(
@@ -1671,13 +1796,15 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           _buildHeader(context, isDark),
-          Expanded(
+          Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   _buildSubstanceInfo(context, isDark),
                   const SizedBox(height: 24),
@@ -1718,6 +1845,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
         ),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             width: 40,
@@ -1746,6 +1874,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       'Dosierungsberechnung',
@@ -1753,12 +1882,16 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     Text(
                       widget.substance.name,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: Colors.white.withOpacity(0.9),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -1804,6 +1937,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   widget.substance.name,
@@ -1811,11 +1945,15 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                     fontWeight: FontWeight.w700,
                     color: Colors.indigo,
                   ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   'Dosierungsbereich: ${widget.substance.lightDosePerKg.toStringAsFixed(1)} - ${widget.substance.strongDosePerKg.toStringAsFixed(1)} mg/kg',
                   style: theme.textTheme.bodyMedium,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -1836,6 +1974,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Text(
             'Benutzerdaten',
@@ -1848,6 +1987,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
             children: [
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.monitor_weight_rounded, color: Colors.indigo),
                     const SizedBox(height: 4),
@@ -1857,13 +1997,21 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                         fontWeight: FontWeight.w600,
                         color: Colors.indigo,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text('Gewicht', style: theme.textTheme.bodySmall),
+                    Text(
+                      'Gewicht', 
+                      style: theme.textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.analytics_rounded, color: Colors.green),
                     const SizedBox(height: 4),
@@ -1873,13 +2021,21 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                         fontWeight: FontWeight.w600,
                         color: Colors.green,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text('BMI', style: theme.textTheme.bodySmall),
+                    Text(
+                      'BMI', 
+                      style: theme.textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.person_rounded, color: Colors.cyan),
                     const SizedBox(height: 4),
@@ -1889,8 +2045,15 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                         fontWeight: FontWeight.w600,
                         color: Colors.cyan,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text('Alter', style: theme.textTheme.bodySmall),
+                    Text(
+                      'Alter', 
+                      style: theme.textTheme.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),
@@ -1906,6 +2069,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           'Dosierungsstärke wählen',
@@ -1923,10 +2087,10 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                   final isSelected = intensity == _selectedIntensity;
                   final color = _getDosageColor(intensity);
                   final dose = _getDoseForIntensity(intensity);
-                  final cardWidth = (constraints.maxWidth / 3) - 8; // Account for spacing
+                  final cardWidth = (constraints.maxWidth / 3).clamp(100.0, 150.0);
 
                   return Container(
-                    width: cardWidth.clamp(100.0, 150.0),
+                    width: cardWidth,
                     margin: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
                       onTap: () {
@@ -1935,6 +2099,10 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                         });
                       },
                       child: Container(
+                        constraints: const BoxConstraints(
+                          minHeight: 80,
+                          maxHeight: 100,
+                        ),
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: isSelected ? color.withOpacity(0.1) : Colors.transparent,
@@ -1945,6 +2113,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                           ),
                         ),
                         child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
@@ -2021,6 +2190,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
                   'Empfohlene Dosis',
@@ -2073,6 +2243,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Row(
             children: [
@@ -2082,11 +2253,15 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                 size: 20,
               ),
               const SizedBox(width: 8),
-              Text(
-                'Sicherheitshinweise',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.red,
+              Expanded(
+                child: Text(
+                  'Sicherheitshinweise',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
@@ -2157,6 +2332,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
 
   Widget _buildActionButtons(BuildContext context, bool isDark) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
           width: double.infinity,
