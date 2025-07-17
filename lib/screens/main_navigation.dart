@@ -162,8 +162,14 @@ class _MainNavigationState extends State<MainNavigation> {
   }
 
   Widget _buildBottomNavigationBar(BuildContext context, bool isDark) {
+    // Use constant from Spacing to avoid potential accumulation issues
+    // Store MediaQuery.of(context) in a variable to ensure consistent reference
+    final mediaQuery = MediaQuery.of(context);
+    final bottomPadding = mediaQuery.padding.bottom;
+    final totalHeight = Spacing.bottomNavHeight + bottomPadding;
+    
     return Container(
-      height: 80 + MediaQuery.of(context).padding.bottom, // Fixed height with safe area
+      height: totalHeight,
       decoration: BoxDecoration(
         color: isDark ? DesignTokens.surfaceDark : DesignTokens.surfaceLight,
         boxShadow: [
@@ -212,51 +218,59 @@ class _MainNavigationState extends State<MainNavigation> {
   ) {
     final theme = Theme.of(context);
     
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-        curve: DesignTokens.curveEaseOut,
-        padding: const EdgeInsets.symmetric(
-          horizontal: Spacing.md,
-          vertical: Spacing.sm,
-        ),
-        decoration: BoxDecoration(
-          color: isActive
-              ? DesignTokens.primaryIndigo.withOpacity(0.1)
-              : Colors.transparent,
-          borderRadius: Spacing.borderRadiusLg,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
-              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
-              child: Icon(
-                isActive ? item.activeIcon : item.icon,
-                key: ValueKey(isActive),
-                color: isActive
-                    ? DesignTokens.primaryIndigo
-                    : (isDark
-                        ? DesignTokens.iconSecondaryDark
-                        : DesignTokens.iconSecondaryLight),
-                size: Spacing.iconMd,
+    return Flexible(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
+          curve: DesignTokens.curveEaseOut,
+          padding: const EdgeInsets.symmetric(
+            horizontal: Spacing.md,
+            vertical: Spacing.sm,
+          ),
+          decoration: BoxDecoration(
+            color: isActive
+                ? DesignTokens.primaryIndigo.withOpacity(0.1)
+                : Colors.transparent,
+            borderRadius: Spacing.borderRadiusLg,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedSwitcher(
+                duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
+                child: Icon(
+                  isActive ? item.activeIcon : item.icon,
+                  key: ValueKey(isActive),
+                  color: isActive
+                      ? DesignTokens.primaryIndigo
+                      : (isDark
+                          ? DesignTokens.iconSecondaryDark
+                          : DesignTokens.iconSecondaryLight),
+                  size: Spacing.iconMd,
+                ),
               ),
-            ),
-            Spacing.verticalSpaceXs,
-            AnimatedDefaultTextStyle(
-              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
-              style: theme.textTheme.labelSmall!.copyWith(
-                color: isActive
-                    ? DesignTokens.primaryIndigo
-                    : (isDark
-                        ? DesignTokens.textSecondaryDark
-                        : DesignTokens.textSecondaryLight),
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                fontSize: 10,
+              Spacing.verticalSpaceXs,
+              AnimatedDefaultTextStyle(
+                duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
+                style: theme.textTheme.labelSmall!.copyWith(
+                  color: isActive
+                      ? DesignTokens.primaryIndigo
+                      : (isDark
+                          ? DesignTokens.textSecondaryDark
+                          : DesignTokens.textSecondaryLight),
+                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: 10,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    item.label,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              child: Text(item.label),
-            ),
           ],
         ),
       ),
