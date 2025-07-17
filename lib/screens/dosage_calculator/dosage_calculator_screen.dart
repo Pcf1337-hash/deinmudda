@@ -810,7 +810,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             return LayoutErrorBoundary(
                               debugLabel: 'Substance Card ${substance.name}',
                               child: RepaintBoundary(
-                                key: Key('substance_card_${substance.name}_${substance.hashCode}'), // Make key unique
+                                key: Key('substance_card_${substance.name}_${substance.hashCode}_${DateTime.now().millisecondsSinceEpoch % 10000}'), // Make key unique with timestamp
                                 child: _buildEnhancedSubstanceCard(context, substance, isDark),
                               ),
                             );
@@ -1410,6 +1410,24 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     
     print('🧮 Starting dosage calculation for: ${substance.name}');
     
+    // Validate substance data before proceeding
+    if (substance.name.isEmpty || 
+        substance.lightDosePerKg <= 0 ||
+        substance.normalDosePerKg <= 0 ||
+        substance.strongDosePerKg <= 0) {
+      print('❌ Invalid substance data: ${substance.name}');
+      if (mounted && !_isDisposed) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler: Ungültige Substanzdaten für ${substance.name}'),
+            backgroundColor: DesignTokens.errorRed,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+      return;
+    }
+    
     if (_currentUser == null) {
       print('⚠️ No user profile found, showing create profile dialog');
       _showCreateProfileDialog();
@@ -1519,13 +1537,17 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             useSafeArea: true,
             constraints: BoxConstraints(
               maxHeight: MediaQuery.of(context).size.height * 0.9,
+              maxWidth: MediaQuery.of(context).size.width,
             ),
             builder: (BuildContext modalContext) {
               print('✅ Modal builder called successfully');
-              return _SafeDosageResultCard(
-                substance: substance,
-                calculation: calculation,
-                user: _currentUser!,
+              return LayoutErrorBoundary(
+                debugLabel: 'Dosage Result Modal',
+                child: _SafeDosageResultCard(
+                  substance: substance,
+                  calculation: calculation,
+                  user: _currentUser!,
+                ),
               );
             },
           );
@@ -1788,6 +1810,7 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       constraints: BoxConstraints(
         maxHeight: mediaQuery.size.height * 0.9,
         maxWidth: mediaQuery.size.width,
+        minHeight: 300, // Ensure minimum height
       ),
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[900] : Colors.white,
@@ -1795,34 +1818,43 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
           top: Radius.circular(24),
         ),
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildHeader(context, isDark),
-          Flexible(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _buildSubstanceInfo(context, isDark),
-                  const SizedBox(height: 24),
-                  _buildUserInfo(context, isDark),
-                  const SizedBox(height: 24),
-                  _buildDosageSelection(context, isDark),
-                  const SizedBox(height: 24),
-                  _buildSelectedDosageInfo(context, isDark),
-                  const SizedBox(height: 24),
-                  _buildSafetyWarnings(context, isDark),
-                  const SizedBox(height: 24),
-                  _buildActionButtons(context, isDark),
-                  const SizedBox(height: 40),
-                ],
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildHeader(context, isDark),
+            SafeExpanded(
+              child: SingleChildScrollView(
+                physics: const ClampingScrollPhysics(),
+                padding: const EdgeInsets.all(16),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    minHeight: 200,
+                    maxWidth: mediaQuery.size.width - 32,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildSubstanceInfo(context, isDark),
+                      const SizedBox(height: 24),
+                      _buildUserInfo(context, isDark),
+                      const SizedBox(height: 24),
+                      _buildDosageSelection(context, isDark),
+                      const SizedBox(height: 24),
+                      _buildSelectedDosageInfo(context, isDark),
+                      const SizedBox(height: 24),
+                      _buildSafetyWarnings(context, isDark),
+                      const SizedBox(height: 24),
+                      _buildActionButtons(context, isDark),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
