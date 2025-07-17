@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../theme/design_tokens.dart';
+import '../utils/crash_protection.dart';
 
 /// A widget that catches and handles layout errors gracefully
 class LayoutErrorBoundary extends StatefulWidget {
@@ -19,7 +20,7 @@ class LayoutErrorBoundary extends StatefulWidget {
   State<LayoutErrorBoundary> createState() => _LayoutErrorBoundaryState();
 }
 
-class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> {
+class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStateMixin {
   Object? _error;
   StackTrace? _stackTrace;
 
@@ -33,7 +34,7 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> {
       if (_isLayoutError(details.exception.toString())) {
         print('🚨 Layout error caught by boundary: ${details.exception}');
         if (mounted) {
-          setState(() {
+          safeSetState(() {
             _error = details.exception;
             _stackTrace = details.stack;
           });
@@ -72,7 +73,7 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> {
       onError: (error, stackTrace) {
         print('🚨 Error boundary caught: $error');
         if (mounted) {
-          setState(() {
+          safeSetState(() {
             _error = error;
             _stackTrace = stackTrace;
           });
@@ -133,7 +134,7 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> {
           ElevatedButton.icon(
             onPressed: () {
               HapticFeedback.lightImpact();
-              setState(() {
+              safeSetState(() {
                 _error = null;
                 _stackTrace = null;
               });

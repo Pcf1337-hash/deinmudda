@@ -12,6 +12,7 @@ import '../widgets/header_bar.dart';
 import '../widgets/consistent_fab.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/crash_protection.dart';
 
 class TimerDashboardScreen extends StatefulWidget {
   const TimerDashboardScreen({super.key});
@@ -20,7 +21,7 @@ class TimerDashboardScreen extends StatefulWidget {
   State<TimerDashboardScreen> createState() => _TimerDashboardScreenState();
 }
 
-class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
+class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeStateMixin {
   final EntryService _entryService = EntryService();
   late TimerService _timerService;
   
@@ -40,7 +41,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
   }
 
   Future<void> _loadActiveTimers() async {
-    setState(() {
+    safeSetState(() {
       _isLoading = true;
       _errorMessage = null;
     });
@@ -51,12 +52,12 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
         entry.hasTimer && entry.isTimerActive && !entry.timerCompleted
       ).toList();
 
-      setState(() {
+      safeSetState(() {
         _activeEntries = activeEntries;
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
+      safeSetState(() {
         _errorMessage = 'Fehler beim Laden der Timer: $e';
         _isLoading = false;
       });
@@ -79,7 +80,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
       context: context,
       builder: (context) => _CustomTimerDialog(
         onTimerCreated: (timer) {
-          setState(() {
+          safeSetState(() {
             _customTimers.add(timer);
           });
         },
@@ -249,7 +250,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> {
             right: 8,
             child: GestureDetector(
               onTap: () {
-                setState(() {
+                safeSetState(() {
                   _customTimers.remove(timer);
                 });
               },
@@ -379,7 +380,7 @@ class _CustomTimerDialog extends StatefulWidget {
   State<_CustomTimerDialog> createState() => _CustomTimerDialogState();
 }
 
-class _CustomTimerDialogState extends State<_CustomTimerDialog> {
+class _CustomTimerDialogState extends State<_CustomTimerDialog> with SafeStateMixin {
   final _titleController = TextEditingController();
   final _minutesController = TextEditingController(text: '30');
   Duration _duration = const Duration(minutes: 30);
@@ -412,7 +413,7 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
     if (text.isNotEmpty) {
       final minutes = int.tryParse(text) ?? 30;
       if (minutes != _duration.inMinutes) {
-        setState(() {
+        safeSetState(() {
           _duration = Duration(minutes: minutes.clamp(1, 1440)); // Max 24 hours
         });
       }
@@ -497,7 +498,7 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
                 children: [15, 30, 45, 60, 90, 120].map((minutes) {
                   return GestureDetector(
                     onTap: () {
-                      setState(() {
+                      safeSetState(() {
                         _duration = Duration(minutes: minutes);
                         _minutesController.text = minutes.toString();
                       });
@@ -537,7 +538,7 @@ class _CustomTimerDialogState extends State<_CustomTimerDialog> {
                 children: _colors.map((color) {
                   return GestureDetector(
                     onTap: () {
-                      setState(() {
+                      safeSetState(() {
                         _selectedColor = color;
                       });
                     },
