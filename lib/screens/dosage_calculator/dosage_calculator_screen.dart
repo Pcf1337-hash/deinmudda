@@ -1820,7 +1820,7 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       ),
       child: SafeArea(
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: MainAxisSize.max,
           children: [
             _buildHeader(context, isDark),
             SafeExpanded(
