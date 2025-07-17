@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
+import 'dart:ui';
 import 'package:intl/date_symbol_data_local.dart';
 import 'utils/performance_helper.dart';
 import 'utils/platform_helper.dart';
@@ -29,19 +30,51 @@ void main() async {
   
   ErrorHandler.logStartup('MAIN', 'App-Initialisierung gestartet');
   
+  // Set up global error handlers to catch layout and rendering errors
+  FlutterError.onError = (FlutterErrorDetails details) {
+    ErrorHandler.logError('FLUTTER_ERROR', 'Unbehandelter Flutter-Fehler: ${details.exception}');
+    ErrorHandler.logError('FLUTTER_ERROR', 'Stack trace: ${details.stack}');
+    
+    // Check if it's a layout error and log accordingly
+    final errorStr = details.exception.toString();
+    if (errorStr.contains('RenderBox was not laid out') ||
+        errorStr.contains('RenderFlex overflowed') ||
+        errorStr.contains('unbounded height') ||
+        errorStr.contains('unbounded width')) {
+      ErrorHandler.logError('LAYOUT_ERROR', 'Layout-Fehler erkannt: $errorStr');
+      ImpellerHelper.logPerformanceIssue('Layout', errorStr);
+    }
+    
+    // Continue with default error handling
+    FlutterError.presentError(details);
+  };
+  
+  // Handle errors in other zones (like timer callbacks)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    ErrorHandler.logError('PLATFORM_ERROR', 'Platform-Fehler: $error');
+    ErrorHandler.logError('PLATFORM_ERROR', 'Stack trace: $stack');
+    return true;
+  };
+  
   // Initialize performance optimizations
   PerformanceHelper.init();
   
   // Initialize Impeller detection for rendering optimization
-  await ImpellerHelper.initialize();
-  
-  // Log Impeller/Vulkan backend status
-  final impellerInfo = ImpellerHelper.getDebugInfo();
-  ErrorHandler.logStartup('IMPELLER', 'Rendering Backend Status: $impellerInfo');
-  
-  // Log if Impeller is using Vulkan backend
-  if (kDebugMode) {
-    print('I/flutter: [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(61)] Using the Impeller rendering backend (Vulkan).');
+  try {
+    await ImpellerHelper.initialize();
+    
+    // Log Impeller/Vulkan backend status
+    final impellerInfo = ImpellerHelper.getDebugInfo();
+    ErrorHandler.logStartup('IMPELLER', 'Rendering Backend Status: $impellerInfo');
+    
+    // Log if Impeller is using Vulkan backend
+    if (kDebugMode) {
+      print('I/flutter: [IMPORTANT:flutter/shell/platform/android/android_context_vk_impeller.cc(61)] Using the Impeller rendering backend (Vulkan).');
+    }
+  } catch (e) {
+    ErrorHandler.logError('IMPELLER', 'Impeller-Initialisierung fehlgeschlagen: $e');
+    // Force disable Impeller features if initialization fails
+    ImpellerHelper.forceDisableImpellerFeatures();
   }
   
   // Enable performance optimization in release mode
@@ -109,7 +142,47 @@ class KonsumTrackerApp extends StatelessWidget {
         
         // Handle initialization completion
         if (snapshot.hasData) {
-          return _buildMainApp();
+          try {
+            return _buildMainApp();
+          } catch (e, stackTrace) {
+            ErrorHandler.logError('MAIN_APP', 'Kritischer Fehler beim Erstellen der App: $e');
+            ErrorHandler.logError('MAIN_APP', 'Stack trace: $stackTrace');
+            
+            // Return fallback app
+            return MaterialApp(
+              home: Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text(
+                        'App-Start fehlgeschlagen',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text('Bitte App neu starten'),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Try to restart initialization
+                          initManager.initialize().then((_) {
+                            if (context.mounted) {
+                              // Force rebuild
+                              (context as Element).markNeedsBuild();
+                            }
+                          });
+                        },
+                        child: Text('Neu starten'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              debugShowCheckedModeBanner: false,
+            );
+          }
         }
         
         // Handle initialization errors
