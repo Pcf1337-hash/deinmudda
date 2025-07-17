@@ -112,8 +112,11 @@ class _QuickEntryBarState extends State<QuickEntryBar> {
         Spacing.verticalSpaceMd,
         
         // Quick buttons scroll view
-        SizedBox(
-          height: 100,
+        ConstrainedBox(
+          constraints: const BoxConstraints(
+            minHeight: 80,
+            maxHeight: 120,
+          ),
           child: widget.isEditing
               ? _buildReorderableButtonList(context, isDark)
               : _buildNormalButtonList(context, isDark),
