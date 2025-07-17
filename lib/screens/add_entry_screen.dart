@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
 import '../services/entry_service.dart';
