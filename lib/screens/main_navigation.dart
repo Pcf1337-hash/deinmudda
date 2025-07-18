@@ -275,6 +275,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
           ],
         ),
       ),
+    ),
     );
   }
 }

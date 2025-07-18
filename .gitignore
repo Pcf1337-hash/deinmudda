@@ -51,3 +51,6 @@ flutter/
 # Environment files
 .env
 node_modules/
+
+# Downloaded SDK for testing
+sdk-*/
