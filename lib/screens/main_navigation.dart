@@ -201,6 +201,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                 isDark,
                 item,
                 isActive,
+                index,
                 () => _onItemTapped(index),
               );
             }).toList(),
@@ -215,6 +216,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     bool isDark,
     NavigationItem item,
     bool isActive,
+    int index,
     VoidCallback onTap,
   ) {
     final theme = Theme.of(context);
@@ -246,7 +248,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                 duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
                 child: Icon(
                   isActive ? item.activeIcon : item.icon,
-                  key: ValueKey(isActive),
+                  key: ValueKey('nav_${index}_$isActive'),
                   color: isActive
                       ? DesignTokens.primaryIndigo
                       : (isDark
