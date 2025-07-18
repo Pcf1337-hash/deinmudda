@@ -235,9 +235,13 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                 : Colors.transparent,
             borderRadius: Spacing.borderRadiusLg,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 60, // Ensure navigation item doesn't exceed reasonable height
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
               AnimatedSwitcher(
                 duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
                 child: Icon(
@@ -272,7 +276,8 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                   ),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
       ),
     ),
