@@ -137,8 +137,10 @@ class _PieChartWidgetState extends State<PieChartWidget>
         final value = (item['value'] as num).toDouble();
         final percentage = total > 0 ? (value / total * 100) : 0.0;
         final color = widget.colors[index % widget.colors.length];
+        final label = item['label']?.toString() ?? '';
 
         return Padding(
+          key: ValueKey('pie_legend_${label}_$index'),
           padding: const EdgeInsets.only(bottom: Spacing.sm),
           child: Row(
             children: [
@@ -153,15 +155,25 @@ class _PieChartWidgetState extends State<PieChartWidget>
               Spacing.horizontalSpaceSm,
               Expanded(
                 child: Text(
-                  item['label']?.toString() ?? '',
+                  label,
                   style: theme.textTheme.bodySmall,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                '${percentage.toStringAsFixed(1)}%',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
+              Spacing.horizontalSpaceXs,
+              Container(
+                constraints: const BoxConstraints(
+                  minWidth: 40,
+                  maxWidth: 50,
+                ),
+                child: Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 11,
+                  ),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

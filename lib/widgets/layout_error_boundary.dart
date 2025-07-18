@@ -34,9 +34,14 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
       if (_isLayoutError(details.exception.toString())) {
         print('🚨 Layout error caught by boundary: ${details.exception}');
         if (mounted) {
-          safeSetState(() {
-            _error = details.exception;
-            _stackTrace = details.stack;
+          // Use post-frame callback to avoid setState during frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              safeSetState(() {
+                _error = details.exception;
+                _stackTrace = details.stack;
+              });
+            }
           });
         }
       }
@@ -73,9 +78,14 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
       onError: (error, stackTrace) {
         print('🚨 Error boundary caught: $error');
         if (mounted) {
-          safeSetState(() {
-            _error = error;
-            _stackTrace = stackTrace;
+          // Use post-frame callback to avoid setState during frame
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              safeSetState(() {
+                _error = error;
+                _stackTrace = stackTrace;
+              });
+            }
           });
         }
       },

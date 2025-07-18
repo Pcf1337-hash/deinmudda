@@ -564,15 +564,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           if (kDebugMode) {
                             print('🔄 HomeScreen: Zeige Loading-Zustand');
                           }
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(Spacing.lg),
-                              child: Column(
-                                children: [
-                                  CircularProgressIndicator(),
-                                  SizedBox(height: 16),
-                                  Text('Lade Einträge...'),
-                                ],
+                          return Container(
+                            constraints: const BoxConstraints(
+                              minHeight: 200,
+                              maxHeight: 400,
+                            ),
+                            child: const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(Spacing.lg),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 16),
+                                    Text('Lade Einträge...'),
+                                  ],
+                                ),
                               ),
                             ),
                           );
@@ -591,16 +598,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
                         }
                         
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Spacing.verticalSpaceLg,
-                            _buildRecentEntriesSection(context, isDark, entries),
-                            Spacing.verticalSpaceLg,
-                            _buildTodayStatsSection(context, isDark),
-                            Spacing.verticalSpaceLg,
-                            _buildQuickInsightsSection(context, isDark),
-                          ],
+                        return Container(
+                          constraints: const BoxConstraints(
+                            minHeight: 100,
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Spacing.verticalSpaceLg,
+                              _buildRecentEntriesSection(context, isDark, entries),
+                              Spacing.verticalSpaceLg,
+                              _buildTodayStatsSection(context, isDark),
+                              Spacing.verticalSpaceLg,
+                              _buildQuickInsightsSection(context, isDark),
+                            ],
+                          ),
                         );
                       },
                     ),
@@ -926,6 +939,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         try {
           // Only animate if animations should be enabled
           Widget card = CompactEntryCard(
+            key: ValueKey('entry_${entryData.id}_$index'),
             entry: entryData,
             onTap: () => _navigateToEditEntry(entryData),
           );
@@ -943,6 +957,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           }
           
           return Padding(
+            key: ValueKey('entry_padding_${entryData.id}_$index'),
             padding: const EdgeInsets.only(bottom: Spacing.sm),
             child: card,
           );
@@ -953,8 +968,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           
           // Fallback simple card on error
           return Padding(
+            key: ValueKey('entry_fallback_${entryData.id}_$index'),
             padding: const EdgeInsets.only(bottom: Spacing.sm),
             child: Card(
+              key: ValueKey('entry_card_${entryData.id}_$index'),
               child: ListTile(
                 title: Text(entryData.substanceName ?? 'Unbekannt'),
                 subtitle: Text('${entryData.dosage} ${entryData.unit}'),
@@ -1255,6 +1272,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     return Column(
       children: List.generate(3, (index) {
         return Padding(
+          key: ValueKey('loading_entry_$index'),
           padding: const EdgeInsets.only(bottom: Spacing.sm),
           child: const EntryCardSkeleton(isCompact: true),
         );
@@ -1266,6 +1284,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     return Row(
       children: List.generate(3, (index) {
         return Expanded(
+          key: ValueKey('stats_loading_$index'),
           child: Padding(
             padding: EdgeInsets.only(
               right: index < 2 ? Spacing.md : 0,
@@ -1313,6 +1332,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     return Column(
       children: List.generate(3, (index) {
         return Padding(
+          key: ValueKey('insights_loading_$index'),
           padding: const EdgeInsets.only(bottom: Spacing.sm),
           child: GlassCard(
             child: Row(
