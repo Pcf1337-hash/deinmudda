@@ -144,9 +144,14 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
           ElevatedButton.icon(
             onPressed: () {
               HapticFeedback.lightImpact();
-              safeSetState(() {
-                _error = null;
-                _stackTrace = null;
+              // Use post-frame callback to avoid setState during frame
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (mounted) {
+                  safeSetState(() {
+                    _error = null;
+                    _stackTrace = null;
+                  });
+                }
               });
             },
             icon: const Icon(Icons.refresh_rounded),
