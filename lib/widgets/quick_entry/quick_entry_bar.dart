@@ -5,6 +5,7 @@ import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'quick_button_widget.dart';
 import '../../screens/quick_entry/quick_button_config_screen.dart';
+import '../../utils/crash_protection.dart';
 
 class QuickEntryBar extends StatefulWidget {
   final List<QuickButtonConfig> quickButtons;
@@ -28,7 +29,7 @@ class QuickEntryBar extends StatefulWidget {
   State<QuickEntryBar> createState() => _QuickEntryBarState();
 }
 
-class _QuickEntryBarState extends State<QuickEntryBar> {
+class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
   final ScrollController _scrollController = ScrollController();
   List<QuickButtonConfig> _reorderedButtons = [];
   bool _isDragging = false;
@@ -54,7 +55,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> {
   }
 
   void _onReorder(int oldIndex, int newIndex) {
-    setState(() {
+    safeSetState(() {
       if (oldIndex < newIndex) {
         newIndex -= 1;
       }

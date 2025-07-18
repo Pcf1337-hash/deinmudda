@@ -4,6 +4,7 @@ import '../models/substance.dart';
 import '../widgets/glass_card.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/crash_protection.dart';
 
 class UnitDropdown extends StatefulWidget {
   final TextEditingController controller;
@@ -23,7 +24,7 @@ class UnitDropdown extends StatefulWidget {
   State<UnitDropdown> createState() => _UnitDropdownState();
 }
 
-class _UnitDropdownState extends State<UnitDropdown> {
+class _UnitDropdownState extends State<UnitDropdown> with SafeStateMixin {
   List<String> _suggestedUnits = [];
   List<String> _filteredUnits = [];
   bool _isLoading = true;
@@ -57,13 +58,13 @@ class _UnitDropdownState extends State<UnitDropdown> {
       final uniqueUnits = suggested.toSet().toList();
       uniqueUnits.sort();
       
-      setState(() {
+      safeSetState(() {
         _suggestedUnits = uniqueUnits;
         _filteredUnits = uniqueUnits;
         _isLoading = false;
       });
     } catch (e) {
-      setState(() {
+      safeSetState(() {
         _suggestedUnits = UnitManager.validUnits;
         _filteredUnits = UnitManager.validUnits;
         _isLoading = false;
@@ -73,7 +74,7 @@ class _UnitDropdownState extends State<UnitDropdown> {
 
   void _filterUnits() {
     final query = widget.controller.text.toLowerCase();
-    setState(() {
+    safeSetState(() {
       if (query.isEmpty) {
         _filteredUnits = _suggestedUnits;
       } else {
@@ -86,7 +87,7 @@ class _UnitDropdownState extends State<UnitDropdown> {
 
   void _selectUnit(String unit) {
     widget.controller.text = unit;
-    setState(() {
+    safeSetState(() {
       _filteredUnits = _suggestedUnits;
     });
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../utils/crash_protection.dart';
 
 class SpeedDial extends StatefulWidget {
   final List<SpeedDialAction> actions;
@@ -26,7 +27,7 @@ class SpeedDial extends StatefulWidget {
 }
 
 class _SpeedDialState extends State<SpeedDial>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, SafeStateMixin {
   late AnimationController _animationController;
   late Animation<double> _expandAnimation;
   late Animation<double> _rotationAnimation;
@@ -64,7 +65,7 @@ class _SpeedDialState extends State<SpeedDial>
   }
 
   void _toggleExpanded() {
-    setState(() {
+    safeSetState(() {
       _isExpanded = !_isExpanded;
       if (_isExpanded) {
         _animationController.forward();
