@@ -158,10 +158,13 @@ class _PieChartWidgetState extends State<PieChartWidget>
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-              Text(
-                '${percentage.toStringAsFixed(1)}%',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: FontWeight.w500,
+              Flexible(
+                child: Text(
+                  '${percentage.toStringAsFixed(1)}%',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],

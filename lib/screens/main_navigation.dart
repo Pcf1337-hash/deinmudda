@@ -226,7 +226,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
           duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
           curve: DesignTokens.curveEaseOut,
           padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.md,
+            horizontal: Spacing.sm,
             vertical: Spacing.sm,
           ),
           decoration: BoxDecoration(

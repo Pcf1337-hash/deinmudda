@@ -33,12 +33,9 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
       // Check if this is a layout-related error
       if (_isLayoutError(details.exception.toString())) {
         print('🚨 Layout error caught by boundary: ${details.exception}');
-        if (mounted) {
-          safeSetState(() {
-            _error = details.exception;
-            _stackTrace = details.stack;
-          });
-        }
+        // Don't call setState during build - just log the error
+        _error = details.exception;
+        _stackTrace = details.stack;
       }
       
       // Call the original error handler
@@ -72,12 +69,15 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
     return ErrorBoundaryWrapper(
       onError: (error, stackTrace) {
         print('🚨 Error boundary caught: $error');
-        if (mounted) {
-          safeSetState(() {
-            _error = error;
-            _stackTrace = stackTrace;
-          });
-        }
+        // Schedule setState for after the current build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            safeSetState(() {
+              _error = error;
+              _stackTrace = stackTrace;
+            });
+          }
+        });
       },
       child: widget.child,
     );
