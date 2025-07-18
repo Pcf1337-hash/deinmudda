@@ -9,6 +9,7 @@ import 'dosage_calculator/dosage_calculator_screen.dart'; // Changed from calend
 import 'menu_screen.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
+import '../widgets/layout_error_boundary.dart';
 import '../utils/performance_helper.dart';
 import '../utils/platform_helper.dart';
 import '../utils/crash_protection.dart';
@@ -26,10 +27,10 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
   late PageController _pageController;
 
   final List<Widget> _screens = [
-    const HomeScreen(),
-    const DosageCalculatorScreen(), // Changed from CalendarScreen
-    const StatisticsScreen(),
-    const MenuScreen(),
+    const HomeScreen(key: ValueKey('home_screen')),
+    const DosageCalculatorScreen(key: ValueKey('dosage_calculator_screen')), // Changed from CalendarScreen
+    const StatisticsScreen(key: ValueKey('statistics_screen')),
+    const MenuScreen(key: ValueKey('menu_screen')),
   ];
 
   final List<NavigationItem> _navigationItems = [
@@ -139,21 +140,25 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
         return Scaffold(
           body: SafeArea(
             bottom: false, // Let bottom navigation handle its own safe area
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                safeSetState(() {
-                  _currentIndex = index;
-                });
-                
-                // Platform-specific haptic feedback for swipe navigation
-                PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
-              },
-              // Use platform-appropriate scroll physics
-              physics: PlatformHelper.isIOS 
-                ? const BouncingScrollPhysics()
-                : const ClampingScrollPhysics(),
-              children: _screens,
+            child: LayoutErrorBoundary(
+              debugLabel: 'Main Navigation PageView',
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  if (!mounted) return;
+                  safeSetState(() {
+                    _currentIndex = index;
+                  });
+                  
+                  // Platform-specific haptic feedback for swipe navigation
+                  PlatformHelper.performHapticFeedback(HapticFeedbackType.selectionClick);
+                },
+                // Use platform-appropriate scroll physics
+                physics: PlatformHelper.isIOS 
+                  ? const BouncingScrollPhysics()
+                  : const ClampingScrollPhysics(),
+                children: _screens,
+              ),
             ),
           ),
           bottomNavigationBar: _buildBottomNavigationBar(context, isDark),
@@ -167,7 +172,10 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     // Store MediaQuery.of(context) in a variable to ensure consistent reference
     final mediaQuery = MediaQuery.of(context);
     final bottomPadding = mediaQuery.padding.bottom;
-    final totalHeight = Spacing.bottomNavHeight + bottomPadding;
+    
+    // Clamp bottomPadding to prevent extreme values that could cause overflow
+    final safeBottomPadding = bottomPadding.clamp(0.0, 50.0);
+    final totalHeight = Spacing.bottomNavHeight + safeBottomPadding;
     
     return Container(
       height: totalHeight,
@@ -240,41 +248,47 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
           child: ConstrainedBox(
             constraints: const BoxConstraints(
               maxHeight: 60, // Ensure navigation item doesn't exceed reasonable height
+              minHeight: 40, // Ensure minimum height for usability
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-              AnimatedSwitcher(
-                duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
-                child: Icon(
-                  isActive ? item.activeIcon : item.icon,
-                  key: ValueKey('nav_${index}_$isActive'),
-                  color: isActive
-                      ? DesignTokens.primaryIndigo
-                      : (isDark
-                          ? DesignTokens.iconSecondaryDark
-                          : DesignTokens.iconSecondaryLight),
-                  size: Spacing.iconMd,
+              Flexible(
+                child: AnimatedSwitcher(
+                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
+                  child: Icon(
+                    isActive ? item.activeIcon : item.icon,
+                    key: ValueKey('nav_${index}_$isActive'),
+                    color: isActive
+                        ? DesignTokens.primaryIndigo
+                        : (isDark
+                            ? DesignTokens.iconSecondaryDark
+                            : DesignTokens.iconSecondaryLight),
+                    size: Spacing.iconMd,
+                  ),
                 ),
               ),
-              Spacing.verticalSpaceXs,
-              AnimatedDefaultTextStyle(
-                duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
-                style: theme.textTheme.labelSmall!.copyWith(
-                  color: isActive
-                      ? DesignTokens.primaryIndigo
-                      : (isDark
-                          ? DesignTokens.textSecondaryDark
-                          : DesignTokens.textSecondaryLight),
-                  fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                  fontSize: 10,
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    item.label,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center,
+              const SizedBox(height: 2), // Fixed small spacing
+              Flexible(
+                child: AnimatedDefaultTextStyle(
+                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
+                  style: theme.textTheme.labelSmall!.copyWith(
+                    color: isActive
+                        ? DesignTokens.primaryIndigo
+                        : (isDark
+                            ? DesignTokens.textSecondaryDark
+                            : DesignTokens.textSecondaryLight),
+                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                    fontSize: 10,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.label,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                    ),
                   ),
                 ),
               ),
