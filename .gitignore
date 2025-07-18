@@ -54,3 +54,6 @@ node_modules/
 
 # Downloaded SDK for testing
 sdk-*/
+
+# Test files for development
+test_pie_chart_overflow.dart
