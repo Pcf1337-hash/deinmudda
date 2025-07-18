@@ -57,3 +57,4 @@ sdk-*/
 
 # Test files for development
 test_pie_chart_overflow.dart
+verify_pie_chart_fix.dart
