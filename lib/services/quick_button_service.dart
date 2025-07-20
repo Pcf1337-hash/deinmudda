@@ -254,6 +254,49 @@ class QuickButtonService {
     }
   }
 
+  // Create default quick buttons for commonly used substances
+  Future<List<String>> createDefaultQuickButtons() async {
+    try {
+      final List<String> createdIds = [];
+      
+      // Check if quick buttons already exist
+      final existingButtons = await getAllQuickButtons();
+      if (existingButtons.isNotEmpty) {
+        return createdIds; // Don't create defaults if buttons already exist
+      }
+      
+      // Define common substances with typical dosages
+      final commonSubstances = [
+        {'name': 'MDMA', 'dosage': 120.0, 'unit': 'mg', 'substanceId': 'mdma'},
+        {'name': 'LSD', 'dosage': 100.0, 'unit': 'µg', 'substanceId': 'lsd'},
+        {'name': 'Cannabis', 'dosage': 0.5, 'unit': 'g', 'substanceId': 'cannabis'},
+        {'name': 'Alkohol', 'dosage': 1.0, 'unit': 'Bier', 'substanceId': 'alkohol'},
+        {'name': 'Koffein', 'dosage': 200.0, 'unit': 'mg', 'substanceId': 'koffein'},
+      ];
+      
+      // Get next position index
+      int position = await getNextOrderIndex();
+      
+      for (final substanceData in commonSubstances) {
+        // Create new quick button
+        final config = QuickButtonConfig.create(
+          substanceId: substanceData['substanceId'] as String,
+          substanceName: substanceData['name'] as String,
+          dosage: substanceData['dosage'] as double,
+          unit: substanceData['unit'] as String,
+          position: position++,
+        );
+        
+        final id = await createQuickButton(config);
+        createdIds.add(id);
+      }
+      
+      return createdIds;
+    } catch (e) {
+      throw Exception('Failed to create default quick buttons: $e');
+    }
+  }
+
   // Get quick button statistics
   Future<Map<String, dynamic>> getQuickButtonStats() async {
     try {

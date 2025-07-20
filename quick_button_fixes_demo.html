@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickButton Fixes Demo</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 24px;
+        }
+        
+        .demo-section {
+            margin-bottom: 30px;
+        }
+        
+        .demo-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #ffd700;
+        }
+        
+        .quick-entry-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .quick-entry-title {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        
+        .edit-button {
+            background: rgba(102, 126, 234, 0.7);
+            border: none;
+            border-radius: 8px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        /* OLD LAYOUT - PROBLEMATIC */
+        .old-buttons-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            padding: 5px 0;
+        }
+        
+        .old-buttons-container::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .old-buttons-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        .old-buttons-container::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        /* NEW LAYOUT - FIXED */
+        .new-buttons-container {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .scrollable-buttons {
+            display: flex;
+            overflow-x: auto;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .scrollable-buttons::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .scrollable-buttons::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+        }
+        
+        .scrollable-buttons::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 2px;
+        }
+        
+        .add-button-fixed {
+            flex-shrink: 0;
+        }
+        
+        .quick-button {
+            min-width: 80px;
+            width: 80px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 8px;
+            box-sizing: border-box;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .quick-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+        
+        .quick-button-icon {
+            width: 24px;
+            height: 24px;
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .quick-button-name {
+            font-size: 10px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 2px;
+            line-height: 1.2;
+            /* OLD VERSION - NO OVERFLOW PROTECTION */
+        }
+        
+        .quick-button-name.fixed {
+            /* NEW VERSION - WITH OVERFLOW PROTECTION */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+        
+        .quick-button-dosage {
+            font-size: 9px;
+            opacity: 0.8;
+            text-align: center;
+            line-height: 1.1;
+        }
+        
+        .quick-button-dosage.fixed {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            width: 100%;
+        }
+        
+        .add-button {
+            min-width: 80px;
+            width: 80px;
+            height: 100px;
+            background: rgba(102, 126, 234, 0.2);
+            border: 2px solid rgba(102, 126, 234, 0.5);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+        
+        .add-button:hover {
+            background: rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .add-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+            color: #667eea;
+        }
+        
+        .add-text {
+            font-size: 9px;
+            font-weight: 600;
+            color: #667eea;
+            text-align: center;
+        }
+        
+        .problem-indicator {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .success-indicator {
+            background: rgba(0, 255, 0, 0.2);
+            border: 1px solid rgba(0, 255, 0, 0.5);
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+        
+        .improvement-list {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .improvement-list h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .improvement-list li {
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 QuickButton Fixes Demo</h1>
+        
+        <div class="demo-section">
+            <div class="demo-title">❌ Vor dem Fix - Problematisches Layout</div>
+            <div class="quick-entry-bar">
+                <div class="quick-entry-header">
+                    <div class="quick-entry-title">Schnelleingabe</div>
+                    <button class="edit-button">Bearbeiten</button>
+                </div>
+                <div class="old-buttons-container">
+                    <div class="quick-button">
+                        <div class="quick-button-icon">💊</div>
+                        <div class="quick-button-name">Very Long Substance Name</div>
+                        <div class="quick-button-dosage">120mg</div>
+                    </div>
+                    <div class="quick-button">
+                        <div class="quick-button-icon">🌿</div>
+                        <div class="quick-button-name">Cannabis</div>
+                        <div class="quick-button-dosage">0.5g</div>
+                    </div>
+                    <div class="quick-button">
+                        <div class="quick-button-icon">🧪</div>
+                        <div class="quick-button-name">LSD</div>
+                        <div class="quick-button-dosage">100µg</div>
+                    </div>
+                    <div class="quick-button">
+                        <div class="quick-button-icon">☕</div>
+                        <div class="quick-button-name">Koffein</div>
+                        <div class="quick-button-dosage">200mg</div>
+                    </div>
+                    <div class="quick-button">
+                        <div class="quick-button-icon">🍺</div>
+                        <div class="quick-button-name">Alkohol</div>
+                        <div class="quick-button-dosage">1 Bier</div>
+                    </div>
+                    <!-- Add button gets hidden when scrolled -->
+                    <div class="add-button">
+                        <div class="add-icon">+</div>
+                        <div class="add-text">Hinzufügen</div>
+                    </div>
+                </div>
+            </div>
+            <div class="problem-indicator">
+                <strong>⚠️ Probleme:</strong><br>
+                • Add-Button verschwindet beim Scrollen<br>
+                • Lange Texte überlaufen den Container<br>
+                • Keine Textgrößenanpassung
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <div class="demo-title">✅ Nach dem Fix - Verbessertes Layout</div>
+            <div class="quick-entry-bar">
+                <div class="quick-entry-header">
+                    <div class="quick-entry-title">Schnelleingabe</div>
+                    <button class="edit-button">Bearbeiten</button>
+                </div>
+                <div class="new-buttons-container">
+                    <div class="scrollable-buttons">
+                        <div class="quick-button">
+                            <div class="quick-button-icon">💊</div>
+                            <div class="quick-button-name fixed">Very Long Substance Name</div>
+                            <div class="quick-button-dosage fixed">120mg</div>
+                        </div>
+                        <div class="quick-button">
+                            <div class="quick-button-icon">🌿</div>
+                            <div class="quick-button-name fixed">Cannabis</div>
+                            <div class="quick-button-dosage fixed">0.5g</div>
+                        </div>
+                        <div class="quick-button">
+                            <div class="quick-button-icon">🧪</div>
+                            <div class="quick-button-name fixed">LSD</div>
+                            <div class="quick-button-dosage fixed">100µg</div>
+                        </div>
+                        <div class="quick-button">
+                            <div class="quick-button-icon">☕</div>
+                            <div class="quick-button-name fixed">Koffein</div>
+                            <div class="quick-button-dosage fixed">200mg</div>
+                        </div>
+                        <div class="quick-button">
+                            <div class="quick-button-icon">🍺</div>
+                            <div class="quick-button-name fixed">Alkohol</div>
+                            <div class="quick-button-dosage fixed">1 Bier</div>
+                        </div>
+                    </div>
+                    <!-- Add button stays fixed on the right -->
+                    <div class="add-button-fixed">
+                        <div class="add-button">
+                            <div class="add-icon">+</div>
+                            <div class="add-text">Hinzufügen</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="success-indicator">
+                <strong>✅ Verbesserungen:</strong><br>
+                • Add-Button immer sichtbar und klickbar<br>
+                • Texte werden automatisch angepasst<br>
+                • Responsive Layout für alle Bildschirmgrößen
+            </div>
+        </div>
+        
+        <div class="improvement-list">
+            <h3>🎯 Implementierte Fixes</h3>
+            <ul>
+                <li><strong>Layout-Fix:</strong> Row mit Expanded + fester Add-Button</li>
+                <li><strong>Text-Overflow:</strong> FittedBox + Flexible Widgets</li>
+                <li><strong>Standard-Buttons:</strong> Automatische Erstellung häufiger Substanzen</li>
+                <li><strong>Verbesserte Constraints:</strong> Optimierte Höhen für Edit-Modus</li>
+                <li><strong>Test-Coverage:</strong> Umfassende Tests für alle Szenarien</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Simulate scrolling to show the difference
+        document.addEventListener('DOMContentLoaded', function() {
+            const oldContainer = document.querySelector('.old-buttons-container');
+            const newScrollable = document.querySelector('.scrollable-buttons');
+            
+            // Add smooth scrolling animation
+            setInterval(() => {
+                if (oldContainer.scrollLeft >= oldContainer.scrollWidth - oldContainer.clientWidth) {
+                    oldContainer.scrollLeft = 0;
+                } else {
+                    oldContainer.scrollLeft += 1;
+                }
+                
+                if (newScrollable.scrollLeft >= newScrollable.scrollWidth - newScrollable.clientWidth) {
+                    newScrollable.scrollLeft = 0;
+                } else {
+                    newScrollable.scrollLeft += 1;
+                }
+            }, 50);
+        });
+    </script>
+</body>
+</html>

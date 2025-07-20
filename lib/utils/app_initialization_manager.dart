@@ -123,6 +123,17 @@ class AppInitializationManager {
       _quickButtonService = QuickButtonService();
       _authService = AuthService();
       
+      // Initialize default quick buttons for common substances
+      try {
+        final createdButtons = await _quickButtonService!.createDefaultQuickButtons();
+        if (createdButtons.isNotEmpty) {
+          ErrorHandler.logInfo('INIT_MANAGER', 'Standard-Quick-Buttons erstellt: ${createdButtons.length}');
+        }
+      } catch (e) {
+        ErrorHandler.logWarning('INIT_MANAGER', 'Warnung beim Erstellen der Standard-Quick-Buttons: $e');
+        // Don't fail initialization if quick buttons creation fails
+      }
+      
       ErrorHandler.logSuccess('INIT_MANAGER', 'Kern-Services erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Kern-Service-Initialisierung: $e');

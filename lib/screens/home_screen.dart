@@ -542,7 +542,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           debugLabel: 'Quick Entry Bar',
                           child: Container(
                             constraints: const BoxConstraints(
-                              maxHeight: 200, // Further increased to accommodate edit mode safely
+                              maxHeight: 220, // Increased to accommodate the improved layout
                             ),
                             child: QuickEntryBar(
                               quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
