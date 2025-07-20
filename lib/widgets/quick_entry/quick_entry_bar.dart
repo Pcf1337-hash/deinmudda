@@ -111,27 +111,29 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           ],
         ),
         
-        const SizedBox(height: 12), // Reduced spacing
+        const SizedBox(height: 8), // Further reduced spacing
         
-        // Quick buttons scroll view - adjust height based on edit mode
-        ConstrainedBox(
-          constraints: BoxConstraints(
-            minHeight: 80,
-            maxHeight: widget.isEditing ? 100 : 120, // Reduce height when editing
+        // Quick buttons scroll view - adjust height based on edit mode and make it flexible
+        Flexible(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: 80,
+              maxHeight: widget.isEditing ? 90 : 120, // Further reduce height when editing
+            ),
+            child: widget.isEditing
+                ? _buildReorderableButtonList(context, isDark)
+                : _buildNormalButtonList(context, isDark),
           ),
-          child: widget.isEditing
-              ? _buildReorderableButtonList(context, isDark)
-              : _buildNormalButtonList(context, isDark),
         ),
         
-        // Edit mode instructions - more compact version
+        // Edit mode instructions - compact version with better overflow handling
         if (widget.isEditing) ...[
-          const SizedBox(height: 8), // Reduced spacing
+          const SizedBox(height: 6), // Further reduced spacing
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced padding
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), // Reduced padding
             decoration: BoxDecoration(
               color: DesignTokens.warningYellow.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(8), // Smaller radius
+              borderRadius: BorderRadius.circular(6), // Smaller radius
               border: Border.all(
                 color: DesignTokens.warningYellow.withOpacity(0.3),
                 width: 1,
@@ -142,15 +144,16 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                 Icon(
                   Icons.info_outline_rounded,
                   color: DesignTokens.warningYellow,
-                  size: 16, // Smaller icon
+                  size: 14, // Smaller icon
                 ),
-                const SizedBox(width: 8), // Reduced spacing
+                const SizedBox(width: 6), // Further reduced spacing
                 Expanded(
                   child: Text(
-                    'Ziehen zum Sortieren • Tippen zum Bearbeiten', // Shorter text
+                    'Ziehen • Tippen', // Much shorter text to save space
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: DesignTokens.warningYellow,
-                      fontSize: 12, // Smaller font
+                      fontSize: 11, // Smaller font
+                      height: 1.2, // Reduce line height
                     ),
                     maxLines: 1, // Single line to save space
                     overflow: TextOverflow.ellipsis,
