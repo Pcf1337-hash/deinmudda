@@ -148,29 +148,39 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                         
                         Spacing.verticalSpaceXs,
                         
-                        // Substance name
-                        Text(
-                          widget.config.substanceName,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
+                        // Substance name - improved overflow handling
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.config.substanceName,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                         
-                        // Dosage
-                        Text(
-                          widget.config.formattedDosage,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 9,
+                        // Dosage - improved overflow handling
+                        Flexible(
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.config.formattedDosage,
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: substanceColor,
+                                fontWeight: FontWeight.w500,
+                                fontSize: 9,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
                     ),
@@ -253,14 +263,21 @@ class AddQuickButtonWidget extends StatelessWidget {
               size: Spacing.iconLg,
             ),
             Spacing.verticalSpaceXs,
-            Text(
-              'Hinzufügen',
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: DesignTokens.primaryIndigo,
-                fontWeight: FontWeight.w600,
-                fontSize: 9,
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Hinzufügen',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: DesignTokens.primaryIndigo,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 9,
+                  ),
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
-              textAlign: TextAlign.center,
             ),
           ],
         ),

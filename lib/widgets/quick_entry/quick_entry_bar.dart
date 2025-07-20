@@ -118,7 +118,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight: 80,
-              maxHeight: widget.isEditing ? 90 : 120, // Further reduce height when editing
+              maxHeight: widget.isEditing ? 110 : 130, // Slightly increased to prevent overflow
             ),
             child: widget.isEditing
                 ? _buildReorderableButtonList(context, isDark)
@@ -168,69 +168,79 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
   }
 
   Widget _buildNormalButtonList(BuildContext context, bool isDark) {
-    return ListView.builder(
-      controller: _scrollController,
-      scrollDirection: Axis.horizontal,
-      itemCount: widget.quickButtons.length + 1, // +1 for add button
-      itemBuilder: (context, index) {
-        if (index == widget.quickButtons.length) {
-          return AddQuickButtonWidget(
-            key: const ValueKey('add_button_normal'), // Add unique key
-            onTap: widget.onAddButton,
-          );
-        }
-
-        final button = widget.quickButtons[index];
-        return QuickButtonWidget(
-          key: ValueKey('normal_${button.id}'), // Make key more specific
-          config: button,
-          isEditing: false,
-          onTap: () => widget.onQuickEntry(button),
-          onLongPress: widget.onEditMode,
-        );
-      },
+    return Row(
+      children: [
+        // Quick buttons in a scrollable container
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            scrollDirection: Axis.horizontal,
+            itemCount: widget.quickButtons.length,
+            itemBuilder: (context, index) {
+              final button = widget.quickButtons[index];
+              return QuickButtonWidget(
+                key: ValueKey('normal_${button.id}'), // Make key more specific
+                config: button,
+                isEditing: false,
+                onTap: () => widget.onQuickEntry(button),
+                onLongPress: widget.onEditMode,
+              );
+            },
+          ),
+        ),
+        // Add button always visible on the right
+        AddQuickButtonWidget(
+          key: const ValueKey('add_button_normal'), // Add unique key
+          onTap: widget.onAddButton,
+        ),
+      ],
     );
   }
 
   Widget _buildReorderableButtonList(BuildContext context, bool isDark) {
-    return ReorderableListView.builder(
-      scrollDirection: Axis.horizontal,
-      onReorder: _onReorder,
-      itemCount: _reorderedButtons.length + 1, // +1 for add button
-      itemBuilder: (context, index) {
-        if (index == _reorderedButtons.length) {
-          return AddQuickButtonWidget(
-            key: const ValueKey('add_button_reorder'), // More specific key
-            onTap: widget.onAddButton,
-          );
-        }
-
-        final button = _reorderedButtons[index];
-        return QuickButtonWidget(
-          key: ValueKey('reorder_${button.id}'), // Make key more specific
-          config: button,
-          isEditing: true,
-          onTap: () => Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => QuickButtonConfigScreen(existingConfig: button),
-            ),
+    return Row(
+      children: [
+        // Reorderable buttons in a scrollable container
+        Expanded(
+          child: ReorderableListView.builder(
+            scrollDirection: Axis.horizontal,
+            onReorder: _onReorder,
+            itemCount: _reorderedButtons.length,
+            itemBuilder: (context, index) {
+              final button = _reorderedButtons[index];
+              return QuickButtonWidget(
+                key: ValueKey('reorder_${button.id}'), // Make key more specific
+                config: button,
+                isEditing: true,
+                onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => QuickButtonConfigScreen(existingConfig: button),
+                  ),
+                ),
+                onLongPress: () {},
+              );
+            },
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final double scale = 1.0 + animation.value * 0.1;
+                  return Transform.scale(
+                    scale: scale,
+                    child: child,
+                  );
+                },
+                child: child,
+              );
+            },
           ),
-          onLongPress: () {},
-        );
-      },
-      proxyDecorator: (child, index, animation) {
-        return AnimatedBuilder(
-          animation: animation,
-          builder: (context, child) {
-            final double scale = 1.0 + animation.value * 0.1;
-            return Transform.scale(
-              scale: scale,
-              child: child,
-            );
-          },
-          child: child,
-        );
-      },
+        ),
+        // Add button always visible on the right
+        AddQuickButtonWidget(
+          key: const ValueKey('add_button_reorder'), // More specific key
+          onTap: widget.onAddButton,
+        ),
+      ],
     );
   }
 
