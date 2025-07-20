@@ -82,6 +82,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min, // Use minimum size needed
       children: [
         // Header with edit button
         Row(
@@ -110,27 +111,27 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           ],
         ),
         
-        Spacing.verticalSpaceMd,
+        const SizedBox(height: 12), // Reduced spacing
         
-        // Quick buttons scroll view
+        // Quick buttons scroll view - adjust height based on edit mode
         ConstrainedBox(
-          constraints: const BoxConstraints(
+          constraints: BoxConstraints(
             minHeight: 80,
-            maxHeight: 120,
+            maxHeight: widget.isEditing ? 100 : 120, // Reduce height when editing
           ),
           child: widget.isEditing
               ? _buildReorderableButtonList(context, isDark)
               : _buildNormalButtonList(context, isDark),
         ),
         
-        // Edit mode instructions
+        // Edit mode instructions - more compact version
         if (widget.isEditing) ...[
-          Spacing.verticalSpaceMd,
+          const SizedBox(height: 8), // Reduced spacing
           Container(
-            padding: Spacing.paddingMd,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Reduced padding
             decoration: BoxDecoration(
               color: DesignTokens.warningYellow.withOpacity(0.1),
-              borderRadius: Spacing.borderRadiusMd,
+              borderRadius: BorderRadius.circular(8), // Smaller radius
               border: Border.all(
                 color: DesignTokens.warningYellow.withOpacity(0.3),
                 width: 1,
@@ -141,15 +142,18 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                 Icon(
                   Icons.info_outline_rounded,
                   color: DesignTokens.warningYellow,
-                  size: Spacing.iconMd,
+                  size: 16, // Smaller icon
                 ),
-                Spacing.horizontalSpaceMd,
+                const SizedBox(width: 8), // Reduced spacing
                 Expanded(
                   child: Text(
-                    'Ziehen Sie die Buttons, um die Reihenfolge zu ändern. Tippen Sie auf einen Button, um ihn zu bearbeiten.',
+                    'Ziehen zum Sortieren • Tippen zum Bearbeiten', // Shorter text
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: DesignTokens.warningYellow,
+                      fontSize: 12, // Smaller font
                     ),
+                    maxLines: 1, // Single line to save space
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],
@@ -168,13 +172,14 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
       itemBuilder: (context, index) {
         if (index == widget.quickButtons.length) {
           return AddQuickButtonWidget(
+            key: const ValueKey('add_button_normal'), // Add unique key
             onTap: widget.onAddButton,
           );
         }
 
         final button = widget.quickButtons[index];
         return QuickButtonWidget(
-          key: ValueKey(button.id),
+          key: ValueKey('normal_${button.id}'), // Make key more specific
           config: button,
           isEditing: false,
           onTap: () => widget.onQuickEntry(button),
@@ -192,14 +197,14 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
       itemBuilder: (context, index) {
         if (index == _reorderedButtons.length) {
           return AddQuickButtonWidget(
-            key: const ValueKey('add_button'),
+            key: const ValueKey('add_button_reorder'), // More specific key
             onTap: widget.onAddButton,
           );
         }
 
         final button = _reorderedButtons[index];
         return QuickButtonWidget(
-          key: ValueKey(button.id),
+          key: ValueKey('reorder_${button.id}'), // Make key more specific
           config: button,
           isEditing: true,
           onTap: () => Navigator.of(context).push(
