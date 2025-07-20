@@ -25,7 +25,7 @@
 
 **Aktuelle Version:** 1.0.0+1  
 **Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14) - APK-Kompilierung vollständig funktionsfähig  
-**Letzte Aktualisierung:** 14. Juli 2025 (README komplettiert mit vollständiger Testing-Strategie, Setup-Anleitung und Sicherheitsrichtlinien)
+**Letzte Aktualisierung:** 20. Juli 2025 (Kritische Timer-Konflikte behoben, Kostentracking implementiert und UI-Overflow-Probleme gelöst)
 
 ---
 
@@ -33,7 +33,18 @@
 
 ### **📅 Juli 2025**
 
-1. **🔧 agent_timer_lifecycle_diagnose - Comprehensive Timer System Repair** (aktuell)
+1. **🔥 Critical System Fixes - Timer Conflicts, Cost Tracking & UI Overflow** (20. Juli 2025)
+   - **⚡ Concurrent Timer Support**: Behoben kritische Abstürze beim gleichzeitigen Betrieb mehrerer Timer - erlaubt nun parallele Timer-Nutzung
+   - **💰 Cost Tracking Integration**: Quick-Button-Einträge werden jetzt korrekt in Statistiken erfasst durch Hinzufügung des `cost`-Feldes zu QuickButtonConfig
+   - **🖼️ UI Overflow Behebung**: Timer Dashboard passt nun ordnungsgemäß auf alle Bildschirmgrößen durch responsive `LayoutBuilder`-Implementation  
+   - **🛡️ Crash Prevention**: Eliminiert Home-Screen-Abstürze bei Quick-Button-Nutzung während aktiver Timer
+   - **📊 Database Migration**: Sichere Datenbank-Migration für bestehende Installationen mit automatischer `cost`-Spalten-Hinzufügung
+   - **📱 Responsive Design**: Verbesserte Constraint-basierte Layout-Berechnungen für unterschiedliche Display-Größen
+   - **🔧 Backward Compatibility**: Vollständige Rückwärtskompatibilität - bestehende Quick-Buttons erhalten Standard-Kostenwert 0.0
+   - **📋 Testing Documentation**: Umfassende Test-Dokumentation mit `MANUAL_TEST_FIXES.md` und automatisiertem Validations-Script
+   - **⚙️ Service Reliability**: Verbesserte Timer-Service-Architektur mit besserer Zustandsverwaltung und Fehlerbehandlung
+
+2. **🔧 agent_timer_lifecycle_diagnose - Comprehensive Timer System Repair** (Juli 2025)
    - **⚪ Race Condition Prevention**: Fixed concurrent timer operations and setState after dispose crashes
    - **💥 Animation Controller Stability**: Enhanced disposal cycles with proper mounted checks and error handling
    - **🛡️ Crash Protection Enhancement**: Added CrashProtectionWrapper for ActiveTimerBar with fallback UI
@@ -50,7 +61,7 @@
    - **🚫 Complete Crash Elimination**: Eliminated all known timer-related crashes through systematic fixes
    - **🔧 Future-Proof Architecture**: Prepared timer system for additional rendering engines and performance modes
 
-2. **🔧 agent_timer_crash_and_white_screen_fix - Critical Stability Fixes** (vorher)
+3. **🔧 agent_timer_crash_and_white_screen_fix - Critical Stability Fixes** (Juli 2025)
    - **🐛 White Screen Bug Fix**: Added comprehensive error handling in app initialization to prevent white screen on startup
    - **⏱️ Timer Crash Prevention**: Fixed crashes during timer operations with proper null checks and mounted state verification
    - **🛡️ Service Initialization**: Added fallback mechanisms for service initialization failures
@@ -62,7 +73,7 @@
    - **📊 Debug Logging**: Added detailed debug logging for troubleshooting initialization issues
    - **🔄 Graceful Fallbacks**: Implemented fallback widgets and states for error conditions
 
-2. **🔧 agent_timer_crash_fix - Critical Timer Crash Fixes & Stability** (vorher)
+4. **🔧 agent_timer_crash_fix - Critical Timer Crash Fixes & Stability** (Juli 2025)
    - **🐛 Timer Crash Prevention**: Added `mounted` checks before all setState calls to prevent "setState() called after dispose()" errors
    - **⏱️ Timer Persistence**: Added SharedPreferences saving/loading for app restart timer recovery
    - **🛡️ Safe Navigation**: Created SafeNavigation utility to prevent context crashes during screen transitions
@@ -73,7 +84,7 @@
    - **💾 Data Persistence**: Timer state survives app restarts and screen navigation
    - **🚫 Crash Prevention**: Eliminated setState after dispose crashes through proper lifecycle management
 
-2. **🎨 agent_ui_polish_finalpass - Visual Design Finalization & UI Polish** (15. Juli 2025)
+5. **🎨 agent_ui_polish_finalpass - Visual Design Finalization & UI Polish** (15. Juli 2025)
    - **⚡ Enhanced TimerBar Animation**: Added progress-based color transitions (green → cyan → orange → red)
    - **🌈 Luminance-Based Text Color**: Implemented automatic text color adaptation based on background luminance
    - **✨ Animated Progress Effects**: Added animated background fill and shine effects in trippy mode
@@ -83,7 +94,7 @@
    - **⚡ FAB Consistency**: Verified ConsistentFAB styling matches across Home, Timer, and DosageCalculator screens
    - **📱 Responsive Design**: Enhanced overflow protection with proper text constraints and maxLines
 
-2. **🛠️ agent_ui_consistency_details - UI Consistency & Database Fixes** (15. Juli 2025)
+6. **🛠️ agent_ui_consistency_details - UI Consistency & Database Fixes** (15. Juli 2025)
    - **⚡ Lightning Icon Implementation**: Added `DesignTokens.lightningIcon` for consistent branding
    - **🎯 Unified HeaderBar**: Created shared `HeaderBar` widget for QuickButtonConfig, Timer, Settings, and DosageCalculator screens
    - **⚡ Lightning Icon Integration**: Added lightning symbols to all header bars with proper centering and visibility
@@ -94,7 +105,7 @@
    - **🔧 SQLITE_ERROR[1] Resolution**: Fixed database schema inconsistencies with fallback-safe migrations
    - **🚀 Shared Widget System**: Extracted common UI patterns into reusable components for better maintainability
 
-3. **🛠️ agent_ui_overflow_fixes - Comprehensive UI Overflow Fixes** (14. Juli 2025)
+7. **🛠️ agent_ui_overflow_fixes - Comprehensive UI Overflow Fixes** (14. Juli 2025)
    - **🎯 Target Screens**: DosageCalculatorScreen, TimerDashboardScreen, SettingsScreen
    - **🔧 Layout Improvements**: Replaced fixed heights with flexible constraints (BoxConstraints)
    - **📱 Responsive Design**: Implemented FittedBox, Flexible, and SingleChildScrollView
@@ -104,7 +115,7 @@
    - **🧪 Testing**: Comprehensive test suite for overflow scenarios
    - **📖 Documentation**: Updated README with overflow fix methodology
 
-2. **🏠 agent_home_layout_transfer - Home Layout Restructuring & Timer Features** (14. Juli 2025)
+8. **🏠 agent_home_layout_transfer - Home Layout Restructuring & Timer Features** (14. Juli 2025)
    - **🔀 HomeScreen Layout**: Bestätigte korrekte Komponentenreihenfolge (Quick-Buttons → Timer → Statistiken → Einträge)
    - **🧩 FAB-Funktionen Transfer**: Timer-Start-Funktionalität vom DosageCalculator übernommen
    - **⏱️ Timer-Eingabe Erweiterung**: Erweiterte ActiveTimerBar mit ausklappbarem Eingabefeld
@@ -114,7 +125,7 @@
    - **🔄 TimerService Enhancement**: Neue `updateTimerDuration` Methode für Timer-Anpassungen
    - **🚀 Nahtlose Integration**: Vollständige Kompatibilität mit bestehendem Entry-basiertem Timer-System
 
-2. **📝 README Komplettierung & Dokumentations-Update** (14. Juli 2025)
+9. **📝 README Komplettierung & Dokumentations-Update** (14. Juli 2025)
    - **🧪 Testing Strategy**: Vollständige Testing-Strategie mit 5 Test-Kategorien dokumentiert
    - **📱 Setup & Installation**: Detaillierte Installationsanweisungen für Flutter, Android und iOS
    - **🔐 Sicherheit & Datenschutz**: Umfassende Sicherheitsrichtlinien und DSGVO-Compliance
@@ -124,7 +135,7 @@
    - **📊 Test-Coverage**: Detaillierte Test-Abdeckung für Database, UI, Business Logic und Integration
    - **🚀 CI/CD Integration**: Automatisierte Test-Ausführung und Performance-Regression-Tests
 
-3. **🛠️ agent_home_dosage_fixes_1_6 - Crash-Fixes & UX-Verbesserungen** (14. Juli 2025)
+10. **🛠️ agent_home_dosage_fixes_1_6 - Crash-Fixes & UX-Verbesserungen** (14. Juli 2025)
    - **🔧 Menü-Crash Fix**: Navigation-Crashes beim ersten App-Start behoben (context.mounted checks)
    - **🎯 Zentrierter Text**: Empfohlene Dosis-Box im DosageCalculator mit FittedBox & TextAlign.center
    - **🧨 Overflow-Behebung**: "BOTTOM OVERFLOWED" im DosageCalculator mit SingleChildScrollView gelöst
@@ -132,88 +143,6 @@
    - **🌈 Visueller Timer-Balken**: Läuft von links nach rechts mit kontrastreichem Text auf Füllfarbe
    - **✨ Animierter App-Titel**: ShaderMask mit Pulsieren/Reflektieren, verstärkt im Trippy-Mode
    - **🛑 FAB-Rotation**: Plusknopf dreht sich wild (4x) im Trippy-Darkmode mit elastischem Bounce
-
-2. **🎨 UI Fixes & Visual Improvements** (14. Juli 2025)
-   - **Dosisrechner**: Header-Overflow behoben (90px → 80px), Logo-Größe reduziert, Profil-Karte näher positioniert
-   - **Substanz-Karten**: Mehr Padding für "Empfohlene Dosis" (12px → 16px), Höhe angepasst (220px → 240px)
-   - **Home-Screen**: Statischer Titel durch animiertes Logo ersetzt (Psychology-Icon mit Rotation)
-   - **Header-Bereich**: Vertikaler Platz reduziert (150px → 120px), kompakte Darstellung
-   - **"Erster Button erstellen"**: Zentriert mit korrektem Padding und Container-Wrapper
-   - **SpeedDial FAB**: OnPressed-Funktionalität repariert, korrekte Positionierung rechts unten
-   - **Quick Button Creation**: Lightning-Icon ausgerichtet, editierbares Preis-Feld hinzugefügt
-   - **Preis-Auto-Load**: Automatisches Laden des Preises bei Substanzauswahl
-   - **Button-Aktivierung**: Nur bei gültiger Eingabe (Substanz + Dosierung + Einheit + Preis)
-
-3. **🗄️ SQL Database Fixes & Android Launcher Icons** (14. Juli 2025)
-   - Behebung von SQL Database-Inkonsistenzen für stabile Datenbank-Operationen
-   - Vollständige Android Launcher Icons (hdpi, mdpi, xhdpi, xxhdpi, xxxhdpi) für APK-Kompilierung
-   - **Neue Android-Konfiguration**: `android/app/src/main/res/mipmap-*` Icon-Sets hinzugefügt
-   - **Build-Verbesserungen**: `android/app/build.gradle.kts` und `android/build.gradle.kts` optimiert
-   - **Sicherheitsverbesserungen**: `network_security_config.xml` für sichere Netzwerkverbindungen
-   - **Styles & Colors**: Verbesserte Android-Theme-Konfiguration in `values/styles.xml` und `values/colors.xml`
-   - **APK-Ready**: Vollständige Kompilierung für Android-Geräte ohne Fehler möglich
-
-3. **🏠 HomeScreen Cleanup & Timer Integration** (14. Juli 2025)
-   - Vollständige Bereinigung des HomeScreens - Entfernung von Quick Actions und Advanced Features
-   - **Entfernte Komponenten**: `_buildQuickActionsSection()`, `_buildAdvancedFeaturesSection()`, `_buildQuickActionCard()`
-   - **Entfernte Buttons**: Quick Buttons verwalten, Erweiterte Suche, Musteranalyse, Daten Export/Import
-   - Integration des ActiveTimerBar für visuelle Timer-Anzeige mit Pulsing-Animation
-   - Implementierung des SpeedDial-Systems für essenzielle Aktionen (Neuer Eintrag, Timer stoppen)
-   - Automatischer Timer-Start bei QuickEntry-Nutzung mit Substanz-basierter Dauer (Fallback: 4 Stunden)
-   - Single-Timer-Logik verhindert mehrere gleichzeitige Timer mit `currentActiveTimer` und `hasAnyActiveTimer` Getters
-   - **Neue Dateien**: `lib/widgets/active_timer_bar.dart`, `lib/widgets/speed_dial.dart`
-
-4. **🔧 Dosage Calculator Syntax Fixes** (14. Juli 2025)
-   - Behebung von 24 Compilation Errors im Dosage Calculator Screen
-   - Syntax-Fehler in der Substanz-Suche und Benutzer-Profil-Verwaltung behoben
-   - Stabile Kompilierung und Funktionalität wiederhergestellt
-
-5. **⏱️ Timer-Funktionalität Implementierung** (14. Juli 2025)
-   - Vollständige Timer-Integration in Entry- und Quick-Button-System
-   - **Neue Timer-Felder im Entry-Model**: `timerStartTime`, `timerEndTime`, `timerCompleted`, `timerNotificationSent`
-   - **Timer-Getters**: `hasTimer`, `isTimerActive`, `isTimerExpired`, `timerProgress`, `remainingTime`, `formattedRemainingTime`
-   - Substanz-basierte Timer-Dauern mit Standard-Fallback-Werten (Koffein: 4h, Cannabis: 2h, Nikotin: 30min)
-   - Hintergrund-Timer-Überwachung alle 30 Sekunden mit automatischen Benachrichtigungen
-   - Timer-Fortschrittsanzeige und animierte Status-Indikatoren mit Pulsing-Effekt
-   - **Database-Migration**: Version 2 mit neuen Timer-Spalten und Substanz-Dauer-Feld
-   - **Neue Komponenten**: Timer Indicator, Timer Progress Bar, Timer Checkbox, Animated Timer Status
-   - Nicht-breaking Integration mit bestehender Funktionalität
-
-6. **🎨 Substance Card Glassmorphism Enhancement** (14. Juli 2025)
-   - Implementierung des modernen Glassmorphism-Designs für Substance Cards mit Backdrop-Blur
-   - **Neue Widget-Komponenten**: `DangerBadge`, `DosageLevelIndicator`, `SubstanceGlassCard`, `SubstanceQuickCard`
-   - Responsive Layout mit LayoutBuilder zur Overflow-Vermeidung und `IntrinsicHeight`
-   - Substanz-spezifische Farbthemen und Danger-Level-Badges (Niedrig, Mittel, Hoch, Kritisch)
-   - **Substanz-spezifische Icons**: heart für MDMA, brain für LSD, konsistente Farbkodierung
-   - Animierte Interaktionen mit Glow-Effekten und Backdrop-Blur bei Hover/Tap
-   - Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung und per-kg/total Dosage-Display
-   - **Technische Verbesserungen**: Transluzente Karten, runde Ecken, subtile Borders, Smooth Glow-Animationen
-
-7. **🐛 Flutter UI Overflow Fixes** (14. Juli 2025)
-   - Behebung aller "BOTTOM OVERFLOWED BY X PIXELS" Fehler in Substance Cards
-   - **Technische Fixes**: Ersetzen von Fixed-Height-Constraints (240px) durch flexible `BoxConstraints` (minHeight: 220, maxHeight: 280)
-   - **Scrolling-Verbesserungen**: `NeverScrollableScrollPhysics()` → `ClampingScrollPhysics()` für ordnungsgemäßes Scrolling
-   - **Responsive Design**: Implementierung von `LayoutBuilder`, `FittedBox`, `Flexible` und `Expanded` Widgets
-   - **Grid-Layout-Optimierungen**: Dynamische Breiten-Berechnungen mit `itemWidth.clamp(80.0, 120.0)` für verschiedene Bildschirmgrößen
-   - **Text-Overflow-Handling**: Improved substance name display (1 line → 2 lines) mit `maxLines` und `ellipsis`
-   - **Widget-Strukturverbesserungen**: `mainAxisSize: MainAxisSize.min` für Dosage-Preview, `IntrinsicHeight` für flexible Card-Höhen
-   - Umfassende Widget-Tests zur Overflow-Verhinderung mit `overflow_test_app.dart`
-
-8. **🐛 Build-Tooling Fix** (13. Juli 2025)
-   - Fehler mit ungültigem depfile im Build-Prozess behoben (Flutter Build Tooling)
-   - Stellt sicher, dass die App weiterhin fehlerfrei kompiliert werden kann
-
-9. **🖼️ Icon-Fix im Timer-Dashboard** (13. Juli 2025)
-   - Icon von `Icons.add_timer_rounded` auf `Icons.add_rounded` geändert
-   - UI-Darstellung im Dashboard korrigiert
-
-10. **📂 Initiale Planung & Struktur** (12. Juli 2025)
-    - Neue Dateien und Grundstruktur für Features und Aufgaben angelegt
-    - Vorbereitungen für die nächsten Entwicklungsschritte
-
-10. **🪟 Glassmorphism Design & Card Overflow Bugfix** (11. Juli 2025)
-    - Substance Card-Komponente mit Glassmorphism-Design versehen
-    - Demo und Dokumentation aktualisiert, Overflow-Bug behoben
 
 > **Hinweis:** Die vollständige Commit-Historie findest du [hier](https://github.com/Pcf1337-hash/deinmudda/commits?sort=updated&direction=desc).
 
@@ -225,6 +154,7 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 | Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Technische Details          | Wer?          |
 |---------------|------------------------------|-----------------------------------------------------|-------------------------------|----------------------------|---------------|
+| 20.07.2025    | Timer Service + Quick Buttons + UI | Critical Timer Conflicts, Cost Tracking & UI Overflow Fixes | Kritische Systemstabilität & Funktionalität | Concurrent Timer Support, QuickButtonConfig.cost-Feld, responsive LayoutBuilder, Database-Migration, Crash Prevention | Copilot/KI    |
 | 15.07.2025    | ActiveTimerBar + DosageCalculator | agent_ui_polish_finalpass - Visual Design Finalization | UI-Polish & Animation-Verbesserung | Progress-basierte Farbübergänge, Luminanz-basierte Textfarben, animierte Shine-Effekte, verbesserte Dosage-Text-Formatierung | Copilot/KI    |
 | 15.07.2025    | UI Consistency + Database    | agent_ui_consistency_details - UI Consistency & Database Fixes | UI-Konsistenz & Datenbank-Stabilität | Lightning Icons, HeaderBar-Vereinheitlichung, ConsistentFAB-Widget, Database-Migration-Safety, SQLITE_ERROR-Fixes | Copilot/KI    |
 | 14.07.2025    | HomeScreen + ActiveTimerBar  | agent_home_layout_transfer - Timer-Features erweitert | Layout-Umbau & Timer-Eingabe | FAB-Timer-Start, ActiveTimerBar mit Eingabefeld, updateTimerDuration-Methode, Echtzeit-Formatierung | Copilot/KI    |
