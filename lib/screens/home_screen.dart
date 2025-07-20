@@ -45,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   final ScrollController _scrollController = ScrollController();
   bool _isScrolled = false;
   bool _isQuickEntryEditMode = false;
+  bool _animationsInitialized = false; // Track if animations have been played
 
   // Services (will be initialized from Provider)
   late EntryService _entryService;
@@ -524,11 +525,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                 ).animate().fadeIn(
                                   duration: DesignTokens.animationMedium,
                                   delay: const Duration(milliseconds: 200),
-                                ).slideY(
-                                  begin: -0.3,
-                                  end: 0,
-                                  duration: DesignTokens.animationMedium,
-                                  curve: DesignTokens.curveEaseOut,
                                 ),
                               );
                             }
@@ -560,14 +556,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                               },
                               isEditing: _isQuickEntryEditMode,
                               onReorder: _reorderQuickButtons,
-                            ).animate().fadeIn(
-                              duration: DesignTokens.animationMedium,
-                              delay: const Duration(milliseconds: 400),
-                            ).slideY(
-                              begin: 0.3,
-                              end: 0,
-                              duration: DesignTokens.animationMedium,
-                              curve: DesignTokens.curveEaseOut,
                             ),
                           ),
                         ),
@@ -974,11 +962,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
             card = card.animate().fadeIn(
               duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
               delay: Duration(milliseconds: 1000 + (index * 100).toInt()),
-            ).slideY(
-              begin: 0.3,
-              end: 0,
-              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-              curve: DesignTokens.curveEaseOut,
             );
           }
           
@@ -1059,11 +1042,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ).animate().fadeIn(
                         duration: DesignTokens.animationMedium,
                         delay: const Duration(milliseconds: 1200),
-                      ).slideY(
-                        begin: 0.3,
-                        end: 0,
-                        duration: DesignTokens.animationMedium,
-                        curve: DesignTokens.curveEaseOut,
                       ),
                     ),
                     Spacing.horizontalSpaceMd,
@@ -1078,11 +1056,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ).animate().fadeIn(
                         duration: DesignTokens.animationMedium,
                         delay: const Duration(milliseconds: 1300),
-                      ).slideY(
-                        begin: 0.3,
-                        end: 0,
-                        duration: DesignTokens.animationMedium,
-                        curve: DesignTokens.curveEaseOut,
                       ),
                     ),
                     Spacing.horizontalSpaceMd,
@@ -1097,11 +1070,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ).animate().fadeIn(
                         duration: DesignTokens.animationMedium,
                         delay: const Duration(milliseconds: 1400),
-                      ).slideY(
-                        begin: 0.3,
-                        end: 0,
-                        duration: DesignTokens.animationMedium,
-                        curve: DesignTokens.curveEaseOut,
                       ),
                     ),
                   ],
@@ -1192,11 +1160,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                   ).animate().fadeIn(
                     duration: DesignTokens.animationMedium,
                     delay: const Duration(milliseconds: 1600),
-                  ).slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: DesignTokens.animationMedium,
-                    curve: DesignTokens.curveEaseOut,
                   ),
                   Spacing.verticalSpaceSm,
                   _buildInsightCard(
@@ -1209,11 +1172,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                   ).animate().fadeIn(
                     duration: DesignTokens.animationMedium,
                     delay: const Duration(milliseconds: 1700),
-                  ).slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: DesignTokens.animationMedium,
-                    curve: DesignTokens.curveEaseOut,
                   ),
                   Spacing.verticalSpaceSm,
                   _buildInsightCard(
@@ -1226,11 +1184,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                   ).animate().fadeIn(
                     duration: DesignTokens.animationMedium,
                     delay: const Duration(milliseconds: 1800),
-                  ).slideY(
-                    begin: 0.3,
-                    end: 0,
-                    duration: DesignTokens.animationMedium,
-                    curve: DesignTokens.curveEaseOut,
                   ),
                 ],
               );
