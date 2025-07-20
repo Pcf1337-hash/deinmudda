@@ -261,41 +261,45 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           width: 1,
         ),
       ),
-      child: Column(
-        children: [
-          Icon(
-            Icons.flash_on_rounded,
-            size: Spacing.iconXl,
-            color: DesignTokens.primaryIndigo,
-          ),
-          Spacing.verticalSpaceMd,
-          Text(
-            'Schnelleingabe einrichten',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.flash_on_rounded,
+              size: Spacing.iconXl,
               color: DesignTokens.primaryIndigo,
             ),
-            textAlign: TextAlign.center,
-          ),
-          Spacing.verticalSpaceXs,
-          Text(
-            'Erstellen Sie Quick Buttons für häufig verwendete Substanzen und Dosierungen.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+            Spacing.verticalSpaceMd,
+            Text(
+              'Schnelleingabe einrichten',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: DesignTokens.primaryIndigo,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
-          ),
-          Spacing.verticalSpaceMd,
-          ElevatedButton.icon(
-            onPressed: widget.onAddButton,
-            icon: const Icon(Icons.add_rounded),
-            label: const Text('Ersten Button erstellen'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: DesignTokens.primaryIndigo,
-              foregroundColor: Colors.white,
+            Spacing.verticalSpaceXs,
+            Text(
+              'Erstellen Sie Quick Buttons für häufig verwendete Substanzen und Dosierungen.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
             ),
-          ),
-        ],
+            Spacing.verticalSpaceMd,
+            ElevatedButton.icon(
+              onPressed: widget.onAddButton,
+              icon: const Icon(Icons.add_rounded),
+              label: const Text('Ersten Button erstellen'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: DesignTokens.primaryIndigo,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
