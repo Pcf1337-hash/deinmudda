@@ -17,6 +17,7 @@ import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
 import '../widgets/active_timer_bar.dart';
 import '../widgets/consistent_fab.dart';
+import '../widgets/layout_error_boundary.dart';
 import '../utils/error_handler.dart';
 import '../utils/crash_protection.dart';
 import 'entry_list_screen.dart';
@@ -489,129 +490,168 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           backgroundColor: isPsychedelicMode 
             ? DesignTokens.psychedelicBackground 
             : null,
-          body: Container(
-            decoration: isPsychedelicMode 
-              ? const BoxDecoration(
-                  gradient: DesignTokens.psychedelicBackground1,
-                ) 
-              : null,
-            child: CustomScrollView(
-              controller: _scrollController,
-              slivers: [
-                _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
-              SliverPadding(
-                padding: Spacing.paddingHorizontalMd,
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    // Active Timer Bar (only shown when timer is active)
-                    Consumer<TimerService>(
-                      builder: (context, timerService, child) {
-                        final activeTimer = timerService.getActiveTimer();
-                        if (activeTimer != null && mounted) {
-                          return ActiveTimerBar(
-                            timer: activeTimer,
-                            onTap: () => _navigateToTimerDashboard(),
-                          ).animate().fadeIn(
-                            duration: DesignTokens.animationMedium,
-                            delay: const Duration(milliseconds: 200),
-                          ).slideY(
-                            begin: -0.3,
-                            end: 0,
-                            duration: DesignTokens.animationMedium,
-                            curve: DesignTokens.curveEaseOut,
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                    
-                    Spacing.verticalSpaceLg,
-                    
-                    // Quick Entry Bar
-                    if (!_isLoadingQuickButtons)
-                      QuickEntryBar(
-                        quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
-                        onQuickEntry: _handleQuickEntry,
-                        onAddButton: _navigateToQuickButtonConfig,
-                        onEditMode: () {
-                          if (mounted) {
-                            safeSetState(() {
-                              _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                            });
-                          }
-                        },
-                        isEditing: _isQuickEntryEditMode,
-                        onReorder: _reorderQuickButtons,
-                      ).animate().fadeIn(
-                        duration: DesignTokens.animationMedium,
-                        delay: const Duration(milliseconds: 400),
-                      ).slideY(
-                        begin: 0.3,
-                        end: 0,
-                        duration: DesignTokens.animationMedium,
-                        curve: DesignTokens.curveEaseOut,
+          body: LayoutErrorBoundary(
+            debugLabel: 'HomeScreen Main Body',
+            child: Container(
+              decoration: isPsychedelicMode 
+                ? const BoxDecoration(
+                    gradient: DesignTokens.psychedelicBackground1,
+                  ) 
+                : null,
+              child: CustomScrollView(
+                controller: _scrollController,
+                physics: const ClampingScrollPhysics(), // Add explicit physics
+                slivers: [
+                  _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
+                SliverPadding(
+                  padding: Spacing.paddingHorizontalMd,
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      // Active Timer Bar (only shown when timer is active)
+                      LayoutErrorBoundary(
+                        debugLabel: 'Active Timer Bar',
+                        child: Consumer<TimerService>(
+                          builder: (context, timerService, child) {
+                            final activeTimer = timerService.getActiveTimer();
+                            if (activeTimer != null && mounted) {
+                              return Container(
+                                constraints: const BoxConstraints(
+                                  maxHeight: 100, // Prevent extreme height
+                                ),
+                                child: ActiveTimerBar(
+                                  timer: activeTimer,
+                                  onTap: () => _navigateToTimerDashboard(),
+                                ).animate().fadeIn(
+                                  duration: DesignTokens.animationMedium,
+                                  delay: const Duration(milliseconds: 200),
+                                ).slideY(
+                                  begin: -0.3,
+                                  end: 0,
+                                  duration: DesignTokens.animationMedium,
+                                  curve: DesignTokens.curveEaseOut,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
                       ),
-                    
-                    // Use FutureBuilder for data-dependent sections to improve loading performance
-                    FutureBuilder<List<Entry>>(
-                      future: _entriesFuture,
-                      builder: (context, snapshot) {
-                        if (kDebugMode) {
-                          print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
-                        }
-                        
-                        if (snapshot.connectionState == ConnectionState.waiting || _isLoadingEntries) {
-                          if (kDebugMode) {
-                            print('🔄 HomeScreen: Zeige Loading-Zustand');
-                          }
-                          return const Center(
-                            child: Padding(
-                              padding: EdgeInsets.all(Spacing.lg),
-                              child: Column(
-                                children: [
-                                  CircularProgressIndicator(),
-                                  SizedBox(height: 16),
-                                  Text('Lade Einträge...'),
-                                ],
-                              ),
+                      
+                      Spacing.verticalSpaceLg,
+                      
+                      // Quick Entry Bar
+                      if (!_isLoadingQuickButtons)
+                        LayoutErrorBoundary(
+                          debugLabel: 'Quick Entry Bar',
+                          child: Container(
+                            constraints: const BoxConstraints(
+                              maxHeight: 150, // Prevent extreme height
                             ),
-                          );
-                        }
-                        
-                        // Handle errors gracefully
-                        if (snapshot.hasError) {
-                          if (kDebugMode) {
-                            print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
-                          }
-                          return _buildErrorFallback(context, isDark);
-                        }
-                        
-                        final entries = snapshot.data ?? [];
-                        if (kDebugMode) {
-                          print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
-                        }
-                        
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Spacing.verticalSpaceLg,
-                            _buildRecentEntriesSection(context, isDark, entries),
-                            Spacing.verticalSpaceLg,
-                            _buildTodayStatsSection(context, isDark),
-                            Spacing.verticalSpaceLg,
-                            _buildQuickInsightsSection(context, isDark),
-                          ],
-                        );
-                      },
-                    ),
-                
-                const SizedBox(height: 120), // Bottom padding for navigation
-              ]),
+                            child: QuickEntryBar(
+                              quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
+                              onQuickEntry: _handleQuickEntry,
+                              onAddButton: _navigateToQuickButtonConfig,
+                              onEditMode: () {
+                                if (mounted) {
+                                  safeSetState(() {
+                                    _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                                  });
+                                }
+                              },
+                              isEditing: _isQuickEntryEditMode,
+                              onReorder: _reorderQuickButtons,
+                            ).animate().fadeIn(
+                              duration: DesignTokens.animationMedium,
+                              delay: const Duration(milliseconds: 400),
+                            ).slideY(
+                              begin: 0.3,
+                              end: 0,
+                              duration: DesignTokens.animationMedium,
+                              curve: DesignTokens.curveEaseOut,
+                            ),
+                          ),
+                        ),
+                      
+                      // Use FutureBuilder for data-dependent sections to improve loading performance
+                      LayoutErrorBoundary(
+                        debugLabel: 'Main Content Section',
+                        child: FutureBuilder<List<Entry>>(
+                          future: _entriesFuture,
+                          builder: (context, snapshot) {
+                            if (kDebugMode) {
+                              print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
+                            }
+                            
+                            if (snapshot.connectionState == ConnectionState.waiting || _isLoadingEntries) {
+                              if (kDebugMode) {
+                                print('🔄 HomeScreen: Zeige Loading-Zustand');
+                              }
+                              return Container(
+                                constraints: const BoxConstraints(
+                                  minHeight: 200,
+                                  maxHeight: 300,
+                                ),
+                                child: const Center(
+                                  child: Padding(
+                                    padding: EdgeInsets.all(Spacing.lg),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        CircularProgressIndicator(),
+                                        SizedBox(height: 16),
+                                        Text('Lade Einträge...'),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                            // Handle errors gracefully
+                            if (snapshot.hasError) {
+                              if (kDebugMode) {
+                                print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
+                              }
+                              return _buildErrorFallback(context, isDark);
+                            }
+                            
+                            final entries = snapshot.data ?? [];
+                            if (kDebugMode) {
+                              print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
+                            }
+                            
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Recent Entries Section',
+                                  child: _buildRecentEntriesSection(context, isDark, entries),
+                                ),
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Today Stats Section',
+                                  child: _buildTodayStatsSection(context, isDark),
+                                ),
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Quick Insights Section',
+                                  child: _buildQuickInsightsSection(context, isDark),
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                  
+                  const SizedBox(height: 120), // Bottom padding for navigation
+                ]),
+              ),
             ),
-          ),
-        ],
-      ),
-            ), // Close the Container
+          ],
+        ),
+              ), // Close the Container
+            ), // Close the LayoutErrorBoundary
           floatingActionButton: Consumer<PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
               return Consumer<TimerService>(
