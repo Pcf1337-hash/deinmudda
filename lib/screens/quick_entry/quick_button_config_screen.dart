@@ -91,8 +91,13 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       _dosageController.text = config.dosage.toString().replaceAll('.', ',');
       _selectedUnit = config.unit;
       _unitController.text = _selectedUnit;
-      // Load saved price if available
-      _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+      // Load saved cost if available  
+      if (config.cost > 0) {
+        _priceController.text = config.cost.toString().replaceAll('.', ',');
+        _calculatedCost = config.cost;
+      } else {
+        _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+      }
       // Trigger cost calculation after form is initialized
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateCalculatedCost();
@@ -179,17 +184,24 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
 
       // Ensure unit is set
       final unit = _selectedUnit.isNotEmpty ? _selectedUnit : _unitController.text;
+      
+      // Calculate the final cost to use
+      final finalCost = _priceController.text.isNotEmpty 
+          ? double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0
+          : _calculatedCost;
 
       final config = widget.existingConfig?.copyWith(
         substanceId: _selectedSubstance!.id,
         substanceName: _selectedSubstance!.name,
         dosage: dosage,
         unit: unit,
+        cost: finalCost,
       ) ?? QuickButtonConfig.create(
         substanceId: _selectedSubstance!.id,
         substanceName: _selectedSubstance!.name,
         dosage: dosage,
         unit: unit,
+        cost: finalCost,
         position: position,
       );
 

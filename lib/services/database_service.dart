@@ -84,6 +84,7 @@ class DatabaseService {
         substanceName TEXT NOT NULL,
         dosage REAL NOT NULL,
         unit TEXT NOT NULL,
+        cost REAL NOT NULL DEFAULT 0.0,
         position INTEGER NOT NULL,
         isActive INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL,
@@ -229,6 +230,9 @@ class DatabaseService {
     // Check and add created_at/updated_at to quick_buttons table
     await _addColumnIfNotExists(db, 'quick_buttons', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
     await _addColumnIfNotExists(db, 'quick_buttons', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+    
+    // Check and add cost column to quick_buttons table
+    await _addColumnIfNotExists(db, 'quick_buttons', 'cost', 'REAL NOT NULL DEFAULT 0.0');
     
     // Check and add created_at to dosage_calculator_users table
     await _addColumnIfNotExists(db, 'dosage_calculator_users', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');

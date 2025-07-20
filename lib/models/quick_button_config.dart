@@ -6,6 +6,7 @@ class QuickButtonConfig {
   final String substanceName;
   final double dosage;
   final String unit;
+  final double cost;
   final int position;
   final bool isActive;
   final DateTime createdAt;
@@ -17,6 +18,7 @@ class QuickButtonConfig {
     required this.substanceName,
     required this.dosage,
     required this.unit,
+    this.cost = 0.0,
     required this.position,
     required this.isActive,
     required this.createdAt,
@@ -29,6 +31,7 @@ class QuickButtonConfig {
     required String substanceName,
     required double dosage,
     required String unit,
+    double cost = 0.0,
     required int position,
     bool isActive = true,
   }) {
@@ -39,6 +42,7 @@ class QuickButtonConfig {
       substanceName: substanceName,
       dosage: dosage,
       unit: unit,
+      cost: cost,
       position: position,
       isActive: isActive,
       createdAt: now,
@@ -63,6 +67,7 @@ class QuickButtonConfig {
       'substanceName': substanceName,
       'dosage': dosage,
       'unit': unit,
+      'cost': cost,
       'position': position,
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
@@ -77,6 +82,7 @@ class QuickButtonConfig {
       substanceName: json['substanceName'] as String,
       dosage: (json['dosage'] as num).toDouble(),
       unit: json['unit'] as String,
+      cost: (json['cost'] as num?)?.toDouble() ?? 0.0,
       position: json['position'] as int,
       isActive: json['isActive'] as bool,
       createdAt: DateTime.parse(json['createdAt'] as String),
@@ -92,6 +98,7 @@ class QuickButtonConfig {
       'substanceName': substanceName,
       'dosage': dosage,
       'unit': unit,
+      'cost': cost,
       'position': position,
       'isActive': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
@@ -106,6 +113,7 @@ class QuickButtonConfig {
       substanceName: map['substanceName'] as String,
       dosage: (map['dosage'] as num).toDouble(),
       unit: map['unit'] as String,
+      cost: (map['cost'] as num?)?.toDouble() ?? 0.0,
       position: map['position'] as int,
       isActive: (map['isActive'] as int) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
@@ -120,6 +128,7 @@ class QuickButtonConfig {
     String? substanceName,
     double? dosage,
     String? unit,
+    double? cost,
     int? position,
     bool? isActive,
     DateTime? createdAt,
@@ -131,6 +140,7 @@ class QuickButtonConfig {
       substanceName: substanceName ?? this.substanceName,
       dosage: dosage ?? this.dosage,
       unit: unit ?? this.unit,
+      cost: cost ?? this.cost,
       position: position ?? this.position,
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
