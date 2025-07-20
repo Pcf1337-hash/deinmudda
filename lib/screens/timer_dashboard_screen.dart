@@ -153,24 +153,38 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
 
     return RefreshIndicator(
       onRefresh: _loadActiveTimers,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (_activeEntries.isNotEmpty) ...[
-            _buildSectionHeader('Substanz-Timer', Icons.medication_rounded),
-            const SizedBox(height: 16),
-            ..._activeEntries.map((entry) => _buildEntryTimer(entry, isDark)),
-          ],
-          
-          if (_customTimers.isNotEmpty) ...[
-            if (_activeEntries.isNotEmpty) const SizedBox(height: 24),
-            _buildSectionHeader('Benutzerdefinierte Timer', Icons.timer_rounded),
-            const SizedBox(height: 16),
-            ..._customTimers.map((timer) => _buildCustomTimer(timer, isDark)),
-          ],
-          
-          const SizedBox(height: 100), // Bottom padding for FAB
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              if (_activeEntries.isNotEmpty) ...[
+                _buildSectionHeader('Substanz-Timer', Icons.medication_rounded),
+                const SizedBox(height: 16),
+                ..._activeEntries.map((entry) => Container(
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth - 32, // Account for padding
+                  ),
+                  child: _buildEntryTimer(entry, isDark),
+                )),
+              ],
+              
+              if (_customTimers.isNotEmpty) ...[
+                if (_activeEntries.isNotEmpty) const SizedBox(height: 24),
+                _buildSectionHeader('Benutzerdefinierte Timer', Icons.timer_rounded),
+                const SizedBox(height: 16),
+                ..._customTimers.map((timer) => Container(
+                  constraints: BoxConstraints(
+                    maxWidth: constraints.maxWidth - 32, // Account for padding
+                  ),
+                  child: _buildCustomTimer(timer, isDark),
+                )),
+              ],
+              
+              const SizedBox(height: 100), // Bottom padding for FAB
+            ],
+          );
+        },
       ),
     );
   }

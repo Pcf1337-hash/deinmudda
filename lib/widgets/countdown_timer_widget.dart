@@ -281,21 +281,25 @@ class _CountdownTimerWidgetState extends State<CountdownTimerWidget>
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 8,
-              width: MediaQuery.of(context).size.width * progress,
-              decoration: BoxDecoration(
-                color: accentColor,
-                borderRadius: BorderRadius.circular(4),
-                boxShadow: [
-                  BoxShadow(
-                    color: accentColor.withOpacity(0.4),
-                    blurRadius: 4,
-                    spreadRadius: 1,
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 8,
+                  width: constraints.maxWidth * progress,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(4),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withOpacity(0.4),
+                        blurRadius: 4,
+                        spreadRadius: 1,
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             ),
             if (progress > 0.15) // Only show text if there's enough space
               Container(

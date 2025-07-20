@@ -203,18 +203,14 @@ class TimerService extends ChangeNotifier {
     try {
       ErrorHandler.logTimer('START', 'Timer wird für ${entry.substanceName} gestartet');
       
-      // Check for duplicate timer instances
+      // Check for duplicate timer instances for the same entry
       if (hasTimerWithId(entry.id)) {
-        ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für ${entry.substanceName} bereits aktiv - stoppe zuerst den vorhandenen');
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für ${entry.substanceName} bereits aktiv - stoppe den vorhandenen');
         await stopTimer(entry);
       }
       
-      // Stop any existing active timer first (only one timer allowed)
-      if (_activeTimers.isNotEmpty) {
-        for (final activeTimer in List.from(_activeTimers)) {
-          await stopTimer(activeTimer);
-        }
-      }
+      // Allow multiple timers to run concurrently - no need to stop existing timers
+      ErrorHandler.logTimer('CONCURRENT', 'Erlaube gleichzeitige Timer. Aktive Timer: ${_activeTimers.length}');
 
       Duration? duration = customDuration;
       

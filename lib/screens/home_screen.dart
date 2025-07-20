@@ -253,6 +253,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         substanceName: config.substanceName,
         dosage: config.dosage,
         unit: config.unit,
+        cost: config.cost, // Include cost from quick button config
         dateTime: DateTime.now(),
         notes: 'Erstellt über Quick Entry',
       );
