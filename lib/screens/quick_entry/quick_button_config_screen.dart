@@ -579,154 +579,192 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   }
 
   Widget _buildIconColorSection(BuildContext context, bool isDark) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Aussehen',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 450),
+    return ExpansionTile(
+      initiallyExpanded: false, // Start collapsed to save space
+      title: Text(
+        'Aussehen anpassen',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
         ),
-        Spacing.verticalSpaceSm,
-        
-        // Icon selection
-        Text(
-          'Symbol',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GlassCard(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableIcons.map((icon) {
-                final isSelected = _selectedIcon == icon;
-                final color = _selectedColor ?? DesignTokens.primaryIndigo;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedIcon = icon;
-                      _isIconManuallySelected = true; // Mark as manually selected
-                    });
-                  },
-                  child: Container(
-                    width: 48,
-                    height: 48,
+      ),
+      subtitle: _selectedIcon != null || _selectedColor != null
+          ? Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_selectedIcon != null) ...[
+                  Icon(_selectedIcon!, size: 16, color: _selectedColor),
+                  const SizedBox(width: 8),
+                ],
+                if (_selectedColor != null) ...[
+                  Container(
+                    width: 16,
+                    height: 16,
                     decoration: BoxDecoration(
-                      color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: isSelected ? color : Colors.grey.withOpacity(0.3),
-                        width: isSelected ? 2 : 1,
-                      ),
-                    ),
-                    child: Icon(
-                      icon,
-                      color: isSelected ? color : Colors.grey[600],
-                      size: 24,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 470),
-        ),
-        
-        Spacing.verticalSpaceSm,
-        
-        // Color selection
-        Text(
-          'Farbe',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-        const SizedBox(height: 8),
-        GlassCard(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _availableColors.map((color) {
-                final isSelected = _selectedColor == color;
-                return GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      _selectedColor = color;
-                      _isColorManuallySelected = true; // Mark as manually selected
-                    });
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: color,
+                      color: _selectedColor,
                       shape: BoxShape.circle,
-                      border: Border.all(
-                        color: isSelected ? Colors.white : Colors.transparent,
-                        width: isSelected ? 3 : 0,
-                      ),
-                      boxShadow: [
-                        if (isSelected)
-                          BoxShadow(
-                            color: color.withOpacity(0.5),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                      ],
                     ),
-                    child: isSelected
-                        ? const Icon(
-                            Icons.check,
-                            color: Colors.white,
-                            size: 20,
-                          )
-                        : null,
                   ),
-                );
-              }).toList(),
+                  const SizedBox(width: 8),
+                ],
+                Text(
+                  'Angepasst',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: DesignTokens.accentCyan,
+                  ),
+                ),
+              ],
+            )
+          : Text(
+              'Standard verwenden',
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-          ),
-        ).animate().fadeIn(
-          duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 490),
-        ),
-        
-        // Reset to substance defaults button
-        if (_selectedSubstance != null && (_isIconManuallySelected || _isColorManuallySelected))
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0),
-            child: Center(
-              child: TextButton.icon(
-                onPressed: () {
-                  setState(() {
-                    _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
-                    _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
-                    _isIconManuallySelected = false;
-                    _isColorManuallySelected = false;
-                  });
-                },
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Substanz-Standard verwenden'),
-                style: TextButton.styleFrom(
-                  foregroundColor: DesignTokens.accentCyan,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Icon selection
+              Text(
+                'Symbol',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-            ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  constraints: const BoxConstraints(maxHeight: 140), // Limit height
+                  child: SingleChildScrollView(
+                    child: Wrap(
+                      spacing: 6, // Reduced spacing
+                      runSpacing: 6,
+                      children: _availableIcons.map((icon) {
+                        final isSelected = _selectedIcon == icon;
+                        final color = _selectedColor ?? DesignTokens.primaryIndigo;
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedIcon = icon;
+                              _isIconManuallySelected = true; // Mark as manually selected
+                            });
+                          },
+                          child: Container(
+                            width: 40, // Reduced size
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected ? color : Colors.grey.withOpacity(0.3),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Icon(
+                              icon,
+                              color: isSelected ? color : Colors.grey[600],
+                              size: 20, // Reduced size
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ),
+              
+              Spacing.verticalSpaceSm,
+              
+              // Color selection
+              Text(
+                'Farbe',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: Container(
+                  padding: const EdgeInsets.all(12),
+                  child: Wrap(
+                    spacing: 6, // Reduced spacing
+                    runSpacing: 6,
+                    children: _availableColors.map((color) {
+                      final isSelected = _selectedColor == color;
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedColor = color;
+                            _isColorManuallySelected = true; // Mark as manually selected
+                          });
+                        },
+                        child: Container(
+                          width: 32, // Reduced size
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: color,
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: isSelected ? Colors.white : Colors.transparent,
+                              width: isSelected ? 2 : 0, // Reduced border width
+                            ),
+                            boxShadow: [
+                              if (isSelected)
+                                BoxShadow(
+                                  color: color.withOpacity(0.5),
+                                  blurRadius: 4, // Reduced blur
+                                  offset: const Offset(0, 2),
+                                ),
+                            ],
+                          ),
+                          child: isSelected
+                              ? const Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16, // Reduced size
+                                )
+                              : null,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ),
+              
+              // Reset to substance defaults button
+              if (_selectedSubstance != null && (_isIconManuallySelected || _isColorManuallySelected))
+                Padding(
+                  padding: const EdgeInsets.only(top: 12.0),
+                  child: Center(
+                    child: TextButton.icon(
+                      onPressed: () {
+                        setState(() {
+                          _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
+                          _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
+                          _isIconManuallySelected = false;
+                          _isColorManuallySelected = false;
+                        });
+                      },
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text(
+                        'Standard wiederherstellen',
+                        style: TextStyle(fontSize: 12),
+                      ),
+                      style: TextButton.styleFrom(
+                        foregroundColor: DesignTokens.accentCyan,
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
           ),
+        ),
       ],
+    ).animate().fadeIn(
+      duration: DesignTokens.animationMedium,
+      delay: const Duration(milliseconds: 450),
     );
   }
 

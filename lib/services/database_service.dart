@@ -17,7 +17,7 @@ class DatabaseService {
 
   static Database? _database;
   static const String _databaseName = 'konsum_tracker.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   Future<Database> get database async {
     _database ??= await _initDatabase();
@@ -55,7 +55,9 @@ class DatabaseService {
         timerStartTime TEXT,
         timerEndTime TEXT,
         timerCompleted INTEGER NOT NULL DEFAULT 0,
-        timerNotificationSent INTEGER NOT NULL DEFAULT 0
+        timerNotificationSent INTEGER NOT NULL DEFAULT 0,
+        iconCodePoint INTEGER,
+        colorValue INTEGER
       )
     ''');
 
@@ -89,6 +91,8 @@ class DatabaseService {
         isActive INTEGER NOT NULL DEFAULT 1,
         created_at TEXT NOT NULL,
         updated_at TEXT NOT NULL,
+        iconCodePoint INTEGER,
+        colorValue INTEGER,
         FOREIGN KEY (substanceId) REFERENCES substances (id) ON DELETE CASCADE
       )
     ''');
@@ -194,6 +198,16 @@ class DatabaseService {
         SET duration = 240 
         WHERE name = 'Paracetamol';
       '''); // 4 hours
+    }
+    
+    if (oldVersion < 3) {
+      // Add icon and color fields to entries table
+      await _addColumnIfNotExists(db, 'entries', 'iconCodePoint', 'INTEGER');
+      await _addColumnIfNotExists(db, 'entries', 'colorValue', 'INTEGER');
+      
+      // Add icon and color fields to quick_buttons table
+      await _addColumnIfNotExists(db, 'quick_buttons', 'iconCodePoint', 'INTEGER');
+      await _addColumnIfNotExists(db, 'quick_buttons', 'colorValue', 'INTEGER');
     }
     
     // Migration for any version that doesn't have created_at/updated_at columns
