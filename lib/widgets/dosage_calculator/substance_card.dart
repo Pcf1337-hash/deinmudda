@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:math' as math;
 import '../../models/dosage_calculator_substance.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
@@ -206,146 +207,368 @@ class _SubstanceCardState extends State<SubstanceCard>
   Widget _buildFullContent(BuildContext context, Color substanceColor, Color riskColor) {
     final theme = Theme.of(context);
 
-    return Container(
-      constraints: const BoxConstraints(
-        minHeight: 220,
-        maxHeight: 280,
-      ),
-      padding: Spacing.paddingMd,
-      child: SingleChildScrollView(
-        physics: const ClampingScrollPhysics(),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with icon and risk level
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(Spacing.sm),
-                  decoration: BoxDecoration(
-                    color: substanceColor.withOpacity(0.1),
-                    borderRadius: Spacing.borderRadiusMd,
-                  ),
-                  child: Icon(
-                    AppIconGenerator.getSubstanceIcon(widget.substance.name),
-                    color: substanceColor,
-                    size: Spacing.iconLg,
-                  ),
-                ),
-                
-                if (widget.showRiskLevel)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: Spacing.sm,
-                      vertical: Spacing.xs,
-                    ),
-                    decoration: BoxDecoration(
-                      color: riskColor.withOpacity(0.1),
-                      borderRadius: Spacing.borderRadiusSm,
-                      border: Border.all(
-                        color: riskColor.withOpacity(0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          _getRiskIcon(widget.substance.name),
-                          color: riskColor,
-                          size: Spacing.iconSm,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive dimensions based on available space
+        final availableHeight = constraints.maxHeight;
+        final availableWidth = constraints.maxWidth;
+        
+        // Use flexible constraints instead of fixed heights
+        final minHeight = math.max(220.0, availableHeight * 0.8);
+        final maxHeight = math.min(320.0, availableHeight * 1.2);
+        
+        return Container(
+          constraints: BoxConstraints(
+            minHeight: minHeight,
+            maxHeight: maxHeight,
+            maxWidth: availableWidth,
+          ),
+          padding: EdgeInsets.all(math.max(12.0, availableWidth * 0.05)),
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with icon and risk level
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(math.max(8.0, availableWidth * 0.04)),
+                        decoration: BoxDecoration(
+                          color: substanceColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(math.max(8.0, availableWidth * 0.04)),
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          _getRiskLevel(widget.substance.name),
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: riskColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                        child: Icon(
+                          AppIconGenerator.getSubstanceIcon(widget.substance.name),
+                          color: substanceColor,
+                          size: math.min(Spacing.iconLg, availableWidth * 0.15),
+                        ),
+                      ),
+                      
+                      if (widget.showRiskLevel)
+                        Flexible(
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: math.max(8.0, availableWidth * 0.03),
+                              vertical: math.max(4.0, availableWidth * 0.02),
+                            ),
+                            decoration: BoxDecoration(
+                              color: riskColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(math.max(6.0, availableWidth * 0.02)),
+                              border: Border.all(
+                                color: riskColor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _getRiskIcon(widget.substance.name),
+                                  color: riskColor,
+                                  size: math.min(Spacing.iconSm, availableWidth * 0.08),
+                                ),
+                                SizedBox(width: math.max(2.0, availableWidth * 0.01)),
+                                Flexible(
+                                  child: Text(
+                                    _getRiskLevel(widget.substance.name),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: riskColor,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: math.min(14.0, availableWidth * 0.045),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ],
+                    ],
+                  ),
+                  
+                  SizedBox(height: math.max(12.0, availableHeight * 0.04)),
+                  
+                  // Substance name with flexible sizing
+                  Flexible(
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: math.max(35.0, availableHeight * 0.15),
+                        maxHeight: math.max(60.0, availableHeight * 0.25),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          widget.substance.name,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            color: substanceColor,
+                            fontSize: math.min(22.0, availableWidth * 0.08),
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                     ),
                   ),
-              ],
+                  
+                  SizedBox(height: math.max(6.0, availableHeight * 0.02)),
+                  
+                  // Responsive administration route and duration info
+                  _buildResponsiveInfoRows(context, theme, availableWidth),
+                  
+                  // Flexible dosage preview section
+                  if (widget.showDosagePreview) ...[
+                    SizedBox(height: math.max(8.0, availableHeight * 0.03)),
+                    Flexible(
+                      child: _buildResponsiveDosagePreview(context, substanceColor, availableWidth, availableHeight),
+                    ),
+                  ],
+                ],
+              ),
             ),
-            
-            Spacing.verticalSpaceMd,
-            
-            // Substance name
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildResponsiveInfoRows(BuildContext context, ThemeData theme, double availableWidth) {
+    final iconSize = math.min(15.0, availableWidth * 0.05);
+    final fontSize = math.min(12.5, availableWidth * 0.04);
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          children: [
+            Icon(
+              Icons.compare_arrows_rounded,
+              color: theme.iconTheme.color?.withOpacity(0.7),
+              size: iconSize,
+            ),
+            SizedBox(width: math.max(4.0, availableWidth * 0.01)),
             Flexible(
               child: Text(
-                widget.substance.name,
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.w800,
-                  color: substanceColor,
-                  fontSize: 22,
+                widget.substance.administrationRouteDisplayName,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white70,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
                 ),
-                maxLines: 2,
+                maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            
-            Spacing.verticalSpaceXs,
-            
-            // Konsumform und Dauer UNTEREINANDER (mit kleinerer Schrift!)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.compare_arrows_rounded,
-                      color: theme.iconTheme.color?.withOpacity(0.7),
-                      size: 15,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        widget.substance.administrationRouteDisplayName,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 1),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.schedule_rounded,
-                      color: theme.iconTheme.color?.withOpacity(0.7),
-                      size: 15,
-                    ),
-                    const SizedBox(width: 4),
-                    Flexible(
-                      child: Text(
-                        widget.substance.duration,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.white70,
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+          ],
+        ),
+        const SizedBox(height: 1),
+        Row(
+          children: [
+            Icon(
+              Icons.schedule_rounded,
+              color: theme.iconTheme.color?.withOpacity(0.7),
+              size: iconSize,
             ),
-            
-            // Abstand zum Warnhinweis verringern (statt Spacing.verticalSpaceMd benutzt: SizedBox(height: 10))
-            if (widget.showDosagePreview) ...[
-              const SizedBox(height: 10),
-              _buildDosagePreview(context, substanceColor),
+            SizedBox(width: math.max(4.0, availableWidth * 0.01)),
+            Flexible(
+              child: Text(
+                widget.substance.duration,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: Colors.white70,
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildResponsiveDosagePreview(BuildContext context, Color substanceColor, double availableWidth, double availableHeight) {
+    final theme = Theme.of(context);
+    final padding = math.max(8.0, availableWidth * 0.03);
+    final fontSize = math.min(13.0, availableWidth * 0.045);
+    final titleFontSize = math.min(16.0, availableWidth * 0.055);
+
+    return Container(
+      width: double.infinity,
+      constraints: BoxConstraints(
+        minHeight: math.max(70.0, availableHeight * 0.25),
+        maxHeight: math.max(120.0, availableHeight * 0.4),
+      ),
+      padding: EdgeInsets.symmetric(
+        vertical: padding,
+        horizontal: math.max(10.0, availableWidth * 0.035),
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.07),
+        borderRadius: BorderRadius.circular(math.max(12.0, availableWidth * 0.04)),
+      ),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Add recommended dose display if user weight is available
+            if (widget.userWeight != null) ...[
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Empfohlene Dosis',
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: substanceColor,
+                      fontSize: fontSize,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
+              SizedBox(height: math.max(4.0, availableHeight * 0.01)),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    widget.substance.getFormattedDosage(widget.userWeight!, DosageIntensity.normal),
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: Colors.amberAccent,
+                      fontSize: titleFontSize,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(height: math.max(8.0, availableHeight * 0.02)),
             ],
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  'Dosierungsbereich (pro kg)',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: substanceColor,
+                    fontSize: fontSize,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ),
+            SizedBox(height: math.max(2.0, availableHeight * 0.005)),
+            // Use Flexible layout for dosage values
+            Flexible(
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${widget.substance.lightDosePerKg.toStringAsFixed(1)}mg',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: Colors.greenAccent,
+                              fontSize: math.min(13.0, constraints.maxWidth * 0.08),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: math.max(2.0, constraints.maxWidth * 0.01)),
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${widget.substance.normalDosePerKg.toStringAsFixed(1)}mg',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: Colors.amberAccent,
+                              fontSize: math.min(13.0, constraints.maxWidth * 0.08),
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: math.max(2.0, constraints.maxWidth * 0.01)),
+                      Expanded(
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${widget.substance.strongDosePerKg.toStringAsFixed(1)}mg',
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: Colors.redAccent,
+                              fontSize: math.min(13.0, constraints.maxWidth * 0.08),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            // Labels with responsive sizing
+            Flexible(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Leicht',
+                        style: TextStyle(
+                          fontSize: math.min(11.0, availableWidth * 0.035),
+                          color: Colors.white54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Norm',
+                        style: TextStyle(
+                          fontSize: math.min(11.0, availableWidth * 0.035),
+                          color: Colors.white54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        'Stark',
+                        style: TextStyle(
+                          fontSize: math.min(11.0, availableWidth * 0.035),
+                          color: Colors.white54,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
@@ -353,117 +576,8 @@ class _SubstanceCardState extends State<SubstanceCard>
   }
 
   Widget _buildDosagePreview(BuildContext context, Color substanceColor) {
-    final theme = Theme.of(context);
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.07),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Add recommended dose display if user weight is available
-          if (widget.userWeight != null) ...[
-            Flexible(
-              child: Text(
-                'Empfohlene Dosis',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: substanceColor,
-                  fontSize: 13,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  widget.substance.getFormattedDosage(widget.userWeight!, DosageIntensity.normal),
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                    color: Colors.amberAccent,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
-          ],
-          Flexible(
-            child: Text(
-              'Dosierungsbereich (pro kg)',
-              style: theme.textTheme.titleSmall?.copyWith(
-                fontWeight: FontWeight.w700,
-                color: substanceColor,
-                fontSize: 13,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Row(
-            children: [
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${widget.substance.lightDosePerKg.toStringAsFixed(1)}mg',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.greenAccent,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 2),
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${widget.substance.normalDosePerKg.toStringAsFixed(1)}mg',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.amberAccent,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 2),
-              Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    '${widget.substance.strongDosePerKg.toStringAsFixed(1)}mg',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: Colors.redAccent,
-                      fontSize: 13,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const Row(
-            children: [
-              Expanded(child: Text('Leicht', style: TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-              Expanded(child: Text('Norm', style: TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-              Expanded(child: Text('Stark', style: TextStyle(fontSize: 11, color: Colors.white54, fontWeight: FontWeight.w500), textAlign: TextAlign.center)),
-            ],
-          ),
-        ],
-      ),
-    );
+    // Keep existing method for backward compatibility
+    return _buildResponsiveDosagePreview(context, substanceColor, 200.0, 200.0);
   }
 
   Color _getSubstanceColor(String substanceName) {
