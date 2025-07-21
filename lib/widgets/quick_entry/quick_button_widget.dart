@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../models/quick_button_config.dart';
 import '../../services/timer_service.dart';
+import '../../services/substance_service.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/app_icon_generator.dart';
@@ -206,7 +207,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                           ),
                         ),
                         
-                        // Dosage - improved overflow handling
+                        // Dosage - improved overflow handling  
                         Flexible(
                           child: FittedBox(
                             fit: BoxFit.scaleDown,
@@ -222,6 +223,100 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                        ),
+                        
+                        // Compact info row: cost and timer duration side by side
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Cost information - show if cost is set
+                            if (widget.config.cost > 0) ...[
+                              Flexible(
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                                  decoration: BoxDecoration(
+                                    color: DesignTokens.accentEmerald.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      '${widget.config.cost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: DesignTokens.accentEmerald,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 7,
+                                      ),
+                                      textAlign: TextAlign.center,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              if (widget.config.cost > 0) const SizedBox(width: 2), // Space between cost and timer
+                            ],
+                            
+                            // Timer duration information - show planned duration from substance
+                            Consumer<SubstanceService>(
+                              builder: (context, substanceService, child) {
+                                return FutureBuilder(
+                                  future: substanceService.getSubstanceById(widget.config.substanceId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData && snapshot.data?.duration != null) {
+                                      final duration = snapshot.data!.duration!;
+                                      final hours = duration.inHours;
+                                      final minutes = duration.inMinutes.remainder(60);
+                                      String durationText;
+                                      
+                                      if (hours > 0) {
+                                        durationText = '${hours}h';
+                                      } else {
+                                        durationText = '${minutes}m';
+                                      }
+                                      
+                                      return Flexible(
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 1),
+                                          decoration: BoxDecoration(
+                                            color: DesignTokens.accentPurple.withOpacity(0.2),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              Icon(
+                                                Icons.timer_outlined,
+                                                size: 6,
+                                                color: DesignTokens.accentPurple,
+                                              ),
+                                              const SizedBox(width: 1),
+                                              FittedBox(
+                                                fit: BoxFit.scaleDown,
+                                                child: Text(
+                                                  durationText,
+                                                  style: theme.textTheme.bodySmall?.copyWith(
+                                                    color: DesignTokens.accentPurple,
+                                                    fontWeight: FontWeight.w600,
+                                                    fontSize: 7,
+                                                  ),
+                                                  textAlign: TextAlign.center,
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                );
+                              },
+                            ),
+                          ],
                         ),
                         
                         // Timer status - show if active timer exists for this substance
@@ -331,32 +426,35 @@ class AddQuickButtonWidget extends StatelessWidget {
             style: BorderStyle.solid,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.add_rounded,
-              color: DesignTokens.primaryIndigo,
-              size: Spacing.iconLg,
-            ),
-            Spacing.verticalSpaceXs,
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  'Hinzufügen',
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: DesignTokens.primaryIndigo,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 9,
+        child: Padding(
+          padding: Spacing.paddingMd,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.add_rounded,
+                color: DesignTokens.primaryIndigo,
+                size: Spacing.iconMd, // Use same icon size as regular buttons
+              ),
+              Spacing.verticalSpaceXs,
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    'Hinzufügen',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: DesignTokens.primaryIndigo,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 10, // Match regular button font size
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ).animate().fadeIn(
