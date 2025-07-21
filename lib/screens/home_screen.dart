@@ -874,42 +874,40 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                   ),
                                 ],
                               ),
+                              child: TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 3000),
+                                tween: Tween(begin: 0.0, end: 1.0),
+                                builder: (context, value, child) {
+                                  return Transform.rotate(
+                                    angle: value * 6.28, // Full rotation
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) {
+                                        return LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.white.withOpacity(0.8),
+                                            isPsychedelic ? substanceColors['primary']! : DesignTokens.accentCyan,
+                                            Colors.white,
+                                          ],
+                                          stops: [0.0, 0.3, 0.7, 1.0],
+                                          transform: GradientRotation(value * 3.14),
+                                        ).createShader(bounds);
+                                      },
+                                      child: const Icon(
+                                        Icons.psychology_rounded,
+                                        color: Colors.white,
+                                        size: 28,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                          child: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 3000),
-                            tween: Tween(begin: 0.0, end: 1.0),
-                            builder: (context, value, child) {
-                              return Transform.rotate(
-                                angle: value * 6.28, // Full rotation
-                                child: ShaderMask(
-                                  shaderCallback: (bounds) {
-                                    return LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        Colors.white,
-                                        Colors.white.withOpacity(0.8),
-                                        isPsychedelic ? substanceColors['primary']! : DesignTokens.accentCyan,
-                                        Colors.white,
-                                      ],
-                                      stops: [0.0, 0.3, 0.7, 1.0],
-                                      transform: GradientRotation(value * 3.14),
-                                    ).createShader(bounds);
-                                  },
-                                  child: const Icon(
-                                    Icons.psychology_rounded,
-                                    color: Colors.white,
-                                    size: 28,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
+                          const SizedBox(width: 12),
+                          Expanded(
                         child: PulsatingWidget(
                           isEnabled: isPsychedelic,
                           glowColor: substanceColors['primary'],
@@ -933,8 +931,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                 stops: isPsychedelic ? [0.0, 0.3, 0.7, 1.0] : [0.0, 0.3, 0.7, 1.0],
                               ).createShader(bounds);
                             },
-                              child: TweenAnimationBuilder<double>(
-                                duration: const Duration(milliseconds: 3000),
+                            child: TweenAnimationBuilder<double>(
+                              duration: const Duration(milliseconds: 3000),
                                 tween: Tween(begin: 0.0, end: 1.0),
                                 builder: (context, value, child) {
                                   return Transform.rotate(
