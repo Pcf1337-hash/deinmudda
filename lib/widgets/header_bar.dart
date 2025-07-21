@@ -42,7 +42,7 @@ class HeaderBar extends StatelessWidget {
           // Use flexible constraints instead of fixed height
           constraints: BoxConstraints(
             minHeight: height ?? (PlatformHelper.isIOS ? 100 : 120),
-            maxHeight: height != null ? height! : (PlatformHelper.isIOS ? 140 : 160),
+            maxHeight: height != null ? height! : (PlatformHelper.isIOS ? 180 : 200),
           ),
           decoration: BoxDecoration(
             gradient: isPsychedelicMode
@@ -120,7 +120,7 @@ class HeaderBar extends StatelessWidget {
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 // Improved title with better text scaling
@@ -140,14 +140,14 @@ class HeaderBar extends StatelessWidget {
                                           fontSize: _getResponsiveTitleSize(constraints.maxWidth),
                                         ),
                                         overflow: TextOverflow.ellipsis,
-                                        maxLines: 2, // Allow 2 lines for long titles
+                                        maxLines: 1, // Reduced to 1 line to prevent overflow
                                         textAlign: TextAlign.left,
                                       ),
                                     );
                                   },
                                 ),
                                 if (subtitle != null) ...[
-                                  const SizedBox(height: 4), // Improved spacing
+                                  const SizedBox(height: 2), // Reduced spacing to prevent overflow
                                   LayoutBuilder(
                                     builder: (context, constraints) {
                                       return ConstrainedBox(

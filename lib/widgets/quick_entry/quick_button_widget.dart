@@ -138,7 +138,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
             child: Container(
               width: 80,
               height: 100,
-              margin: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+              margin: const EdgeInsets.symmetric(horizontal: 2.0), // Reduced margin for consistent spacing
               decoration: BoxDecoration(
                 gradient: isDark
                     ? DesignTokens.glassGradientDark
@@ -414,7 +414,7 @@ class AddQuickButtonWidget extends StatelessWidget {
       child: Container(
         width: 80,
         height: 100,
-        margin: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+        margin: const EdgeInsets.symmetric(horizontal: 2.0), // Consistent margin with QuickButtonWidget
         decoration: BoxDecoration(
           gradient: isDark
               ? DesignTokens.glassGradientDark
