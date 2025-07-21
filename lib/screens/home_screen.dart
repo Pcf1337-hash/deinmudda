@@ -908,63 +908,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                        child: PulsatingWidget(
-                          isEnabled: isPsychedelic,
-                          glowColor: substanceColors['primary'],
-                          intensity: 0.3,
-                          child: ShaderMask(
-                            shaderCallback: (bounds) {
-                              return LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: isPsychedelic ? [
-                                  substanceColors['primary']!,
-                                  DesignTokens.textPsychedelicPrimary,
-                                  substanceColors['primary']!,
-                                  Colors.white,
-                                ] : [
-                                  Colors.white,
-                                  Colors.white,
-                                  Colors.white,
-                                  Colors.white,
-                                ],
-                                stops: isPsychedelic ? [0.0, 0.3, 0.7, 1.0] : [0.0, 0.3, 0.7, 1.0],
-                              ).createShader(bounds);
-                            },
-                            child: TweenAnimationBuilder<double>(
-                              duration: const Duration(milliseconds: 3000),
-                                tween: Tween(begin: 0.0, end: 1.0),
-                                builder: (context, value, child) {
-                                  return Transform.rotate(
-                                    angle: isPsychedelic ? value * 0.1 : 0, // Reduced rotation
-                                    child: ShaderMask(
-                                      shaderCallback: (bounds) {
-                                        return LinearGradient(
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                          colors: [
-                                            Colors.white,
-                                            Colors.white.withOpacity(0.8),
-                                            isPsychedelic ? substanceColors['primary']! : DesignTokens.accentCyan,
-                                            Colors.white,
-                                          ],
-                                          stops: [0.0, 0.3, 0.7, 1.0],
-                                          transform: GradientRotation(value * 3.14),
-                                        ).createShader(bounds);
-                                      },
-                                      child: const Icon(
-                                        Icons.psychology_rounded,
-                                        color: Colors.white,
-                                        size: 28,
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16), // Improved spacing
-                          Expanded(
                             child: PulsatingWidget(
                               isEnabled: isPsychedelic,
                               glowColor: substanceColors['primary'],
@@ -1003,13 +946,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.left,
                                         ),
+                                      ),
                                     ],
                                   );
                                 },
                               ),
                             ),
-                          ),
-                        ],
+                          ),                        ],
                       ).animate().fadeIn(
                         duration: DesignTokens.animationSlow,
                         delay: const Duration(milliseconds: 200),
