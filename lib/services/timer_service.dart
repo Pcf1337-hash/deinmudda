@@ -18,10 +18,12 @@ class TimerService extends ChangeNotifier {
   final NotificationService _notificationService = NotificationService();
 
   Timer? _timerCheckTimer;
+  Timer? _notificationDebounceTimer;
   final List<Entry> _activeTimers = [];
   SharedPreferences? _prefs;
   bool _isDisposed = false;
   bool _isInitialized = false;
+  bool _pendingNotification = false;
 
   // Timer persistence keys
   static const String _activeTimerCountKey = 'active_timer_count';
@@ -58,6 +60,20 @@ class TimerService extends ChangeNotifier {
         ErrorHandler.logError('TIMER_SERVICE', 'Auch Fallback-Initialisierung fehlgeschlagen: $fallbackError');
       }
     }
+  }
+
+  // Debounced notification to prevent excessive updates
+  void _notifyListenersDebounced() {
+    if (_isDisposed) return;
+    
+    _pendingNotification = true;
+    _notificationDebounceTimer?.cancel();
+    _notificationDebounceTimer = Timer(const Duration(milliseconds: 100), () {
+      if (_pendingNotification && !_isDisposed) {
+        _notifyListenersDebounced();
+        _pendingNotification = false;
+      }
+    });
   }
 
   // Load active timers from database
@@ -139,7 +155,7 @@ class TimerService extends ChangeNotifier {
         
         // Notify listeners if any timers were removed
         if (expiredTimers.isNotEmpty) {
-          notifyListeners();
+          _notifyListenersDebounced();
         }
       }
       
@@ -182,7 +198,7 @@ class TimerService extends ChangeNotifier {
         await _saveTimersToPrefs();
         
         // Notify listeners of timer state change
-        notifyListeners();
+        _notifyListenersDebounced();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer-Ablauf erfolgreich verarbeitet');
       }
@@ -244,7 +260,7 @@ class TimerService extends ChangeNotifier {
         await _saveTimersToPrefs();
         
         // Notify listeners of timer state change
-        notifyListeners();
+        _notifyListenersDebounced();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestartet für ${entry.substanceName} (${_formatDuration(duration)})');
         ErrorHandler.logTimer('STATUS', 'Aktive Timer: ${_activeTimers.length}, End-Zeit: ${timerEndTime.toIso8601String()}');
@@ -284,7 +300,7 @@ class TimerService extends ChangeNotifier {
         await _saveTimersToPrefs();
         
         // Notify listeners of timer state change
-        notifyListeners();
+        _notifyListenersDebounced();
         
         ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich gestoppt für ${entry.substanceName}');
       }
@@ -495,7 +511,7 @@ class TimerService extends ChangeNotifier {
       
       if (oldCount != newCount) {
         ErrorHandler.logTimer('REFRESH', 'Timer-Anzahl geändert: $oldCount -> $newCount');
-        notifyListeners();
+        _notifyListenersDebounced();
       }
       
       ErrorHandler.logSuccess('TIMER_SERVICE', 'Aktive Timer erfolgreich aktualisiert');
@@ -612,7 +628,7 @@ class TimerService extends ChangeNotifier {
                 _activeTimers.add(entry);
                 
                 // Notify listeners of timer state change
-                notifyListeners();
+                _notifyListenersDebounced();
                 
                 ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer erfolgreich wiederhergestellt für ${substance.name}');
               } else {
@@ -729,6 +745,8 @@ class TimerService extends ChangeNotifier {
       
       _timerCheckTimer?.cancel();
       _timerCheckTimer = null;
+      _notificationDebounceTimer?.cancel();
+      _notificationDebounceTimer = null;
       _activeTimers.clear();
       
       // Clear timer preferences

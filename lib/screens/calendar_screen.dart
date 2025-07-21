@@ -209,21 +209,26 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisAlignment: MainAxisAlignment.end,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Kalender',
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
+              Flexible(
+                child: Text(
+                  'Kalender',
+                  style: theme.textTheme.headlineMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ).animate().fadeIn(
+                  duration: DesignTokens.animationSlow,
+                  delay: const Duration(milliseconds: 200),
+                ).slideX(
+                  begin: -0.3,
+                  end: 0,
+                  duration: DesignTokens.animationSlow,
+                  curve: DesignTokens.curveEaseOut,
                 ),
-              ).animate().fadeIn(
-                duration: DesignTokens.animationSlow,
-                delay: const Duration(milliseconds: 200),
-              ).slideX(
-                begin: -0.3,
-                end: 0,
-                duration: DesignTokens.animationSlow,
-                curve: DesignTokens.curveEaseOut,
               ),
             ],
           ),
