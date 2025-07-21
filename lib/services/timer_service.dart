@@ -482,6 +482,28 @@ class TimerService extends ChangeNotifier {
     }
   }
 
+  // Refresh active timers from database (call this when timers might have been added from other sources)
+  Future<void> refreshActiveTimers() async {
+    if (_isDisposed) return;
+    
+    try {
+      ErrorHandler.logTimer('REFRESH', 'Aktualisiere aktive Timer von der Datenbank');
+      
+      final oldCount = _activeTimers.length;
+      await _loadActiveTimers();
+      final newCount = _activeTimers.length;
+      
+      if (oldCount != newCount) {
+        ErrorHandler.logTimer('REFRESH', 'Timer-Anzahl geändert: $oldCount -> $newCount');
+        notifyListeners();
+      }
+      
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'Aktive Timer erfolgreich aktualisiert');
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Aktualisieren aktiver Timer: $e');
+    }
+  }
+
   // Save timer data to specific SharedPreferences keys as requested
   Future<void> _saveTimerToSpecificPrefs(DateTime startTime, Duration duration, String substanceId) async {
     if (_prefs == null) return;

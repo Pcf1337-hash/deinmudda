@@ -295,23 +295,34 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                 overflow: TextOverflow.ellipsis,
               ),
               Spacing.verticalSpaceSm, // Reduced from verticalSpaceMd
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 200, // Limit button width to prevent cut-off
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: widget.onAddButton,
-                  icon: const Icon(Icons.add_rounded, size: 18), // Smaller icon
-                  label: const Text(
-                    'Ersten Button erstellen',
-                    style: TextStyle(fontSize: 13), // Smaller text
+              // Use Flexible instead of ConstrainedBox to prevent overflow
+              Flexible(
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(
+                    maxWidth: 220, // Slightly increased for better text fit
+                    minHeight: 36, // Minimum height to prevent cut-off
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: DesignTokens.primaryIndigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Smaller radius
+                  child: ElevatedButton.icon(
+                    onPressed: widget.onAddButton,
+                    icon: const Icon(Icons.add_rounded, size: 16), // Even smaller icon
+                    label: const Text(
+                      'Ersten Button erstellen',
+                      style: TextStyle(fontSize: 12), // Smaller text
+                      maxLines: 1, // Prevent text wrapping
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: DesignTokens.primaryIndigo,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Even smaller padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6), // Smaller radius
+                      ),
+                      // Add minimum size to prevent shrinking too much
+                      minimumSize: const Size(120, 32),
+                      // Add maximum size to prevent expanding too much
+                      maximumSize: const Size(220, 40),
                     ),
                   ),
                 ),

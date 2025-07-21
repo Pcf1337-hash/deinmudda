@@ -137,6 +137,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     
     _loadEntries();
     _loadQuickButtons();
+    
+    // Also refresh timers to ensure they're up to date
+    _timerService.refreshActiveTimers();
   }
 
   void _loadEntries() {
@@ -251,6 +254,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         cost: config.cost, // Include cost from quick button config
         dateTime: DateTime.now(),
         notes: 'Erstellt über Quick Entry',
+        // Inherit color and icon from quick button
+        icon: config.icon,
+        color: config.color,
       );
 
       await _entryService.addEntry(entry);
@@ -589,65 +595,68 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                         ),
                       ),
                       
-                      // Use FutureBuilder for data-dependent sections to improve loading performance
-                      LayoutErrorBoundary(
-                        debugLabel: 'Main Content Section',
-                        child: FutureBuilder<List<Entry>>(
-                          future: _entriesFuture,
-                          builder: (context, snapshot) {
+                      // Use FutureBuilder for data-dependent sections with better error handling
+                      FutureBuilder<List<Entry>>(
+                        future: _entriesFuture,
+                        builder: (context, snapshot) {
+                          if (kDebugMode) {
+                            print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
+                          }
+                          
+                          // Show loading state with better constraints
+                          if (snapshot.connectionState == ConnectionState.waiting) {
                             if (kDebugMode) {
-                              print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
+                              print('🔄 HomeScreen: Zeige Loading-Zustand');
                             }
-                            
-                            if (snapshot.connectionState == ConnectionState.waiting) {
-                              if (kDebugMode) {
-                                print('🔄 HomeScreen: Zeige Loading-Zustand');
-                              }
-                              return Container(
-                                constraints: const BoxConstraints(
-                                  minHeight: 200,
-                                  maxHeight: 300,
+                            return Container(
+                              constraints: const BoxConstraints(
+                                minHeight: 200,
+                                maxHeight: 400, // Increased to prevent overflow
+                              ),
+                              padding: const EdgeInsets.all(Spacing.lg),
+                              child: const Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(),
+                                    SizedBox(height: 16),
+                                    Text('Lade Einträge...'),
+                                  ],
                                 ),
-                                child: const Center(
-                                  child: Padding(
-                                    padding: EdgeInsets.all(Spacing.lg),
-                                    child: Column(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        CircularProgressIndicator(),
-                                        SizedBox(height: 16),
-                                        Text('Lade Einträge...'),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                            
-                            // Handle errors gracefully
-                            if (snapshot.hasError) {
-                              if (kDebugMode) {
-                                print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
-                              }
-                              return _buildErrorFallback(context, isDark);
-                            }
-                            
-                            final entries = snapshot.data ?? [];
+                              ),
+                            );
+                          }
+                          
+                          // Handle errors gracefully without error boundary wrapper
+                          if (snapshot.hasError) {
                             if (kDebugMode) {
-                              print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
+                              print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
                             }
-                            
-                            return Column(
+                            return _buildErrorFallback(context, isDark);
+                          }
+                          
+                          final entries = snapshot.data ?? [];
+                          if (kDebugMode) {
+                            print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
+                          }
+                          
+                          // Wrap content sections individually for more granular error handling
+                          return LayoutErrorBoundary(
+                            debugLabel: 'Main Content Sections',
+                            fallback: _buildErrorFallback(context, isDark),
+                            child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min, // Use minimum required space
                               children: [
                                 Spacing.verticalSpaceLg,
-                                LayoutErrorBoundary(
-                                  debugLabel: 'Recent Entries Section',
-                                  child: _buildRecentEntriesSection(context, isDark, entries),
-                                ),
+                                _buildRecentEntriesSection(context, isDark, entries),
                                 Spacing.verticalSpaceLg,
-                                LayoutErrorBoundary(
-                                  debugLabel: 'Today Stats Section',
+                                _buildTodayStatsSection(context, isDark, entries),
+                                Spacing.verticalSpaceLg,
+                                _buildQuickInsightsSection(context, isDark),
+                              ],
+                            ),
+                          );
                                   child: _buildTodayStatsSection(context, isDark),
                                 ),
                                 Spacing.verticalSpaceLg,
