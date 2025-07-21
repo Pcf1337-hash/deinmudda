@@ -54,22 +54,68 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   // Icon and color selection
   IconData? _selectedIcon;
   Color? _selectedColor;
+  bool _isIconManuallySelected = false; // Track if user manually selected icon
+  bool _isColorManuallySelected = false; // Track if user manually selected color
   List<IconData> _availableIcons = [
+    // Substances & Stimulants
     Icons.local_cafe_rounded,
-    Icons.local_bar_rounded,
-    Icons.medication_rounded,
-    Icons.psychology_rounded,
-    Icons.bedtime_rounded,
     Icons.flash_on_rounded,
+    Icons.emoji_food_beverage_rounded,
+    Icons.bolt_rounded,
+    Icons.energy_savings_leaf_rounded,
+    
+    // Alcohol & Bar
+    Icons.local_bar_rounded,
+    Icons.wine_bar_rounded,
+    Icons.sports_bar_rounded,
+    Icons.liquor_rounded,
+    
+    // Medical & Health
+    Icons.medication_rounded,
     Icons.healing_rounded,
     Icons.health_and_safety_rounded,
+    Icons.medical_services_rounded,
+    Icons.local_pharmacy_rounded,
+    Icons.vaccines_rounded,
+    
+    // Supplements & Fitness
     Icons.fitness_center_rounded,
     Icons.water_drop_rounded,
-    Icons.science_rounded,
+    Icons.nutrition_rounded,
+    Icons.self_care_rounded,
+    
+    // Recreational & Psychedelic
+    Icons.psychology_rounded,
     Icons.local_florist_rounded,
     Icons.smoking_rooms_rounded,
-    Icons.emoji_food_beverage_rounded,
-    Icons.wine_bar_rounded,
+    Icons.celebration_rounded,
+    Icons.mood_rounded,
+    Icons.psychology_alt_rounded,
+    
+    // Sleep & Relaxation
+    Icons.bedtime_rounded,
+    Icons.nightlight_rounded,
+    Icons.hotel_rounded,
+    Icons.spa_rounded,
+    
+    // Science & Research
+    Icons.science_rounded,
+    Icons.biotech_rounded,
+    Icons.chemistry_rounded,
+    
+    // Food & Consumption
+    Icons.restaurant_rounded,
+    Icons.fastfood_rounded,
+    Icons.lunch_dining_rounded,
+    Icons.local_dining_rounded,
+    
+    // General Icons
+    Icons.favorite_rounded,
+    Icons.star_rounded,
+    Icons.circle_rounded,
+    Icons.square_rounded,
+    Icons.diamond_rounded,
+    Icons.hexagon_rounded,
   ];
   List<Color> _availableColors = [
     DesignTokens.primaryIndigo,
@@ -124,6 +170,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       _dosageController.text = config.dosage.toString().replaceAll('.', ',');
       _selectedUnit = config.unit;
       _unitController.text = _selectedUnit;
+      
       // Load saved cost if available  
       if (config.cost > 0) {
         _priceController.text = config.cost.toString().replaceAll('.', ',');
@@ -132,10 +179,21 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
       }
       
-      // Initialize icon and color from substance name
-      if (_selectedSubstance != null) {
-        _selectedIcon = AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name);
+      // Load existing icon and color if available, otherwise use substance defaults
+      if (config.icon != null) {
+        _selectedIcon = config.icon;
+        _isIconManuallySelected = true; // Existing config has custom icon
+      } else if (_selectedSubstance != null) {
+        _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
+        _isIconManuallySelected = false;
+      }
+      
+      if (config.color != null) {
+        _selectedColor = config.color;
+        _isColorManuallySelected = true; // Existing config has custom color
+      } else if (_selectedSubstance != null) {
         _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
+        _isColorManuallySelected = false;
       }
       
       // Trigger cost calculation after form is initialized
@@ -146,6 +204,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       // Set defaults for new button
       _selectedIcon = _availableIcons.first;
       _selectedColor = _availableColors.first;
+      _isIconManuallySelected = false;
+      _isColorManuallySelected = false;
     }
   }
 
@@ -488,9 +548,13 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   // Auto-load price when substance is selected
                   _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
                   
-                  // Auto-set icon and color based on substance
-                  _selectedIcon = AppIconGenerator.getSubstanceIcon(substance.name);
-                  _selectedColor = AppIconGenerator.getSubstanceColor(substance.name);
+                  // Only auto-set icon and color if user hasn't manually selected them
+                  if (!_isIconManuallySelected) {
+                    _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(substance);
+                  }
+                  if (!_isColorManuallySelected) {
+                    _selectedColor = AppIconGenerator.getSubstanceColor(substance.name);
+                  }
                 }
               });
             },
@@ -550,6 +614,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   onTap: () {
                     setState(() {
                       _selectedIcon = icon;
+                      _isIconManuallySelected = true; // Mark as manually selected
                     });
                   },
                   child: Container(
@@ -600,6 +665,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   onTap: () {
                     setState(() {
                       _selectedColor = color;
+                      _isColorManuallySelected = true; // Mark as manually selected
                     });
                   },
                   child: Container(
@@ -637,6 +703,29 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           duration: DesignTokens.animationMedium,
           delay: const Duration(milliseconds: 490),
         ),
+        
+        // Reset to substance defaults button
+        if (_selectedSubstance != null && (_isIconManuallySelected || _isColorManuallySelected))
+          Padding(
+            padding: const EdgeInsets.only(top: 12.0),
+            child: Center(
+              child: TextButton.icon(
+                onPressed: () {
+                  setState(() {
+                    _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
+                    _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
+                    _isIconManuallySelected = false;
+                    _isColorManuallySelected = false;
+                  });
+                },
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Substanz-Standard verwenden'),
+                style: TextButton.styleFrom(
+                  foregroundColor: DesignTokens.accentCyan,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -888,7 +977,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                       borderRadius: Spacing.borderRadiusSm,
                     ),
                     child: Icon(
-                      AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name),
+                      AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!),
                       color: DesignTokens.primaryIndigo,
                       size: Spacing.iconMd,
                     ),

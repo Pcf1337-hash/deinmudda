@@ -115,24 +115,33 @@ class HeaderBar extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.end,
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text(
-                                  title,
-                                  style: theme.textTheme.headlineMedium?.copyWith(
-                                    color: isPsychedelicMode
-                                        ? DesignTokens.textPsychedelicPrimary
-                                        : Colors.white,
-                                    fontWeight: FontWeight.w700,
+                                Flexible(
+                                  child: Text(
+                                    title,
+                                    style: theme.textTheme.headlineMedium?.copyWith(
+                                      color: isPsychedelicMode
+                                          ? DesignTokens.textPsychedelicPrimary
+                                          : Colors.white,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                    maxLines: 1,
                                   ),
                                 ),
                                 if (subtitle != null) ...[
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    subtitle!,
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: isPsychedelicMode
-                                          ? DesignTokens.textPsychedelicSecondary
-                                          : Colors.white.withOpacity(0.8),
+                                  const SizedBox(height: 2),
+                                  Flexible(
+                                    child: Text(
+                                      subtitle!,
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: isPsychedelicMode
+                                            ? DesignTokens.textPsychedelicSecondary
+                                            : Colors.white.withOpacity(0.8),
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
                                     ),
                                   ),
                                 ],

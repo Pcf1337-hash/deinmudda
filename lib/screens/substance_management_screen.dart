@@ -655,6 +655,30 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
   bool _isDisposed = false;
   bool _isLoadingUnits = false;
   String? _errorMessage;
+  
+  // Icon selection
+  String? _selectedIconName;
+  IconData? _selectedIcon;
+  final List<Map<String, dynamic>> _availableIcons = [
+    {'name': 'coffee', 'icon': Icons.local_cafe_rounded},
+    {'name': 'flash', 'icon': Icons.flash_on_rounded},
+    {'name': 'tea', 'icon': Icons.emoji_food_beverage_rounded},
+    {'name': 'alcohol', 'icon': Icons.local_bar_rounded},
+    {'name': 'wine', 'icon': Icons.wine_bar_rounded},
+    {'name': 'beer', 'icon': Icons.sports_bar_rounded},
+    {'name': 'cigarette', 'icon': Icons.smoking_rooms_rounded},
+    {'name': 'leaf', 'icon': Icons.local_florist_rounded},
+    {'name': 'pill', 'icon': Icons.medication_rounded},
+    {'name': 'healing', 'icon': Icons.healing_rounded},
+    {'name': 'health', 'icon': Icons.health_and_safety_rounded},
+    {'name': 'fitness', 'icon': Icons.fitness_center_rounded},
+    {'name': 'water', 'icon': Icons.water_drop_rounded},
+    {'name': 'science', 'icon': Icons.science_rounded},
+    {'name': 'psychology', 'icon': Icons.psychology_rounded},
+    {'name': 'sleep', 'icon': Icons.bedtime_rounded},
+    {'name': 'sun', 'icon': Icons.wb_sunny_rounded},
+    {'name': 'moon', 'icon': Icons.nightlight_rounded},
+  ];
 
   final SubstanceService _substanceService = SubstanceService();
 
@@ -663,6 +687,10 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
     super.initState();
     if (widget.substance != null) {
       _initializeForm();
+    } else {
+      // Set default icon for new substances
+      _selectedIcon = _availableIcons.first['icon'];
+      _selectedIconName = _availableIcons.first['name'];
     }
     _loadUnits();
   }
@@ -686,6 +714,19 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
     _notesController.text = substance.notes ?? '';
     _selectedCategory = substance.category;
     _selectedRiskLevel = substance.defaultRiskLevel;
+    
+    // Set icon if available
+    if (substance.iconName != null) {
+      _selectedIconName = substance.iconName;
+      final iconData = _availableIcons.firstWhere(
+        (icon) => icon['name'] == substance.iconName,
+        orElse: () => _availableIcons.first,
+      );
+      _selectedIcon = iconData['icon'];
+    } else {
+      // Use auto-generated icon based on substance name
+      _selectedIcon = AppIconGenerator.getSubstanceIcon(substance.name);
+    }
     
     // Load recommended units for the category
     _updateRecommendedUnits();
@@ -743,6 +784,7 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
         pricePerUnit: double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
         defaultUnit: _selectedUnit.isNotEmpty ? _selectedUnit : _unitController.text.trim(),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        iconName: _selectedIconName,
       ) ?? Substance.create(
         name: _nameController.text.trim(),
         category: _selectedCategory,
@@ -750,6 +792,7 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
         pricePerUnit: double.tryParse(_priceController.text.replaceAll(',', '.')) ?? 0.0,
         defaultUnit: _selectedUnit.isNotEmpty ? _selectedUnit : _unitController.text.trim(),
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        iconName: _selectedIconName,
       );
 
       if (widget.substance != null) {
@@ -1033,6 +1076,96 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
                     ),
                   ),
                 ],
+              ),
+              
+              Spacing.verticalSpaceMd,
+              
+              // Icon Selection
+              Text(
+                'Icon',
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              GlassCard(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: DesignTokens.primaryIndigo.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: DesignTokens.primaryIndigo.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            _selectedIcon ?? Icons.science_rounded,
+                            color: DesignTokens.primaryIndigo,
+                            size: 24,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Wählen Sie ein Icon für diese Substanz aus der Liste unten',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: _availableIcons.map((iconData) {
+                        final icon = iconData['icon'] as IconData;
+                        final iconName = iconData['name'] as String;
+                        final isSelected = _selectedIcon == icon;
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedIcon = icon;
+                              _selectedIconName = iconName;
+                            });
+                          },
+                          child: Container(
+                            width: 48,
+                            height: 48,
+                            decoration: BoxDecoration(
+                              color: isSelected 
+                                  ? DesignTokens.primaryIndigo.withOpacity(0.2) 
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: isSelected 
+                                    ? DesignTokens.primaryIndigo 
+                                    : Colors.grey.withOpacity(0.3),
+                                width: isSelected ? 2 : 1,
+                              ),
+                            ),
+                            child: Icon(
+                              icon,
+                              color: isSelected 
+                                  ? DesignTokens.primaryIndigo 
+                                  : Colors.grey[600],
+                              size: 24,
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ],
+                ),
               ),
               
               Spacing.verticalSpaceMd,
