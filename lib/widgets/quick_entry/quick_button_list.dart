@@ -24,20 +24,49 @@ class QuickButtonList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (quickButtons.isEmpty) {
-      return _buildEmptyState(context);
-    }
+    // Safety check to prevent gray area issues
+    try {
+      if (quickButtons.isEmpty) {
+        return _buildEmptyState(context);
+      }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildInstructions(context),
-        const SizedBox(height: Spacing.lg),
-        isReordering
-            ? _buildReorderableGrid(context)
-            : _buildNormalGrid(context),
-      ],
-    );
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildInstructions(context),
+          const SizedBox(height: Spacing.lg),
+          isReordering
+              ? _buildReorderableGrid(context)
+              : _buildNormalGrid(context),
+        ],
+      );
+    } catch (e, stackTrace) {
+      // If rendering fails, show a safe fallback
+      debugPrint('QuickButtonList render error: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      return GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              const Icon(Icons.error_outline, size: 48, color: Colors.orange),
+              const SizedBox(height: 16),
+              Text(
+                'Fehler beim Laden der Quick Buttons',
+                style: Theme.of(context).textTheme.titleMedium,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Bitte versuchen Sie die Seite neu zu laden.',
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -98,35 +127,50 @@ class QuickButtonList extends StatelessWidget {
   Widget _buildNormalGrid(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Responsive grid column calculation
-        final screenWidth = constraints.maxWidth;
-        final crossAxisCount = _calculateCrossAxisCount(screenWidth);
-        final childAspectRatio = _calculateChildAspectRatio(screenWidth);
-        
-        return GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
-            crossAxisSpacing: Spacing.md,
-            mainAxisSpacing: Spacing.md,
-            childAspectRatio: childAspectRatio,
-          ),
-          itemCount: quickButtons.length,
-          itemBuilder: (context, index) {
-            final button = quickButtons[index];
-            return GestureDetector(
-              onTap: () => onEditButton(button),
-              onLongPress: () => onDeleteButton(button),
-              child: QuickButtonWidget(
-                key: ValueKey(button.id),
-                config: button,
+        try {
+          // Responsive grid column calculation
+          final screenWidth = constraints.maxWidth;
+          final crossAxisCount = _calculateCrossAxisCount(screenWidth);
+          final childAspectRatio = _calculateChildAspectRatio(screenWidth);
+          
+          // Safety check for invalid dimensions
+          if (screenWidth <= 0 || crossAxisCount <= 0) {
+            return const SizedBox.shrink();
+          }
+          
+          return GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              crossAxisSpacing: Spacing.md,
+              mainAxisSpacing: Spacing.md,
+              childAspectRatio: childAspectRatio,
+            ),
+            itemCount: quickButtons.length,
+            itemBuilder: (context, index) {
+              if (index >= quickButtons.length) {
+                return const SizedBox.shrink(); // Safety check for index bounds
+              }
+              
+              final button = quickButtons[index];
+              return GestureDetector(
                 onTap: () => onEditButton(button),
                 onLongPress: () => onDeleteButton(button),
-              ),
-            );
-          },
-        );
+                child: QuickButtonWidget(
+                  key: ValueKey(button.id),
+                  config: button,
+                  onTap: () => onEditButton(button),
+                  onLongPress: () => onDeleteButton(button),
+                ),
+              );
+            },
+          );
+        } catch (e, stackTrace) {
+          debugPrint('Grid build error: $e');
+          debugPrint('Stack trace: $stackTrace');
+          return const SizedBox.shrink();
+        }
       },
     );
   }

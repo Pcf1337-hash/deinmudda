@@ -75,7 +75,13 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
     );
 
     if (result == true) {
-      _loadQuickButtons();
+      // Immediately show loading state while refreshing
+      if (mounted) {
+        setState(() {
+          _isLoading = true;
+        });
+      }
+      await _loadQuickButtons();
     }
   }
 
@@ -102,8 +108,16 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
     if (confirmed != true) return;
 
     try {
+      // Immediately remove from local state for instant UI update
+      setState(() {
+        _quickButtons.removeWhere((button) => button.id == config.id);
+      });
+      
+      // Then delete from the service
       await _quickButtonService.deleteQuickButton(config.id);
-      _loadQuickButtons();
+      
+      // Reload to ensure consistency with backend
+      await _loadQuickButtons();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -114,6 +128,9 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
         );
       }
     } catch (e) {
+      // If there was an error, reload the buttons to restore the correct state
+      await _loadQuickButtons();
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

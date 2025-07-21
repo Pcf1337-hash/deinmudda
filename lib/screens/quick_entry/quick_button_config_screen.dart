@@ -852,9 +852,11 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
                   ],
                     onChanged: (value) {
-                      _updateCalculatedCost();
-                      // Update price display
-                      _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+                      setState(() {
+                        _updateCalculatedCost();
+                        // Update price display
+                        _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+                      });
                     },
                   validator: (value) {
                     if (value == null || value.trim().isEmpty) {
