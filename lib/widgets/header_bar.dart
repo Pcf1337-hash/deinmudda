@@ -118,30 +118,40 @@ class HeaderBar extends StatelessWidget {
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Flexible(
-                                  child: Text(
-                                    title,
-                                    style: theme.textTheme.headlineMedium?.copyWith(
-                                      color: isPsychedelicMode
-                                          ? DesignTokens.textPsychedelicPrimary
-                                          : Colors.white,
-                                      fontWeight: FontWeight.w700,
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      title,
+                                      style: theme.textTheme.headlineMedium?.copyWith(
+                                        color: isPsychedelicMode
+                                            ? DesignTokens.textPsychedelicPrimary
+                                            : Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      textScaleFactor: 1.0, // Prevent system text scaling issues
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
                                   ),
                                 ),
                                 if (subtitle != null) ...[
                                   const SizedBox(height: 2),
                                   Flexible(
-                                    child: Text(
-                                      subtitle!,
-                                      style: theme.textTheme.bodyMedium?.copyWith(
-                                        color: isPsychedelicMode
-                                            ? DesignTokens.textPsychedelicSecondary
-                                            : Colors.white.withOpacity(0.8),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      alignment: Alignment.centerLeft,
+                                      child: Text(
+                                        subtitle!,
+                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                          color: isPsychedelicMode
+                                              ? DesignTokens.textPsychedelicSecondary
+                                              : Colors.white.withOpacity(0.8),
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                        maxLines: 1,
+                                        textScaleFactor: 1.0, // Prevent system text scaling issues
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
                                     ),
                                   ),
                                 ],
