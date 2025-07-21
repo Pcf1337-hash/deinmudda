@@ -6,6 +6,7 @@ import '../services/settings_service.dart';
 import '../services/database_service.dart';
 import '../services/psychedelic_theme_service.dart' as service;
 import '../widgets/glass_card.dart';
+import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/safe_navigation.dart';
@@ -51,7 +52,13 @@ class _MenuScreenState extends State<MenuScreen> {
               : null,
             child: Column(
               children: [
-                _buildAppBar(context, isDark, psychedelicService),
+                HeaderBar(
+                  title: 'Menü',
+                  subtitle: 'Einstellungen & Tools',
+                  showLightningIcon: false,
+                  customIcon: Icons.menu_rounded,
+                  showBackButton: false, // This is in main navigation
+                ),
                 Expanded(
                   child: ListView(
                     padding: Spacing.paddingHorizontalMd,
@@ -59,7 +66,7 @@ class _MenuScreenState extends State<MenuScreen> {
                       Spacing.verticalSpaceLg,
                       _buildToolsSection(context, isDark, psychedelicService),
                       Spacing.verticalSpaceLg,
-                      _buildSecuritySection(context, isDark, psychedelicService), // New security section
+                      _buildSecuritySection(context, isDark, psychedelicService),
                       Spacing.verticalSpaceLg,
                       _buildAppearanceSection(context, isDark, psychedelicService),
                       Spacing.verticalSpaceLg,

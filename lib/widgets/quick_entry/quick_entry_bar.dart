@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../../models/quick_button_config.dart';
+import '../../services/timer_service.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'quick_button_widget.dart';
@@ -82,48 +84,63 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min, // Use minimum size needed
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Header with edit button
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              'Schnelleingabe',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            if (widget.quickButtons.isNotEmpty)
-              TextButton.icon(
-                onPressed: widget.onEditMode,
-                icon: Icon(
-                  widget.isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                  size: Spacing.iconSm,
-                ),
-                label: Text(widget.isEditing ? 'Fertig' : 'Bearbeiten'),
-                style: TextButton.styleFrom(
-                  foregroundColor: widget.isEditing 
-                      ? DesignTokens.successGreen 
-                      : DesignTokens.primaryIndigo,
+        // Improved header with better spacing
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  'Schnelleingabe',
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 20, // Consistent sizing
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
-          ],
+              if (widget.quickButtons.isNotEmpty) ...[
+                Spacing.horizontalSpaceXs,
+                TextButton.icon(
+                  onPressed: widget.onEditMode,
+                  icon: Icon(
+                    widget.isEditing ? Icons.check_rounded : Icons.edit_rounded,
+                    size: Spacing.iconSm,
+                  ),
+                  label: Text(widget.isEditing ? 'Fertig' : 'Bearbeiten'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: widget.isEditing 
+                        ? DesignTokens.successGreen 
+                        : DesignTokens.primaryIndigo,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ],
+            ],
+          ),
         ),
         
-        const SizedBox(height: 8), // Further reduced spacing
+        Spacing.verticalSpaceSm, // Consistent spacing
         
-        // Quick buttons scroll view - adjust height based on edit mode and make it flexible
-        Flexible(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: 80,
-              maxHeight: widget.isEditing ? 110 : 130, // Slightly increased to prevent overflow
-            ),
-            child: widget.isEditing
-                ? _buildReorderableButtonList(context, isDark)
-                : _buildNormalButtonList(context, isDark),
-          ),
+        // Quick buttons with timer status indicators
+        Consumer<TimerService>(
+          builder: (context, timerService, child) {
+            return Flexible(
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  minHeight: 80,
+                  maxHeight: widget.isEditing ? 120 : 140, // Increased for timer indicators
+                ),
+                child: widget.isEditing
+                    ? _buildReorderableButtonList(context, isDark)
+                    : _buildNormalButtonList(context, isDark, timerService),
+              ),
+            );
+          },
         ),
         
         // Edit mode instructions - compact version with better overflow handling
@@ -167,7 +184,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
     );
   }
 
-  Widget _buildNormalButtonList(BuildContext context, bool isDark) {
+  Widget _buildNormalButtonList(BuildContext context, bool isDark, TimerService timerService) {
     return Row(
       children: [
         // Quick buttons in a scrollable container
@@ -178,23 +195,109 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemCount: widget.quickButtons.length,
             itemBuilder: (context, index) {
               final button = widget.quickButtons[index];
-              return QuickButtonWidget(
-                key: ValueKey('quickbutton_${button.id}_${button.position}'), // More stable key
-                config: button,
-                isEditing: false,
-                onTap: () => widget.onQuickEntry(button),
-                onLongPress: widget.onEditMode,
+              
+              // Check if there's an active timer for this substance
+              final activeTimer = timerService.getActiveTimer();
+              final hasActiveTimer = activeTimer != null && 
+                                   activeTimer.substanceId == button.substanceId;
+              
+              return Padding(
+                padding: EdgeInsets.only(
+                  right: index < widget.quickButtons.length - 1 ? Spacing.sm : 0,
+                ),
+                child: _buildQuickButtonWithTimer(
+                  button: button,
+                  hasActiveTimer: hasActiveTimer,
+                  timerProgress: hasActiveTimer ? activeTimer.timerProgress : 0.0,
+                  onTap: () => widget.onQuickEntry(button),
+                ),
               );
             },
           ),
         ),
         // Add button always visible on the right
         AddQuickButtonWidget(
-          key: ValueKey('add_button_${widget.isEditing ? "edit" : "normal"}_mode'), // Dynamic but stable key
+          key: ValueKey('add_button_normal_mode'),
           onTap: widget.onAddButton,
         ),
       ],
     );
+  }
+
+  // New method to build quick button with timer status indicator
+  Widget _buildQuickButtonWithTimer({
+    required QuickButtonConfig button,
+    required bool hasActiveTimer,
+    required double timerProgress,
+    required VoidCallback onTap,
+  }) {
+    return Stack(
+      children: [
+        QuickButtonWidget(
+          key: ValueKey('quickbutton_${button.id}_${button.position}'),
+          config: button,
+          isEditing: false,
+          onTap: onTap,
+          onLongPress: widget.onEditMode,
+        ),
+        
+        // Timer progress indicator
+        if (hasActiveTimer)
+          Positioned(
+            top: 4,
+            right: 4,
+            child: Container(
+              width: 20,
+              height: 20,
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.7),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: _getTimerColor(timerProgress),
+                  width: 2,
+                ),
+              ),
+              child: Center(
+                child: Icon(
+                  Icons.timer,
+                  size: 12,
+                  color: _getTimerColor(timerProgress),
+                ),
+              ),
+            ),
+          ),
+        
+        // Timer progress ring
+        if (hasActiveTimer)
+          Positioned(
+            top: 2,
+            right: 2,
+            child: SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                value: timerProgress,
+                strokeWidth: 2,
+                backgroundColor: Colors.white.withOpacity(0.3),
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  _getTimerColor(timerProgress),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // Helper method to get timer color based on progress
+  Color _getTimerColor(double progress) {
+    if (progress < 0.3) {
+      return DesignTokens.successGreen;
+    } else if (progress < 0.7) {
+      return DesignTokens.warningYellow;
+    } else {
+      return DesignTokens.errorRed;
+    }
   }
 
   Widget _buildReorderableButtonList(BuildContext context, bool isDark) {

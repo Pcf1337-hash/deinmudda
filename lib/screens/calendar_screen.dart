@@ -6,6 +6,7 @@ import '../models/entry.dart';
 import '../services/entry_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
+import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'edit_entry_screen.dart';
@@ -170,9 +171,24 @@ class _CalendarScreenState extends State<CalendarScreen> {
     return Scaffold(
       body: Column(
         children: [
-          _buildAppBar(context, isDark),
+          HeaderBar(
+            title: 'Kalender',
+            subtitle: _getCalendarSubtitle(),
+            showLightningIcon: false,
+            customIcon: Icons.calendar_month_rounded,
+            showBackButton: false, // This is in main navigation
+          ),
+          
+          Spacing.verticalSpaceMd,
+          
           _buildCalendarControls(context, isDark),
+          
+          Spacing.verticalSpaceSm,
+          
           _buildViewSelector(context, isDark),
+          
+          Spacing.verticalSpaceMd,
+          
           Expanded(
             child: _isLoading
                 ? _buildLoadingState()
@@ -183,6 +199,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
         ],
       ),
     );
+  }
+
+  // Helper method to get calendar subtitle
+  String _getCalendarSubtitle() {
+    final dateFormat = DateFormat('MMMM yyyy', 'de_DE');
+    return dateFormat.format(_focusedDate);
   }
 
   Widget _buildAppBar(BuildContext context, bool isDark) {
@@ -258,59 +280,94 @@ class _CalendarScreenState extends State<CalendarScreen> {
         break;
     }
 
-    return GlassCard(
+    return Container(
       margin: Spacing.paddingHorizontalMd,
-      child: Row(
-        children: [
-          IconButton(
-            onPressed: _previousPeriod,
-            icon: const Icon(Icons.chevron_left_rounded),
-            tooltip: 'Vorheriger Zeitraum',
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: _goToToday,
-              child: Column(
-                children: [
-                  Text(
-                    periodText,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    'Tippen für Heute',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
+      child: GlassCard(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
+          child: Row(
+            children: [
+              // Previous button with improved design
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: _previousPeriod,
+                  icon: const Icon(Icons.chevron_left_rounded),
+                  tooltip: 'Vorheriger Zeitraum',
+                  iconSize: 24,
+                ),
               ),
-            ),
+              
+              Spacing.horizontalSpaceSm,
+              
+              // Period text with improved layout
+              Expanded(
+                child: GestureDetector(
+                  onTap: _goToToday,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: Spacing.sm),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 300),
+                          child: Text(
+                            periodText,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Spacing.verticalSpaceXxxs,
+                        Text(
+                          'Tippen für heute',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.textTheme.bodySmall?.color?.withOpacity(0.6),
+                            fontSize: 12,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              
+              Spacing.horizontalSpaceSm,
+              
+              // Next button with improved design
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark 
+                      ? Colors.white.withOpacity(0.1) 
+                      : Colors.black.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: IconButton(
+                  onPressed: _nextPeriod,
+                  icon: const Icon(Icons.chevron_right_rounded),
+                  tooltip: 'Nächster Zeitraum',
+                  iconSize: 24,
+                ),
+              ),
+            ],
           ),
-          IconButton(
-            onPressed: _nextPeriod,
-            icon: const Icon(Icons.chevron_right_rounded),
-            tooltip: 'Nächster Zeitraum',
-          ),
-        ],
+        ),
       ),
-    ).animate().fadeIn(
-      duration: DesignTokens.animationMedium,
-      delay: const Duration(milliseconds: 300),
     );
   }
-
   Widget _buildViewSelector(BuildContext context, bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        Spacing.md,
-        Spacing.md,
-        Spacing.md,
-        0,
-      ),
+    return Container(
+      margin: Spacing.paddingHorizontalMd,
       child: Row(
         children: [
           _buildViewButton(
@@ -356,9 +413,67 @@ class _CalendarScreenState extends State<CalendarScreen> {
         onTap: () => _onViewChanged(viewType),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            vertical: Spacing.sm,
+            vertical: Spacing.sm + 2,
+            horizontal: Spacing.xs,
           ),
           decoration: BoxDecoration(
+            gradient: isSelected
+                ? DesignTokens.primaryGradient
+                : null,
+            color: isSelected
+                ? null
+                : isDark
+                    ? Colors.white.withOpacity(0.05)
+                    : Colors.black.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? DesignTokens.primaryIndigo.withOpacity(0.3)
+                  : isDark
+                      ? Colors.white.withOpacity(0.1)
+                      : Colors.black.withOpacity(0.1),
+              width: 1.5,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: DesignTokens.primaryIndigo.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? Colors.white
+                    : theme.iconTheme.color?.withOpacity(0.8),
+                size: 20,
+              ),
+              Spacing.verticalSpaceXxxs,
+              Text(
+                label,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: isSelected
+                      ? Colors.white
+                      : theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                  fontSize: 13,
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
             color: isSelected
                 ? DesignTokens.primaryIndigo.withOpacity(0.1)
                 : Colors.transparent,

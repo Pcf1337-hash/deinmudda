@@ -51,72 +51,72 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   bool _isDisposed = false;
   String? _errorMessage;
   
-  // Icon and color selection
+  // Icon and color selection - organized into categories for better UX
   IconData? _selectedIcon;
   Color? _selectedColor;
   bool _isIconManuallySelected = false; // Track if user manually selected icon
   bool _isColorManuallySelected = false; // Track if user manually selected color
-  List<IconData> _availableIcons = [
-    // Substances & Stimulants
-    Icons.local_cafe_rounded,
-    Icons.flash_on_rounded,
-    Icons.emoji_food_beverage_rounded,
-    Icons.bolt_rounded,
-    Icons.energy_savings_leaf_rounded,
-    
-    // Alcohol & Bar
-    Icons.local_bar_rounded,
-    Icons.wine_bar_rounded,
-    Icons.sports_bar_rounded,
-    Icons.liquor_rounded,
-    
-    // Medical & Health
-    Icons.medication_rounded,
-    Icons.healing_rounded,
-    Icons.health_and_safety_rounded,
-    Icons.medical_services_rounded,
-    Icons.local_pharmacy_rounded,
-    Icons.vaccines_rounded,
-    
-    // Supplements & Fitness
-    Icons.fitness_center_rounded,
-    Icons.water_drop_rounded,
-    Icons.restaurant_rounded,
-    Icons.health_and_safety_rounded,
-    
-    // Recreational & Psychedelic
-    Icons.psychology_rounded,
-    Icons.local_florist_rounded,
-    Icons.smoking_rooms_rounded,
-    Icons.celebration_rounded,
-    Icons.mood_rounded,
-    Icons.psychology_alt_rounded,
-    
-    // Sleep & Relaxation
-    Icons.bedtime_rounded,
-    Icons.nightlight_rounded,
-    Icons.hotel_rounded,
-    Icons.spa_rounded,
-    
-    // Science & Research
-    Icons.science_rounded,
-    Icons.biotech_rounded,
-    Icons.auto_awesome_rounded,
-    
-    // Food & Consumption
-    Icons.dining_rounded,
-    Icons.fastfood_rounded,
-    Icons.lunch_dining_rounded,
-    Icons.local_dining_rounded,
-    
-    // General Icons
-    Icons.favorite_rounded,
-    Icons.star_rounded,
-    Icons.circle_rounded,
-    Icons.square_rounded,
-    Icons.diamond_rounded,
-    Icons.hexagon_rounded,
-  ];
+  String _selectedIconCategory = 'Substanzen'; // Track selected category
+  
+  // Organized icon categories for better UX
+  final Map<String, List<IconData>> _iconCategories = {
+    'Substanzen': [
+      Icons.local_cafe_rounded,
+      Icons.emoji_food_beverage_rounded,
+      Icons.local_bar_rounded,
+      Icons.wine_bar_rounded,
+      Icons.sports_bar_rounded,
+      Icons.smoking_rooms_rounded,
+      Icons.local_florist_rounded,
+    ],
+    'Medizin': [
+      Icons.medication_rounded,
+      Icons.healing_rounded,
+      Icons.health_and_safety_rounded,
+      Icons.medical_services_rounded,
+      Icons.local_pharmacy_rounded,
+      Icons.vaccines_rounded,
+      Icons.science_rounded,
+      Icons.biotech_rounded,
+    ],
+    'Wellness': [
+      Icons.fitness_center_rounded,
+      Icons.water_drop_rounded,
+      Icons.spa_rounded,
+      Icons.bedtime_rounded,
+      Icons.nightlight_rounded,
+      Icons.psychology_rounded,
+      Icons.mood_rounded,
+    ],
+    'Energie': [
+      Icons.flash_on_rounded,
+      Icons.bolt_rounded,
+      Icons.energy_savings_leaf_rounded,
+      Icons.wb_sunny_rounded,
+      Icons.auto_awesome_rounded,
+      Icons.celebration_rounded,
+    ],
+    'Essen': [
+      Icons.restaurant_rounded,
+      Icons.dining_rounded,
+      Icons.fastfood_rounded,
+      Icons.lunch_dining_rounded,
+      Icons.local_dining_rounded,
+    ],
+    'Allgemein': [
+      Icons.favorite_rounded,
+      Icons.star_rounded,
+      Icons.circle_rounded,
+      Icons.square_rounded,
+      Icons.diamond_rounded,
+      Icons.hexagon_rounded,
+    ],
+  };
+  
+  // Helper method to get all icons as flat list for backwards compatibility
+  List<IconData> get _availableIcons {
+    return _iconCategories.values.expand((icons) => icons).toList();
+  }
   List<Color> _availableColors = [
     DesignTokens.primaryIndigo,
     DesignTokens.accentPurple,
@@ -201,8 +201,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         _updateCalculatedCost();
       });
     } else {
-      // Set defaults for new button
-      _selectedIcon = _availableIcons.first;
+      // Set defaults for new button using first icon from first category
+      _selectedIcon = _iconCategories.values.first.first;
       _selectedColor = _availableColors.first;
       _isIconManuallySelected = false;
       _isColorManuallySelected = false;
@@ -624,7 +624,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Icon selection
+              // Enhanced icon selection with categories
               Text(
                 'Symbol',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -632,30 +632,83 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                 ),
               ),
               const SizedBox(height: 8),
+              
+              // Category selector
+              Container(
+                height: 40,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: _iconCategories.keys.length,
+                  itemBuilder: (context, index) {
+                    final category = _iconCategories.keys.elementAt(index);
+                    final isSelected = _selectedIconCategory == category;
+                    
+                    return Padding(
+                      padding: EdgeInsets.only(
+                        right: index < _iconCategories.keys.length - 1 ? 8 : 0,
+                      ),
+                      child: GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedIconCategory = category;
+                          });
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                            gradient: isSelected ? DesignTokens.primaryGradient : null,
+                            color: isSelected ? null : Colors.grey.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              color: isSelected ? DesignTokens.primaryIndigo.withOpacity(0.3) : Colors.grey.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            category,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.grey[600],
+                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              
+              const SizedBox(height: 12),
+              
+              // Icon grid for selected category
               GlassCard(
                 child: Container(
                   padding: const EdgeInsets.all(12),
-                  constraints: const BoxConstraints(maxHeight: 140), // Limit height
+                  constraints: const BoxConstraints(
+                    minHeight: 120,
+                    maxHeight: 160, // Slightly increased for better visibility
+                  ),
                   child: SingleChildScrollView(
                     child: Wrap(
-                      spacing: 6, // Reduced spacing
-                      runSpacing: 6,
-                      children: _availableIcons.map((icon) {
+                      spacing: 8, // Improved spacing
+                      runSpacing: 8,
+                      children: (_iconCategories[_selectedIconCategory] ?? []).map((icon) {
                         final isSelected = _selectedIcon == icon;
                         final color = _selectedColor ?? DesignTokens.primaryIndigo;
                         return GestureDetector(
                           onTap: () {
                             setState(() {
                               _selectedIcon = icon;
-                              _isIconManuallySelected = true; // Mark as manually selected
+                              _isIconManuallySelected = true;
                             });
                           },
                           child: Container(
-                            width: 40, // Reduced size
-                            height: 40,
+                            width: 44, // Slightly larger for better touch target
+                            height: 44,
                             decoration: BoxDecoration(
                               color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(10),
                               border: Border.all(
                                 color: isSelected ? color : Colors.grey.withOpacity(0.3),
                                 width: isSelected ? 2 : 1,
@@ -664,7 +717,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                             child: Icon(
                               icon,
                               color: isSelected ? color : Colors.grey[600],
-                              size: 20, // Reduced size
+                              size: 22, // Improved size
                             ),
                           ),
                         );

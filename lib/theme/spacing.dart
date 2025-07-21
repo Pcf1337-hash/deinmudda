@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
 class Spacing {
+  // Enhanced vertical spacing values for better visual hierarchy
+  static const double xxxs = 2.0;
+  static const double xxs = 3.0;
   // Base spacing values
   static const double xs = 4.0;
   static const double sm = 8.0;
@@ -9,6 +12,12 @@ class Spacing {
   static const double xl = 32.0;
   static const double xxl = 48.0;
   static const double xxxl = 64.0;
+
+  // Component-specific spacing for consistent visual hierarchy
+  static const double cardPadding = 20.0;
+  static const double sectionSpacing = 32.0;
+  static const double componentSpacing = 12.0;
+  static const double textSpacing = 6.0;
 
   // Padding values
   static const EdgeInsets paddingXs = EdgeInsets.all(xs);
@@ -74,19 +83,28 @@ class Spacing {
   // App bar height
   static const double appBarHeight = 56.0;
 
-  // Spacing widgets for convenience
+  // Enhanced spacing widgets for better consistency
+  static const Widget horizontalSpaceXxxs = SizedBox(width: xxxs);
+  static const Widget horizontalSpaceXxs = SizedBox(width: xxs);
   static const Widget horizontalSpaceXs = SizedBox(width: xs);
   static const Widget horizontalSpaceSm = SizedBox(width: sm);
   static const Widget horizontalSpaceMd = SizedBox(width: md);
   static const Widget horizontalSpaceLg = SizedBox(width: lg);
   static const Widget horizontalSpaceXl = SizedBox(width: xl);
 
+  static const Widget verticalSpaceXxxs = SizedBox(height: xxxs);
+  static const Widget verticalSpaceXxs = SizedBox(height: xxs);
   static const Widget verticalSpaceXs = SizedBox(height: xs);
   static const Widget verticalSpaceSm = SizedBox(height: sm);
   static const Widget verticalSpaceMd = SizedBox(height: md);
   static const Widget verticalSpaceLg = SizedBox(height: lg);
   static const Widget verticalSpaceXl = SizedBox(height: xl);
   static const Widget verticalSpaceXxl = SizedBox(height: xxl);
+
+  // Component-specific spacing widgets
+  static const Widget cardSpacing = SizedBox(height: componentSpacing);
+  static const Widget sectionSpacing = SizedBox(height: sectionSpacing);
+  static const Widget textSpacing = SizedBox(height: textSpacing);
 
   // Responsive breakpoints
   static const double mobileBreakpoint = 480.0;

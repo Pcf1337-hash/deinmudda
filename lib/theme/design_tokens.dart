@@ -159,14 +159,14 @@ class DesignTokens {
   static const Color surfaceLight = Color(0xFFFFFFFF);
   static const Color surfaceDark = Color(0xFF1A1A1A);
   
-  // Text Colors
-  static const Color textPrimaryLight = Color(0xFF1F2937);
-  static const Color textSecondaryLight = Color(0xFF6B7280);
-  static const Color textTertiaryLight = Color(0xFF9CA3AF);
+  // Text Colors - Enhanced for better accessibility
+  static const Color textPrimaryLight = Color(0xFF1A1A1A); // Darker for better contrast
+  static const Color textSecondaryLight = Color(0xFF4A4A4A); // Improved contrast
+  static const Color textTertiaryLight = Color(0xFF737373); // Better readability
 
-  static const Color textPrimaryDark = Color(0xFFF9FAFB);
-  static const Color textSecondaryDark = Color(0xFFD1D5DB);
-  static const Color textTertiaryDark = Color(0xFF9CA3AF);
+  static const Color textPrimaryDark = Color(0xFFFBFBFB); // Slightly warmer white
+  static const Color textSecondaryDark = Color(0xFFE0E0E0); // Improved contrast
+  static const Color textTertiaryDark = Color(0xFFB0B0B0); // Better readability
   
   // Psychedelic Text Colors (reduced blue content)
   static const Color textPsychedelicPrimary = Color(0xFFFFFAFA);  // Slightly warm white
@@ -174,12 +174,12 @@ class DesignTokens {
   static const Color textPsychedelicTertiary = Color(0xFFB8B8B8);  // Muted gray
   static const Color textPsychedelicAccent = Color(0xFF9D4EDD);    // Neon purple
   
-  // Icon Colors
-  static const Color iconPrimaryLight = Color(0xFF374151);
-  static const Color iconSecondaryLight = Color(0xFF6B7280);
-  
-  static const Color iconPrimaryDark = Color(0xFFF3F4F6);
-  static const Color iconSecondaryDark = Color(0xFF9CA3AF);
+  // Icon Colors - Enhanced for better accessibility
+  static const Color iconPrimaryLight = Color(0xFF2A2A2A); // Darker for better contrast
+  static const Color iconSecondaryLight = Color(0xFF5A5A5A); // Improved contrast
+
+  static const Color iconPrimaryDark = Color(0xFFF5F5F5); // Brighter for better contrast
+  static const Color iconSecondaryDark = Color(0xFFB8B8B8); // Improved contrast
   
   // Border Colors
   static const Color borderLight = Color(0xFFE5E7EB);
