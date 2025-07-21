@@ -184,7 +184,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         _selectedIcon = config.icon;
         _isIconManuallySelected = true; // Existing config has custom icon
       } else if (_selectedSubstance != null) {
-        _selectedIcon = AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name);
+        _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
         _isIconManuallySelected = false;
       }
       
@@ -550,7 +550,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   
                   // Only auto-set icon and color if user hasn't manually selected them
                   if (!_isIconManuallySelected) {
-                    _selectedIcon = AppIconGenerator.getSubstanceIcon(substance.name);
+                    _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(substance);
                   }
                   if (!_isColorManuallySelected) {
                     _selectedColor = AppIconGenerator.getSubstanceColor(substance.name);
@@ -712,7 +712,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
               child: TextButton.icon(
                 onPressed: () {
                   setState(() {
-                    _selectedIcon = AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name);
+                    _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);
                     _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
                     _isIconManuallySelected = false;
                     _isColorManuallySelected = false;
@@ -977,7 +977,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                       borderRadius: Spacing.borderRadiusSm,
                     ),
                     child: Icon(
-                      AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name),
+                      AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!),
                       color: DesignTokens.primaryIndigo,
                       size: Spacing.iconMd,
                     ),

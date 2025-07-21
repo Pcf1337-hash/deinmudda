@@ -27,6 +27,58 @@ class AppIconGenerator {
     }
   }
 
+  // Generate substance icon based on substance object (checks custom iconName first)
+  static IconData getSubstanceIconFromSubstance(Substance substance) {
+    if (substance.iconName != null) {
+      return getIconFromName(substance.iconName!);
+    }
+    return getSubstanceIcon(substance.name);
+  }
+
+  // Get icon from iconName string
+  static IconData getIconFromName(String iconName) {
+    switch (iconName.toLowerCase()) {
+      case 'coffee':
+        return Icons.local_cafe_rounded;
+      case 'flash':
+        return Icons.flash_on_rounded;
+      case 'tea':
+        return Icons.emoji_food_beverage_rounded;
+      case 'alcohol':
+        return Icons.local_bar_rounded;
+      case 'wine':
+        return Icons.wine_bar_rounded;
+      case 'beer':
+        return Icons.sports_bar_rounded;
+      case 'cigarette':
+        return Icons.smoking_rooms_rounded;
+      case 'leaf':
+        return Icons.local_florist_rounded;
+      case 'pill':
+        return Icons.medication_rounded;
+      case 'healing':
+        return Icons.healing_rounded;
+      case 'health':
+        return Icons.health_and_safety_rounded;
+      case 'fitness':
+        return Icons.fitness_center_rounded;
+      case 'water':
+        return Icons.water_drop_rounded;
+      case 'science':
+        return Icons.science_rounded;
+      case 'psychology':
+        return Icons.psychology_rounded;
+      case 'sleep':
+        return Icons.bedtime_rounded;
+      case 'sun':
+        return Icons.wb_sunny_rounded;
+      case 'moon':
+        return Icons.nightlight_rounded;
+      default:
+        return Icons.science_rounded;
+    }
+  }
+
   // Generate substance icon based on name
   static IconData getSubstanceIcon(String substanceName) {
     final name = substanceName.toLowerCase();
