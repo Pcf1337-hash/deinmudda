@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../theme/design_tokens.dart';
+import '../models/substance.dart';
 
 class AppIconGenerator {
   // Generate substance category icon
