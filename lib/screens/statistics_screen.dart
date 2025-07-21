@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
 import '../services/analytics_service.dart';
 import '../widgets/glass_card.dart';
+import '../widgets/header_bar.dart';
 import '../widgets/charts/line_chart_widget.dart';
 import '../widgets/charts/bar_chart_widget.dart';
 import '../widgets/charts/pie_chart_widget.dart';
@@ -134,22 +135,52 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     return Scaffold(
       body: Column(
         children: [
-          _buildAppBar(context, isDark),
+          HeaderBar(
+            title: 'Statistiken & Analyse',
+            subtitle: _getPeriodDisplayName(_selectedPeriod),
+            showLightningIcon: false,
+            customIcon: Icons.analytics_rounded,
+            showBackButton: false, // This is in main navigation
+          ),
+          
+          Spacing.verticalSpaceMd,
+          
           Padding(
             padding: Spacing.paddingHorizontalMd,
             child: _buildTimePeriodSelector(context, isDark),
           ),
+          
           Spacing.verticalSpaceMd,
+          
           Padding(
             padding: Spacing.paddingHorizontalMd,
             child: _buildTabBar(context, isDark),
           ),
+          
           Expanded(
             child: _buildTabBarView(context, isDark),
           ),
         ],
       ),
     );
+  }
+
+  // Helper method to get period display name
+  String _getPeriodDisplayName(TimePeriod period) {
+    switch (period) {
+      case TimePeriod.today:
+        return 'Heute';
+      case TimePeriod.thisWeek:
+        return 'Diese Woche';
+      case TimePeriod.thisMonth:
+        return 'Dieser Monat';
+      case TimePeriod.last30Days:
+        return 'Letzte 30 Tage';
+      case TimePeriod.thisYear:
+        return 'Dieses Jahr';
+      case TimePeriod.allTime:
+        return 'Gesamt';
+    }
   }
 
   Widget _buildAppBar(BuildContext context, bool isDark) {
@@ -223,11 +254,19 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildTimePeriodSelector(BuildContext context, bool isDark) {
-    return GlassCard(
-      child: Row(
-        children: TimePeriod.values.map((period) {
+    return Container(
+      height: 50,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: TimePeriod.values.length,
+        itemBuilder: (context, index) {
+          final period = TimePeriod.values[index];
           final isSelected = period == _selectedPeriod;
-          return Expanded(
+          
+          return Padding(
+            padding: EdgeInsets.only(
+              right: index < TimePeriod.values.length - 1 ? Spacing.sm : 0,
+            ),
             child: GestureDetector(
               onTap: () {
                 setState(() {
@@ -238,28 +277,53 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: Spacing.sm,
-                  horizontal: Spacing.xs,
+                  horizontal: Spacing.md,
                 ),
                 decoration: BoxDecoration(
+                  gradient: isSelected
+                      ? DesignTokens.primaryGradient
+                      : null,
                   color: isSelected
-                      ? DesignTokens.primaryIndigo.withOpacity(0.2)
-                      : Colors.transparent,
-                  borderRadius: Spacing.borderRadiusSm,
-                ),
-                child: Text(
-                  _getPeriodDisplayName(period),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      ? null
+                      : isDark
+                          ? Colors.white.withOpacity(0.05)
+                          : Colors.black.withOpacity(0.03),
+                  borderRadius: BorderRadius.circular(25),
+                  border: Border.all(
                     color: isSelected
-                        ? DesignTokens.primaryIndigo
-                        : Theme.of(context).textTheme.bodySmall?.color,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        ? DesignTokens.primaryIndigo.withOpacity(0.3)
+                        : isDark
+                            ? Colors.white.withOpacity(0.1)
+                            : Colors.black.withOpacity(0.1),
+                    width: 1.5,
                   ),
-                  textAlign: TextAlign.center,
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: DesignTokens.primaryIndigo.withOpacity(0.2),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Center(
+                  child: Text(
+                    _getPeriodDisplayName(period),
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: isSelected
+                          ? Colors.white
+                          : Theme.of(context).textTheme.bodyMedium?.color,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
                 ),
               ),
             ),
           );
-        }).toList(),
+        },
       ),
     ).animate().fadeIn(
       duration: DesignTokens.animationMedium,

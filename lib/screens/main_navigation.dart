@@ -177,42 +177,44 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     final safeBottomPadding = bottomPadding.clamp(0.0, 50.0);
     final totalHeight = Spacing.bottomNavHeight + safeBottomPadding;
     
-    return Container(
-      height: totalHeight,
-      decoration: BoxDecoration(
-        color: isDark ? DesignTokens.surfaceDark : DesignTokens.surfaceLight,
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? DesignTokens.shadowDark.withOpacity(0.2)
-                : DesignTokens.shadowLight.withOpacity(0.1),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
-          ),
-        ],
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.md,
-            vertical: Spacing.sm,
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: _navigationItems.asMap().entries.map((entry) {
-              final index = entry.key;
-              final item = entry.value;
-              final isActive = index == _currentIndex;
+    return RepaintBoundary( // Wrap in RepaintBoundary to reduce unnecessary repaints
+      child: Container(
+        height: totalHeight,
+        decoration: BoxDecoration(
+          color: isDark ? DesignTokens.surfaceDark : DesignTokens.surfaceLight,
+          boxShadow: [
+            BoxShadow(
+              color: isDark
+                  ? DesignTokens.shadowDark.withOpacity(0.2)
+                  : DesignTokens.shadowLight.withOpacity(0.1),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: Spacing.md,
+              vertical: Spacing.sm,
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: _navigationItems.asMap().entries.map((entry) {
+                final index = entry.key;
+                final item = entry.value;
+                final isActive = index == _currentIndex;
 
-              return _buildNavigationItem(
-                context,
-                isDark,
-                item,
-                isActive,
-                index,
-                () => _onItemTapped(index),
-              );
-            }).toList(),
+                return _buildNavigationItem(
+                  context,
+                  isDark,
+                  item,
+                  isActive,
+                  index,
+                  () => _onItemTapped(index),
+                );
+              }).toList(),
+            ),
           ),
         ),
       ),
@@ -230,59 +232,73 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     final theme = Theme.of(context);
     
     return Flexible(
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: Spacing.sm,
-            vertical: Spacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: isActive
-                ? DesignTokens.primaryIndigo.withOpacity(0.1)
-                : Colors.transparent,
-            borderRadius: Spacing.borderRadiusLg,
-          ),
-          child: SizedBox(
-            height: 54, // Fixed height to prevent layout shifts
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-              // Fixed size icon container to prevent scaling issues
-              SizedBox(
-                height: Spacing.iconMd + 4, // Fixed height for icon area
-                child: Icon(
-                  isActive ? item.activeIcon : item.icon,
-                  color: isActive
-                      ? DesignTokens.primaryIndigo
-                      : (isDark
-                          ? DesignTokens.iconSecondaryDark
-                          : DesignTokens.iconSecondaryLight),
-                  size: Spacing.iconMd,
+      child: RepaintBoundary( // Wrap each navigation item in RepaintBoundary
+        child: AnimatedScale( // Use AnimatedScale instead of Transform.scale for better performance
+          scale: isActive ? 1.05 : 1.0,
+          duration: DesignTokens.animationFast,
+          curve: DesignTokens.curveEaseOut,
+          child: GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: Spacing.sm,
+                vertical: Spacing.sm,
+              ),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? DesignTokens.primaryIndigo.withOpacity(0.1)
+                    : Colors.transparent,
+                borderRadius: Spacing.borderRadiusLg,
+              ),
+              child: SizedBox(
+                height: 54, // Fixed height to prevent layout shifts
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Fixed size icon container to prevent scaling issues
+                    SizedBox(
+                      height: Spacing.iconMd + 4, // Fixed height for icon area
+                      child: AnimatedSwitcher( // Smooth icon transitions
+                        duration: DesignTokens.animationFast,
+                        child: Icon(
+                          isActive ? item.activeIcon : item.icon,
+                          key: ValueKey('${item.label}_${isActive ? 'active' : 'inactive'}'),
+                          color: isActive
+                              ? DesignTokens.primaryIndigo
+                              : (isDark
+                                  ? DesignTokens.iconSecondaryDark
+                                  : DesignTokens.iconSecondaryLight),
+                          size: Spacing.iconMd,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 2), // Fixed small spacing
+                    // Fixed size text container to prevent scaling issues
+                    SizedBox(
+                      height: 14, // Fixed height for text area
+                      child: AnimatedDefaultTextStyle( // Smooth text transitions
+                        duration: DesignTokens.animationFast,
+                        style: theme.textTheme.labelSmall!.copyWith(
+                          color: isActive
+                              ? DesignTokens.primaryIndigo
+                              : (isDark
+                                  ? DesignTokens.textSecondaryDark
+                                  : DesignTokens.textSecondaryLight),
+                          fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                          fontSize: 10,
+                        ),
+                        child: Text(
+                          item.label,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(height: 2), // Fixed small spacing
-              // Fixed size text container to prevent scaling issues
-              SizedBox(
-                height: 14, // Fixed height for text area
-                child: Text(
-                  item.label,
-                  style: theme.textTheme.labelSmall!.copyWith(
-                    color: isActive
-                        ? DesignTokens.primaryIndigo
-                        : (isDark
-                            ? DesignTokens.textSecondaryDark
-                            : DesignTokens.textSecondaryLight),
-                    fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                    fontSize: 10,
-                  ),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                ),
-              ),
-            ],
             ),
           ),
         ),
