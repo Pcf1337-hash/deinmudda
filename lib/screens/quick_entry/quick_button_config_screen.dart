@@ -50,6 +50,39 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   bool _isSaving = false;
   bool _isDisposed = false;
   String? _errorMessage;
+  
+  // Icon and color selection
+  IconData? _selectedIcon;
+  Color? _selectedColor;
+  List<IconData> _availableIcons = [
+    Icons.local_cafe_rounded,
+    Icons.local_bar_rounded,
+    Icons.medication_rounded,
+    Icons.psychology_rounded,
+    Icons.bedtime_rounded,
+    Icons.flash_on_rounded,
+    Icons.healing_rounded,
+    Icons.health_and_safety_rounded,
+    Icons.fitness_center_rounded,
+    Icons.water_drop_rounded,
+    Icons.science_rounded,
+    Icons.local_florist_rounded,
+    Icons.smoking_rooms_rounded,
+    Icons.emoji_food_beverage_rounded,
+    Icons.wine_bar_rounded,
+  ];
+  List<Color> _availableColors = [
+    DesignTokens.primaryIndigo,
+    DesignTokens.accentPurple,
+    DesignTokens.accentCyan,
+    DesignTokens.accentEmerald,
+    DesignTokens.warningYellow,
+    DesignTokens.warningOrange,
+    DesignTokens.errorRed,
+    DesignTokens.accentPink,
+    DesignTokens.successGreen,
+    DesignTokens.infoBlue,
+  ];
 
   // Services
   final QuickButtonService _quickButtonService = QuickButtonService();
@@ -98,10 +131,21 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       } else {
         _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
       }
+      
+      // Initialize icon and color from substance name
+      if (_selectedSubstance != null) {
+        _selectedIcon = AppIconGenerator.getSubstanceIcon(_selectedSubstance!.name);
+        _selectedColor = AppIconGenerator.getSubstanceColor(_selectedSubstance!.name);
+      }
+      
       // Trigger cost calculation after form is initialized
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateCalculatedCost();
       });
+    } else {
+      // Set defaults for new button
+      _selectedIcon = _availableIcons.first;
+      _selectedColor = _availableColors.first;
     }
   }
 
@@ -394,6 +438,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           Spacing.verticalSpaceLg,
           _buildSubstanceSection(context, isDark),
           Spacing.verticalSpaceLg,
+          _buildIconColorSection(context, isDark),
+          Spacing.verticalSpaceLg,
           _buildDosageSection(context, isDark),
           Spacing.verticalSpaceLg,
           _buildPreviewSection(context, isDark),
@@ -437,6 +483,10 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   _updateCalculatedCost();
                   // Auto-load price when substance is selected
                   _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
+                  
+                  // Auto-set icon and color based on substance
+                  _selectedIcon = AppIconGenerator.getSubstanceIcon(substance.name);
+                  _selectedColor = AppIconGenerator.getSubstanceColor(substance.name);
                 }
               });
             },
@@ -455,6 +505,133 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           end: 0,
           duration: DesignTokens.animationMedium,
           curve: DesignTokens.curveEaseOut,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildIconColorSection(BuildContext context, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Aussehen',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 450),
+        ),
+        Spacing.verticalSpaceSm,
+        
+        // Icon selection
+        Text(
+          'Symbol',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GlassCard(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _availableIcons.map((icon) {
+                final isSelected = _selectedIcon == icon;
+                final color = _selectedColor ?? DesignTokens.primaryIndigo;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedIcon = icon;
+                    });
+                  },
+                  child: Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? color : Colors.grey.withOpacity(0.3),
+                        width: isSelected ? 2 : 1,
+                      ),
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isSelected ? color : Colors.grey[600],
+                      size: 24,
+                    ),
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 470),
+        ),
+        
+        Spacing.verticalSpaceSm,
+        
+        // Color selection
+        Text(
+          'Farbe',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 8),
+        GlassCard(
+          child: Container(
+            padding: const EdgeInsets.all(12),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _availableColors.map((color) {
+                final isSelected = _selectedColor == color;
+                return GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _selectedColor = color;
+                    });
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: color,
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isSelected ? Colors.white : Colors.transparent,
+                        width: isSelected ? 3 : 0,
+                      ),
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: color.withOpacity(0.5),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                    child: isSelected
+                        ? const Icon(
+                            Icons.check,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                        : null,
+                  ),
+                );
+              }).toList(),
+            ),
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 490),
         ),
       ],
     );

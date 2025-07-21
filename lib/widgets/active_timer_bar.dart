@@ -559,16 +559,21 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        FittedBox(
-                          fit: BoxFit.scaleDown,
-                          child: Text(
-                            widget.timer.substanceName ?? 'Unbekannte Substanz',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              color: textColor,
-                              fontWeight: FontWeight.w600,
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(
+                            maxWidth: 120, // Prevent text from becoming too wide
+                          ),
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              widget.timer.substanceName ?? 'Unbekannte Substanz',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: textColor,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         Text(
@@ -580,11 +585,19 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                       ],
                     ),
                   ),
-                  Text(
-                    widget.timer.formattedRemainingTime,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: textColor,
-                      fontWeight: FontWeight.w700,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 80, // Prevent timer text from overflowing
+                    ),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        widget.timer.formattedRemainingTime,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: textColor,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(width: Spacing.sm),
