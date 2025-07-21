@@ -651,23 +651,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                 Spacing.verticalSpaceLg,
                                 _buildRecentEntriesSection(context, isDark, entries),
                                 Spacing.verticalSpaceLg,
-                                _buildTodayStatsSection(context, isDark, entries),
+                                _buildTodayStatsSection(context, isDark),
                                 Spacing.verticalSpaceLg,
                                 _buildQuickInsightsSection(context, isDark),
                               ],
                             ),
                           );
-                                  child: _buildTodayStatsSection(context, isDark),
-                                ),
-                                Spacing.verticalSpaceLg,
-                                LayoutErrorBoundary(
-                                  debugLabel: 'Quick Insights Section',
-                                  child: _buildQuickInsightsSection(context, isDark),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
+                        },
                       ),
                   
                   const SizedBox(height: 120), // Bottom padding for navigation
@@ -675,9 +665,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
               ),
             ),
           ],
-        ),
-              ), // Close the Container
-            ), // Close the LayoutErrorBoundary
+          ), // Close CustomScrollView
+          ), // Close Container
+          ), // Close LayoutErrorBoundary
           floatingActionButton: Consumer<PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
               return Consumer<TimerService>(
