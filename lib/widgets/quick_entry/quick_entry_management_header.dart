@@ -37,20 +37,18 @@ class QuickEntryManagementHeader extends StatelessWidget {
     );
   }
 
-  BoxDecoration _buildGradient(bool isDark) {
-    return BoxDecoration(
-      gradient: isDark
-          ? const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF1A1A2E),
-                Color(0xFF16213E),
-                Color(0xFF0F3460),
-              ],
-            )
-          : DesignTokens.primaryGradient,
-    );
+  Gradient _buildGradient(bool isDark) {
+    return isDark
+        ? const LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF1A1A2E),
+              Color(0xFF16213E),
+              Color(0xFF0F3460),
+            ],
+          )
+        : DesignTokens.primaryGradient;
   }
 
   Widget _buildHeaderContent(BuildContext context, ThemeData theme) {
