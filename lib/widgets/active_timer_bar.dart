@@ -709,6 +709,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                 ),
                           ],
                         ),
+                        ),
                         Flexible(
                           flex: 2, // Timer display area
                           child: Column(
@@ -870,6 +871,6 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           ),
         ),
       ],
-    ));
+    );
   }
 }
