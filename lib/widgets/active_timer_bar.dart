@@ -706,7 +706,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                     color: textColor.withOpacity(0.7),
                                     fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false, isSmallHeight: isVerySmall),
                                   ),
-                            ),
+                                ),
                           ],
                         ),
                         Flexible(
@@ -743,8 +743,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                           ),
                         ),
                         // Only show edit button if there's enough space
-                        if (!isVerySmall) SizedBox(width: isVerySmall ? Spacing.xxs : Spacing.xs),
-                        if (!isVerySmall)
+                        if (!isVerySmall) ...[
+                          SizedBox(width: isVerySmall ? Spacing.xxs : Spacing.xs),
                           IconButton(
                             onPressed: () {
                               if (mounted && !_isDisposed) {
@@ -764,6 +764,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                             ),
                             padding: EdgeInsets.zero,
                           ),
+                        ],
                       ],
                     ),
                   );
@@ -869,6 +870,6 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           ),
         ),
       ],
-    );
+    ));
   }
 }
