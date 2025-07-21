@@ -991,7 +991,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         Text(
                           _currentUser != null 
                               ? _currentUser!.getDosageLabel() 
-                              : 'Empfohlene Dosis (-20%):',
+                              : 'Optimale Dosis (-20%):',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w600,
@@ -1013,25 +1013,41 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4), // Reduced from 6 to 4
-                        // Duration integrated into dosage field
+                        // Enhanced duration display with better styling
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.schedule_rounded,
-                              color: substanceColor.withOpacity(0.7),
-                              size: 11, // Reduced from 12 to fit better
+                              color: Colors.white,
+                              size: 14, // Increased for better visibility
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 2,
+                                  offset: const Offset(1, 1),
+                                ),
+                              ],
                             ),
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                substance.duration,
+                                '⏱ ${substance.duration}',
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  color: substanceColor.withOpacity(0.7),
-                                  fontSize: 9, // Reduced from 10 to fit better
+                                  color: Colors.white,
+                                  fontSize: 13, // Increased to 13-14 range
+                                  fontWeight: FontWeight.w500,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.7),
+                                      blurRadius: 2,
+                                      offset: const Offset(1, 1),
+                                    ),
+                                  ],
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                                softWrap: false,
                               ),
                             ),
                           ],
@@ -2257,24 +2273,40 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 8),
-                // Duration information integrated
+                // Enhanced duration information with better styling
                 Row(
                   children: [
                     Icon(
                       Icons.schedule_rounded,
-                      color: color.withOpacity(0.7),
+                      color: Colors.white,
                       size: 16,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 2,
+                          offset: const Offset(1, 1),
+                        ),
+                      ],
                     ),
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        widget.substance.duration,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: color.withOpacity(0.8),
+                        '⏱ ${widget.substance.duration}',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontSize: 14,
                           fontWeight: FontWeight.w500,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.7),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
+                        softWrap: false,
                       ),
                     ),
                   ],
