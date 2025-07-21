@@ -29,6 +29,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
   // Form state
   Gender _selectedGender = Gender.male;
+  DosageStrategy _selectedDosageStrategy = DosageStrategy.optimal;
   double _weightKg = 70.0;
   double _heightCm = 175.0;
   int _ageYears = 25;
@@ -118,6 +119,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         setState(() {
           _existingUser = user;
           _selectedGender = user.gender;
+          _selectedDosageStrategy = user.dosageStrategy;
           _weightKg = user.weightKg;
           _heightCm = user.heightCm;
           _ageYears = user.ageYears;
@@ -151,11 +153,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     try {
       final user = _existingUser?.copyWith(
         gender: _selectedGender,
+        dosageStrategy: _selectedDosageStrategy,
         weightKg: _weightKg,
         heightCm: _heightCm,
         ageYears: _ageYears,
       ) ?? DosageCalculatorUser.create(
         gender: _selectedGender,
+        dosageStrategy: _selectedDosageStrategy,
         weightKg: _weightKg,
         heightCm: _heightCm,
         ageYears: _ageYears,
@@ -292,6 +296,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
           _buildHeightSection(context, isDark),
           Spacing.verticalSpaceLg,
           _buildAgeSection(context, isDark),
+          Spacing.verticalSpaceLg,
+          _buildDosageStrategySection(context, isDark),
           Spacing.verticalSpaceLg,
           _buildHealthAssessmentSection(context, isDark),
         ],
@@ -620,6 +626,122 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
   }
 
+  Widget _buildDosageStrategySection(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Dosierungsstrategie',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 1150),
+        ),
+        Spacing.verticalSpaceMd,
+        Text(
+          'Wählen Sie Ihren bevorzugten Ansatz für Dosierungsempfehlungen:',
+          style: theme.textTheme.bodyMedium?.copyWith(
+            color: theme.textTheme.bodyMedium?.color?.withOpacity(0.8),
+          ),
+        ),
+        Spacing.verticalSpaceMd,
+        Column(
+          children: DosageStrategy.values.map((strategy) {
+            final isSelected = strategy == _selectedDosageStrategy;
+            final color = _getDosageStrategyColor(strategy);
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedDosageStrategy = strategy;
+                  });
+                },
+                child: AnimatedContainer(
+                  duration: DesignTokens.animationFast,
+                  padding: Spacing.paddingMd,
+                  decoration: BoxDecoration(
+                    gradient: isSelected
+                        ? (isDark
+                            ? DesignTokens.glassGradientDark
+                            : DesignTokens.glassGradientLight)
+                        : null,
+                    color: isSelected ? null : Colors.transparent,
+                    borderRadius: Spacing.borderRadiusMd,
+                    border: Border.all(
+                      color: isSelected
+                          ? color
+                          : (isDark ? Colors.white24 : Colors.black12),
+                      width: isSelected ? 2 : 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          _getDosageStrategyIcon(strategy),
+                          color: color,
+                          size: 20,
+                        ),
+                      ),
+                      Spacing.horizontalSpaceMd,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              strategy.shortName,
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: isSelected ? color : null,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '-${strategy.percentageDisplay}%',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: color,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      if (isSelected)
+                        Icon(
+                          Icons.check_circle_rounded,
+                          color: color,
+                          size: 20,
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ).animate().fadeIn(
+          duration: DesignTokens.animationMedium,
+          delay: const Duration(milliseconds: 1175),
+        ).slideY(
+          begin: 0.3,
+          end: 0,
+          duration: DesignTokens.animationMedium,
+          curve: DesignTokens.curveEaseOut,
+        ),
+      ],
+    );
+  }
+
   Widget _buildHealthAssessmentSection(BuildContext context, bool isDark) {
     final theme = Theme.of(context);
     final bmi = _dosageService.calculateBMI(_weightKg, _heightCm);
@@ -750,6 +872,32 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         return 'Weiblich';
       case Gender.other:
         return 'Divers';
+    }
+  }
+
+  Color _getDosageStrategyColor(DosageStrategy strategy) {
+    switch (strategy) {
+      case DosageStrategy.calculated:
+        return DesignTokens.accentCyan;
+      case DosageStrategy.optimal:
+        return DesignTokens.successGreen;
+      case DosageStrategy.safe:
+        return DesignTokens.warningYellow;
+      case DosageStrategy.beginner:
+        return DesignTokens.accentPurple;
+    }
+  }
+
+  IconData _getDosageStrategyIcon(DosageStrategy strategy) {
+    switch (strategy) {
+      case DosageStrategy.calculated:
+        return Icons.calculate_rounded;
+      case DosageStrategy.optimal:
+        return Icons.verified_rounded;
+      case DosageStrategy.safe:
+        return Icons.shield_rounded;
+      case DosageStrategy.beginner:
+        return Icons.school_rounded;
     }
   }
 }
