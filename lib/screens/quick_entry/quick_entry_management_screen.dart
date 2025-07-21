@@ -103,7 +103,16 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
 
     try {
       await _quickButtonService.deleteQuickButton(config.id);
-      _loadQuickButtons();
+      
+      // Immediately update the local state to reflect the deletion
+      if (mounted) {
+        setState(() {
+          _quickButtons.removeWhere((button) => button.id == config.id);
+        });
+      }
+      
+      // Reload from database to ensure consistency
+      await _loadQuickButtons();
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -119,7 +119,7 @@ class QuickButtonList extends StatelessWidget {
               onTap: () => onEditButton(button),
               onLongPress: () => onDeleteButton(button),
               child: QuickButtonWidget(
-                key: ValueKey(button.id),
+                key: ValueKey('${button.id}_${button.dosage}_${button.unit}_${button.cost}'),
                 config: button,
                 onTap: () => onEditButton(button),
                 onLongPress: () => onDeleteButton(button),
@@ -151,7 +151,7 @@ class QuickButtonList extends StatelessWidget {
           itemBuilder: (context, index) {
             final button = quickButtons[index];
             return QuickButtonWidget(
-              key: ValueKey(button.id),
+              key: ValueKey('${button.id}_reorder_${button.position}'),
               config: button,
               isDragging: false,
               isEditing: true,

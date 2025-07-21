@@ -46,7 +46,9 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
   void didUpdateWidget(QuickEntryBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.quickButtons != widget.quickButtons) {
-      _reorderedButtons = List.from(widget.quickButtons);
+      safeSetState(() {
+        _reorderedButtons = List.from(widget.quickButtons);
+      });
     }
   }
 
@@ -193,6 +195,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             controller: _scrollController,
             scrollDirection: Axis.horizontal,
             itemCount: widget.quickButtons.length,
+            physics: const ClampingScrollPhysics(), // Prevent gray/empty state after scrolling
             itemBuilder: (context, index) {
               final button = widget.quickButtons[index];
               

@@ -117,7 +117,7 @@ class HeaderBar extends StatelessWidget {
                       ),
                       child: Row(
                         children: [
-                          Expanded(
+                          Flexible(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisAlignment: MainAxisAlignment.end,
@@ -140,14 +140,14 @@ class HeaderBar extends StatelessWidget {
                                           fontSize: _getResponsiveTitleSize(constraints.maxWidth),
                                         ),
                                         overflow: TextOverflow.ellipsis,
-                                        maxLines: 2, // Allow 2 lines for long titles
+                                        maxLines: 1, // Reduced to 1 line to prevent overflow
                                         textAlign: TextAlign.left,
                                       ),
                                     );
                                   },
                                 ),
                                 if (subtitle != null) ...[
-                                  const SizedBox(height: 4), // Improved spacing
+                                  const SizedBox(height: 2), // Reduced spacing to prevent overflow
                                   LayoutBuilder(
                                     builder: (context, constraints) {
                                       return ConstrainedBox(

@@ -136,8 +136,8 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
             onTap: widget.onTap,
             onLongPress: widget.onLongPress,
             child: Container(
-              width: 80,
-              height: 100,
+              width: 80.0, // Fixed width to ensure consistency
+              height: 100.0, // Fixed height to ensure consistency
               margin: const EdgeInsets.symmetric(horizontal: Spacing.xs),
               decoration: BoxDecoration(
                 gradient: isDark
@@ -412,8 +412,8 @@ class AddQuickButtonWidget extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 80,
-        height: 100,
+        width: 80.0, // Fixed width to match other buttons exactly
+        height: 100.0, // Fixed height to match other buttons exactly
         margin: const EdgeInsets.symmetric(horizontal: Spacing.xs),
         decoration: BoxDecoration(
           gradient: isDark
