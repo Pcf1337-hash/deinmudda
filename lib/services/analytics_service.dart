@@ -11,6 +11,7 @@ enum TimePeriod {
   today,
   thisWeek,
   thisMonth,
+  last30Days,
   thisYear,
   allTime,
 }
@@ -680,6 +681,10 @@ class AnalyticsService {
         break;
       case TimePeriod.thisMonth:
         start = DateTime(now.year, now.month, 1);
+        break;
+      case TimePeriod.last30Days:
+        start = now.subtract(const Duration(days: 30));
+        start = DateTime(start.year, start.month, start.day);
         break;
       case TimePeriod.thisYear:
         start = DateTime(now.year, 1, 1);

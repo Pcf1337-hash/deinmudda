@@ -874,15 +874,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                   ),
                                 ],
                               ),
-                            ),
-                          ),
-                          child: TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 3000),
-                            tween: Tween(begin: 0.0, end: 1.0),
-                            builder: (context, value, child) {
-                              return Transform.rotate(
-                                angle: value * 6.28, // Full rotation
-                                child: ShaderMask(
+                              child: TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 3000),
+                                tween: Tween(begin: 0.0, end: 1.0),
+                                builder: (context, value, child) {
+                                  return Transform.rotate(
+                                    angle: value * 6.28, // Full rotation
+                                    child: ShaderMask(
                                   shaderCallback: (bounds) {
                                     return LinearGradient(
                                       begin: Alignment.topLeft,
@@ -1005,6 +1003,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                           overflow: TextOverflow.ellipsis,
                                           textAlign: TextAlign.left,
                                         ),
+                                      ),
                                     ],
                                   );
                                 },

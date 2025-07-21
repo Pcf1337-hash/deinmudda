@@ -647,7 +647,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.right,
                               ),
-                              if (widget.timer.isExpired) 
+                              if (widget.timer.isTimerExpired) 
                                 Text(
                                   'Abgelaufen',
                                   style: theme.textTheme.bodySmall?.copyWith(
