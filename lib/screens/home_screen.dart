@@ -795,7 +795,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     final isPsychedelic = psychedelicService.isPsychedelicMode && isDark;
 
     return SliverAppBar(
-      expandedHeight: 120, // Reduced from 150 to 120
+      expandedHeight: 140, // Increased for better text accommodation
       floating: false,
       pinned: true,
       elevation: 0,
@@ -827,27 +827,53 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ),
           child: SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), // Reduced padding
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Replace static text with animated logo
-                  Row(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Improved padding
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Animated logo container
-                      PulsatingWidget(
-                        isEnabled: isPsychedelic,
-                        glowColor: substanceColors['primary'],
-                        intensity: 0.5,
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.2),
-                              width: 1,
+                      // Improved header with better text scaling
+                      Row(
+                        children: [
+                          // Animated logo container with better constraints
+                          PulsatingWidget(
+                            isEnabled: isPsychedelic,
+                            glowColor: substanceColors['primary'],
+                            intensity: 0.5,
+                            child: Container(
+                              constraints: const BoxConstraints(
+                                minWidth: 40,
+                                minHeight: 40,
+                                maxWidth: 56,
+                                maxHeight: 56,
+                              ),
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.white.withOpacity(0.15),
+                                    Colors.white.withOpacity(0.05),
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.3),
+                                  width: 1.5,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: (isPsychedelic 
+                                        ? substanceColors['primary']! 
+                                        : Colors.black).withOpacity(0.2),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                           child: TweenAnimationBuilder<double>(
@@ -907,87 +933,156 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                 stops: isPsychedelic ? [0.0, 0.3, 0.7, 1.0] : [0.0, 0.3, 0.7, 1.0],
                               ).createShader(bounds);
                             },
-                            child: TweenAnimationBuilder<double>(
-                              duration: const Duration(milliseconds: 2000),
-                              tween: Tween(begin: 0.0, end: 1.0),
-                              builder: (context, value, child) {
-                                return Transform.scale(
-                                  scale: 1.0 + (isPsychedelic ? (0.05 * (1.0 - value)) : 0.0),
-                                  child: ConstrainedBox(
-                                    constraints: const BoxConstraints(
-                                      maxWidth: 250, // Prevent title overflow
-                                    ),
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      child: Text(
-                                        'Konsum Tracker Pro',
-                                        style: theme.textTheme.headlineMedium?.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w700,
-                                          shadows: isPsychedelic ? [
-                                            Shadow(
-                                              color: substanceColors['primary']!.withOpacity(0.3),
-                                              blurRadius: 10,
-                                            ),
-                                          ] : [
-                                            Shadow(
-                                              color: Colors.black.withOpacity(0.3),
-                                              blurRadius: 8,
-                                            ),
+                              child: TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 3000),
+                                tween: Tween(begin: 0.0, end: 1.0),
+                                builder: (context, value, child) {
+                                  return Transform.rotate(
+                                    angle: isPsychedelic ? value * 0.1 : 0, // Reduced rotation
+                                    child: ShaderMask(
+                                      shaderCallback: (bounds) {
+                                        return LinearGradient(
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                          colors: [
+                                            Colors.white,
+                                            Colors.white.withOpacity(0.8),
+                                            isPsychedelic ? substanceColors['primary']! : DesignTokens.accentCyan,
+                                            Colors.white,
                                           ],
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
+                                          stops: [0.0, 0.3, 0.7, 1.0],
+                                          transform: GradientRotation(value * 3.14),
+                                        ).createShader(bounds);
+                                      },
+                                      child: const Icon(
+                                        Icons.psychology_rounded,
+                                        color: Colors.white,
+                                        size: 28,
                                       ),
                                     ),
-                                  ),
-                                );
-                              },
-                              onEnd: () {
-                                // Restart animation in trippy mode
-                                if (isPsychedelic && mounted) {
-                                  safeSetState(() {});
-                                }
-                              },
+                                  );
+                                },
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 16), // Improved spacing
+                          Expanded(
+                            child: PulsatingWidget(
+                              isEnabled: isPsychedelic,
+                              glowColor: substanceColors['primary'],
+                              intensity: 0.3,
+                              child: LayoutBuilder(
+                                builder: (context, titleConstraints) {
+                                  return Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      // Improved title with responsive sizing
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: titleConstraints.maxWidth,
+                                        ),
+                                        child: Text(
+                                          'Konsum Tracker Pro',
+                                          style: theme.textTheme.headlineMedium?.copyWith(
+                                            color: isPsychedelic
+                                                ? DesignTokens.textPsychedelicPrimary
+                                                : Colors.white,
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: _getResponsiveHeaderSize(titleConstraints.maxWidth),
+                                            shadows: isPsychedelic ? [
+                                              Shadow(
+                                                color: substanceColors['primary']!.withOpacity(0.3),
+                                                blurRadius: 10,
+                                              ),
+                                            ] : [
+                                              Shadow(
+                                                color: Colors.black.withOpacity(0.3),
+                                                blurRadius: 8,
+                                              ),
+                                            ],
+                                          ),
+                                          maxLines: 2, // Allow wrapping for long titles
+                                          overflow: TextOverflow.ellipsis,
+                                          textAlign: TextAlign.left,
+                                        ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        ],
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationSlow,
+                        delay: const Duration(milliseconds: 200),
+                      ).slideX(
+                        begin: -0.3,
+                        end: 0,
+                        duration: DesignTokens.animationSlow,
+                        curve: DesignTokens.curveEaseOut,
+                      ),
+                      const SizedBox(height: 8), // Improved spacing
+                      // Improved date text with responsive sizing
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: constraints.maxWidth * 0.8,
                         ),
+                        child: Text(
+                          dateText,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: isPsychedelic 
+                                ? DesignTokens.textPsychedelicSecondary 
+                                : Colors.white.withOpacity(0.9),
+                            fontWeight: FontWeight.w400,
+                            fontSize: _getResponsiveDateSize(constraints.maxWidth),
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ).animate().fadeIn(
+                        duration: DesignTokens.animationSlow,
+                        delay: const Duration(milliseconds: 400),
+                      ).slideX(
+                        begin: -0.3,
+                        end: 0,
+                        duration: DesignTokens.animationSlow,
+                        curve: DesignTokens.curveEaseOut,
                       ),
                     ],
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationSlow,
-                    delay: const Duration(milliseconds: 200),
-                  ).slideX(
-                    begin: -0.3,
-                    end: 0,
-                    duration: DesignTokens.animationSlow,
-                    curve: DesignTokens.curveEaseOut,
-                  ),
-                  const SizedBox(height: 4), // Reduced from Spacing.verticalSpaceXs
-                  Text(
-                    dateText,
-                    style: theme.textTheme.bodyMedium?.copyWith( // Changed from bodyLarge to bodyMedium
-                      color: isPsychedelic 
-                          ? DesignTokens.textPsychedelicSecondary 
-                          : Colors.white.withOpacity(0.9),
-                      fontWeight: FontWeight.w400,
-                    ),
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationSlow,
-                    delay: const Duration(milliseconds: 400),
-                  ).slideX(
-                    begin: -0.3,
-                    end: 0,
-                    duration: DesignTokens.animationSlow,
-                    curve: DesignTokens.curveEaseOut,
-                  ),
-                ],
+                  );
+                },
               ),
             ),
           ),
         ),
       ),
     );
+  }
+
+  // Helper method to get responsive header size
+  double _getResponsiveHeaderSize(double availableWidth) {
+    if (availableWidth < 200) {
+      return 18.0; // Very small screens
+    } else if (availableWidth < 280) {
+      return 20.0; // Small screens
+    } else if (availableWidth < 350) {
+      return 22.0; // Medium screens
+    } else {
+      return 26.0; // Large screens
+    }
+  }
+
+  // Helper method to get responsive date size
+  double _getResponsiveDateSize(double availableWidth) {
+    if (availableWidth < 200) {
+      return 12.0; // Very small screens
+    } else if (availableWidth < 280) {
+      return 13.0; // Small screens
+    } else if (availableWidth < 350) {
+      return 14.0; // Medium screens
+    } else {
+      return 16.0; // Large screens
+    }
   }
 
   Widget _buildRecentEntriesSection(BuildContext context, bool isDark, List<Entry>? entries) {

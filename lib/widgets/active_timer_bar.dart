@@ -486,6 +486,46 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     }
   }
 
+  // Helper method to get responsive font size
+  double _getResponsiveFontSize(double availableWidth, {required bool isTitle}) {
+    if (availableWidth < 280) {
+      return isTitle ? 14.0 : 12.0; // Very small screens
+    } else if (availableWidth < 350) {
+      return isTitle ? 16.0 : 13.0; // Small screens
+    } else {
+      return isTitle ? 18.0 : 14.0; // Normal screens
+    }
+  }
+
+  // Helper method to format timer text for better display
+  String _formatTimerText(String originalText) {
+    // Handle "abgelaufen" case specifically
+    if (originalText.toLowerCase().contains('abgelaufen') || 
+        originalText.toLowerCase().contains('expired')) {
+      return 'Ende';
+    }
+    
+    // Shorten common time formats
+    String formatted = originalText
+        .replaceAll('Stunde', 'h')
+        .replaceAll('Std', 'h')
+        .replaceAll('Minute', 'm')
+        .replaceAll('Min', 'm')
+        .replaceAll(' ', '');
+    
+    // If still too long, truncate further
+    if (formatted.length > 8) {
+      // Try to extract just numbers and units
+      final regex = RegExp(r'(\d+)([hm])');
+      final matches = regex.allMatches(formatted);
+      if (matches.isNotEmpty) {
+        formatted = matches.map((m) => '${m.group(1)}${m.group(2)}').join(' ');
+      }
+    }
+    
+    return formatted;
+  }
+
   void _showErrorMessage(String message) {
     if (mounted && !_isDisposed) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Zeige Fehlermeldung: $message');
@@ -540,82 +580,106 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(Spacing.sm),
-                    decoration: BoxDecoration(
-                      color: progressColor.withOpacity(0.2),
-                      borderRadius: Spacing.borderRadiusMd,
-                    ),
-                    child: Icon(
-                      Icons.timer_rounded,
-                      color: progressColor,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.sm),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        ConstrainedBox(
-                          constraints: const BoxConstraints(
-                            maxWidth: 120, // Prevent text from becoming too wide
-                          ),
-                          child: FittedBox(
-                            fit: BoxFit.scaleDown,
-                            child: Text(
-                              widget.timer.substanceName ?? 'Unbekannte Substanz',
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: textColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(Spacing.sm),
+                        decoration: BoxDecoration(
+                          color: progressColor.withOpacity(0.2),
+                          borderRadius: Spacing.borderRadiusMd,
                         ),
-                        Text(
-                          'Timer läuft',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: textColor.withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: 80, // Prevent timer text from overflowing
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        widget.timer.formattedRemainingTime,
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: textColor,
-                          fontWeight: FontWeight.w700,
+                        child: Icon(
+                          Icons.timer_rounded,
+                          color: progressColor,
+                          size: 20,
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: Spacing.sm),
-                  IconButton(
-                    onPressed: () {
-                      if (mounted && !_isDisposed) {
-                        safeSetState(() {
-                          _showTimerInput = !_showTimerInput;
-                        });
-                      }
-                    },
-                    icon: Icon(
-                      _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
-                      color: textColor,
-                      size: 20,
-                    ),
-                  ),
-                ],
+                      const SizedBox(width: Spacing.sm),
+                      Expanded(
+                        flex: 3, // Give more space to the substance name
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            ConstrainedBox(
+                              constraints: BoxConstraints(
+                                maxWidth: constraints.maxWidth * 0.4, // Use 40% of available width
+                              ),
+                              child: Text(
+                                widget.timer.substanceName ?? 'Unbekannte Substanz',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true),
+                                ),
+                                maxLines: 2, // Allow 2 lines for long names
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Text(
+                              'Timer läuft',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: textColor.withOpacity(0.7),
+                                fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Flexible(
+                        flex: 2, // Give space to timer display
+                        child: Container(
+                          constraints: BoxConstraints(
+                            maxWidth: constraints.maxWidth * 0.25, // Use 25% of available width
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Text(
+                                _formatTimerText(widget.timer.formattedRemainingTime),
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.right,
+                              ),
+                              if (widget.timer.isExpired) 
+                                Text(
+                                  'Abgelaufen',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: DesignTokens.errorRed,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: Spacing.sm),
+                      IconButton(
+                        onPressed: () {
+                          if (mounted && !_isDisposed) {
+                            safeSetState(() {
+                              _showTimerInput = !_showTimerInput;
+                            });
+                          }
+                        },
+                        icon: Icon(
+                          _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
+                          color: textColor,
+                          size: 20,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: Spacing.sm),
               // Enhanced progress bar with animation

@@ -14,6 +14,7 @@ class HeaderBar extends StatelessWidget {
   final Widget? trailing;
   final double? height;
   final bool showLightningIcon;
+  final IconData? customIcon; // New parameter for custom icons
 
   const HeaderBar({
     super.key,
@@ -24,6 +25,7 @@ class HeaderBar extends StatelessWidget {
     this.trailing,
     this.height,
     this.showLightningIcon = true,
+    this.customIcon, // Custom icon for different screens
   });
 
   @override
@@ -37,7 +39,11 @@ class HeaderBar extends StatelessWidget {
         final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
         return Container(
-          height: height ?? (PlatformHelper.isIOS ? 100 : 120),
+          // Use flexible constraints instead of fixed height
+          constraints: BoxConstraints(
+            minHeight: height ?? (PlatformHelper.isIOS ? 100 : 120),
+            maxHeight: height != null ? height! : (PlatformHelper.isIOS ? 140 : 160),
+          ),
           decoration: BoxDecoration(
             gradient: isPsychedelicMode
                 ? LinearGradient(
@@ -117,50 +123,59 @@ class HeaderBar extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.end,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Flexible(
-                                  child: FittedBox(
-                                    fit: BoxFit.scaleDown,
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      title,
-                                      style: theme.textTheme.headlineMedium?.copyWith(
-                                        color: isPsychedelicMode
-                                            ? DesignTokens.textPsychedelicPrimary
-                                            : Colors.white,
-                                        fontWeight: FontWeight.w700,
+                                // Improved title with better text scaling
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return ConstrainedBox(
+                                      constraints: BoxConstraints(
+                                        maxWidth: constraints.maxWidth * 0.9, // Use 90% of available width
                                       ),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      textScaleFactor: 1.0, // Prevent system text scaling issues
-                                    ),
-                                  ),
-                                ),
-                                if (subtitle != null) ...[
-                                  const SizedBox(height: 2),
-                                  Flexible(
-                                    child: FittedBox(
-                                      fit: BoxFit.scaleDown,
-                                      alignment: Alignment.centerLeft,
                                       child: Text(
-                                        subtitle!,
-                                        style: theme.textTheme.bodyMedium?.copyWith(
+                                        title,
+                                        style: theme.textTheme.headlineMedium?.copyWith(
                                           color: isPsychedelicMode
-                                              ? DesignTokens.textPsychedelicSecondary
-                                              : Colors.white.withOpacity(0.8),
+                                              ? DesignTokens.textPsychedelicPrimary
+                                              : Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: _getResponsiveTitleSize(constraints.maxWidth),
                                         ),
                                         overflow: TextOverflow.ellipsis,
-                                        maxLines: 1,
-                                        textScaleFactor: 1.0, // Prevent system text scaling issues
+                                        maxLines: 2, // Allow 2 lines for long titles
+                                        textAlign: TextAlign.left,
                                       ),
-                                    ),
+                                    );
+                                  },
+                                ),
+                                if (subtitle != null) ...[
+                                  const SizedBox(height: 4), // Improved spacing
+                                  LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      return ConstrainedBox(
+                                        constraints: BoxConstraints(
+                                          maxWidth: constraints.maxWidth * 0.85, // Slightly less width for subtitle
+                                        ),
+                                        child: Text(
+                                          subtitle!,
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: isPsychedelicMode
+                                                ? DesignTokens.textPsychedelicSecondary
+                                                : Colors.white.withOpacity(0.9), // Improved contrast
+                                            fontSize: _getResponsiveSubtitleSize(constraints.maxWidth),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                          maxLines: 1,
+                                          textAlign: TextAlign.left,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ],
                               ],
                             ),
                           ),
-                          if (showLightningIcon) ...[
+                          if (showLightningIcon || customIcon != null) ...[
                             const SizedBox(width: 12),
-                            _buildLightningIcon(isPsychedelicMode, substanceColors),
+                            _buildHeaderIcon(isPsychedelicMode, substanceColors),
                           ],
                         ],
                       ),
@@ -178,29 +193,80 @@ class HeaderBar extends StatelessWidget {
     );
   }
 
-  Widget _buildLightningIcon(bool isPsychedelicMode, Map<String, Color> substanceColors) {
+  // Helper method to get responsive title size
+  double _getResponsiveTitleSize(double availableWidth) {
+    if (availableWidth < 300) {
+      return 20.0; // Smaller screens
+    } else if (availableWidth < 400) {
+      return 22.0; // Medium screens
+    } else {
+      return 24.0; // Larger screens
+    }
+  }
+
+  // Helper method to get responsive subtitle size
+  double _getResponsiveSubtitleSize(double availableWidth) {
+    if (availableWidth < 300) {
+      return 14.0; // Smaller screens
+    } else if (availableWidth < 400) {
+      return 15.0; // Medium screens
+    } else {
+      return 16.0; // Larger screens
+    }
+  }
+
+  Widget _buildHeaderIcon(bool isPsychedelicMode, Map<String, Color> substanceColors) {
+    final iconToShow = customIcon ?? DesignTokens.lightningIcon;
+    
     return Container(
+      constraints: const BoxConstraints(
+        minWidth: 36,
+        minHeight: 36,
+        maxWidth: 48,
+        maxHeight: 48,
+      ),
       padding: EdgeInsets.all(PlatformHelper.isIOS ? 6.0 : 8.0),
       decoration: BoxDecoration(
-        color: isPsychedelicMode
-            ? substanceColors['primary']!.withOpacity(0.2)
-            : Colors.white.withOpacity(0.2),
+        // Improved background to prevent fragmentation
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isPsychedelicMode
+              ? [
+                  substanceColors['primary']!.withOpacity(0.3),
+                  substanceColors['primary']!.withOpacity(0.1),
+                ]
+              : [
+                  Colors.white.withOpacity(0.25),
+                  Colors.white.withOpacity(0.1),
+                ],
+        ),
         borderRadius: PlatformHelper.getPlatformBorderRadius(),
         border: Border.all(
           color: isPsychedelicMode
-              ? substanceColors['primary']!.withOpacity(0.3)
-              : Colors.white.withOpacity(0.3),
-          width: 1,
+              ? substanceColors['primary']!.withOpacity(0.4)
+              : Colors.white.withOpacity(0.4),
+          width: 1.5,
         ),
+        // Add shadow for better visual separation
+        boxShadow: [
+          BoxShadow(
+            color: (isPsychedelicMode 
+                ? substanceColors['primary']! 
+                : Colors.black).withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: TweenAnimationBuilder<double>(
         duration: Duration(milliseconds: isPsychedelicMode ? 2000 : 3000),
         tween: Tween(begin: 0.0, end: 1.0),
         builder: (context, value, child) {
           return Transform.rotate(
-            angle: isPsychedelicMode ? value * 0.1 : 0,
+            angle: isPsychedelicMode ? value * 0.05 : 0, // Reduced rotation for less distraction
             child: Icon(
-              DesignTokens.lightningIcon,
+              iconToShow,
               color: isPsychedelicMode
                   ? substanceColors['primary']!
                   : Colors.white,
@@ -216,5 +282,10 @@ class HeaderBar extends StatelessWidget {
         },
       ),
     );
+  }
+
+  // Keep the old method for backwards compatibility
+  Widget _buildLightningIcon(bool isPsychedelicMode, Map<String, Color> substanceColors) {
+    return _buildHeaderIcon(isPsychedelicMode, substanceColors);
   }
 }
