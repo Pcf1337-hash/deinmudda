@@ -59,7 +59,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   
   // Loading State
   Future<List<Entry>>? _entriesFuture;
-  bool _isLoadingEntries = true;
 
   @override
   void initState() {
@@ -151,34 +150,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         safeSetState(() {
-          _isLoadingEntries = true;
           _entriesFuture = _entryService.getAllEntries();
-        });
-      }
-    });
-    
-    // Log the result
-    _entriesFuture?.then((entries) {
-      if (kDebugMode) {
-        print('✅ HomeScreen: ${entries.length} Einträge geladen');
-        for (int i = 0; i < entries.length.clamp(0, 5); i++) {
-          print('  - ${entries[i].substanceName}: ${entries[i].dosage}${entries[i].unit}');
-        }
-      }
-      
-      if (mounted) {
-        safeSetState(() {
-          _isLoadingEntries = false;
-        });
-      }
-    }).catchError((error) {
-      if (kDebugMode) {
-        print('❌ HomeScreen: Fehler beim Laden der Einträge: $error');
-      }
-      
-      if (mounted) {
-        safeSetState(() {
-          _isLoadingEntries = false;
         });
       }
     });
@@ -594,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                               print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
                             }
                             
-                            if (snapshot.connectionState == ConnectionState.waiting || _isLoadingEntries) {
+                            if (snapshot.connectionState == ConnectionState.waiting) {
                               if (kDebugMode) {
                                 print('🔄 HomeScreen: Zeige Loading-Zustand');
                               }
