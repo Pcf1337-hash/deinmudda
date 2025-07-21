@@ -295,13 +295,25 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                 overflow: TextOverflow.ellipsis,
               ),
               Spacing.verticalSpaceSm, // Reduced from verticalSpaceMd
-              ElevatedButton.icon(
-                onPressed: widget.onAddButton,
-                icon: const Icon(Icons.add_rounded),
-                label: const Text('Ersten Button erstellen'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: DesignTokens.primaryIndigo,
-                  foregroundColor: Colors.white,
+              ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: 200, // Limit button width to prevent cut-off
+                ),
+                child: ElevatedButton.icon(
+                  onPressed: widget.onAddButton,
+                  icon: const Icon(Icons.add_rounded, size: 18), // Smaller icon
+                  label: const Text(
+                    'Ersten Button erstellen',
+                    style: TextStyle(fontSize: 13), // Smaller text
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: DesignTokens.primaryIndigo,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller padding
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8), // Smaller radius
+                    ),
+                  ),
                 ),
               ),
             ],

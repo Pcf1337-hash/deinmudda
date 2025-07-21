@@ -37,11 +37,9 @@ class TimerService extends ChangeNotifier {
       _prefs = await SharedPreferences.getInstance();
       await _loadActiveTimers();
       
-      // First try to restore from specific preferences (new format)
-      await restoreTimer();
-      
-      // Then restore from old format if needed (backward compatibility)
-      await _restoreTimersFromPrefs();
+      // Only restore from database, not from preferences to prevent duplication
+      // The database is the single source of truth for active timers
+      ErrorHandler.logTimer('INIT', 'Timer aus Datenbank geladen, Preferences-Wiederherstellung übersprungen um Duplikate zu vermeiden');
       
       _startTimerCheckLoop();
       

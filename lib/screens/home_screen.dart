@@ -869,22 +869,32 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                               builder: (context, value, child) {
                                 return Transform.scale(
                                   scale: 1.0 + (isPsychedelic ? (0.05 * (1.0 - value)) : 0.0),
-                                  child: Text(
-                                    'Konsum Tracker Pro',
-                                    style: theme.textTheme.headlineMedium?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w700,
-                                      shadows: isPsychedelic ? [
-                                        Shadow(
-                                          color: substanceColors['primary']!.withOpacity(0.3),
-                                          blurRadius: 10,
+                                  child: ConstrainedBox(
+                                    constraints: const BoxConstraints(
+                                      maxWidth: 250, // Prevent title overflow
+                                    ),
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Text(
+                                        'Konsum Tracker Pro',
+                                        style: theme.textTheme.headlineMedium?.copyWith(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w700,
+                                          shadows: isPsychedelic ? [
+                                            Shadow(
+                                              color: substanceColors['primary']!.withOpacity(0.3),
+                                              blurRadius: 10,
+                                            ),
+                                          ] : [
+                                            Shadow(
+                                              color: Colors.black.withOpacity(0.3),
+                                              blurRadius: 8,
+                                            ),
+                                          ],
                                         ),
-                                      ] : [
-                                        Shadow(
-                                          color: Colors.black.withOpacity(0.3),
-                                          blurRadius: 8,
-                                        ),
-                                      ],
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ),
                                 );
