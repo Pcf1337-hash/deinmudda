@@ -531,30 +531,63 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       
                       Spacing.verticalSpaceLg,
                       
-                      // Quick Entry Bar
-                      if (!_isLoadingQuickButtons)
-                        LayoutErrorBoundary(
-                          debugLabel: 'Quick Entry Bar',
-                          child: Container(
-                            constraints: const BoxConstraints(
-                              maxHeight: 220, // Increased to accommodate the improved layout
-                            ),
-                            child: QuickEntryBar(
-                              quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
-                              onQuickEntry: _handleQuickEntry,
-                              onAddButton: _navigateToQuickButtonConfig,
-                              onEditMode: () {
-                                if (mounted) {
-                                  safeSetState(() {
-                                    _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                                  });
-                                }
-                              },
-                              isEditing: _isQuickEntryEditMode,
-                              onReorder: _reorderQuickButtons,
-                            ),
-                          ),
+                      // Quick Entry Bar with AnimatedSwitcher for overflow protection
+                      LayoutErrorBoundary(
+                        debugLabel: 'Quick Entry Bar Animated Container',
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: _isLoadingQuickButtons
+                                  ? SizedBox(
+                                      key: const ValueKey('quick_entry_loading'),
+                                      height: 60, // Minimal height during loading
+                                      child: Center(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(16),
+                                          child: const Row(
+                                            mainAxisAlignment: MainAxisAlignment.center,
+                                            children: [
+                                              SizedBox(
+                                                width: 16,
+                                                height: 16,
+                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                              ),
+                                              SizedBox(width: 12),
+                                              Text('Lade Quick-Buttons...'),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    )
+                                  : ConstrainedBox(
+                                      key: const ValueKey('quick_entry_content'),
+                                      constraints: BoxConstraints(
+                                        maxHeight: constraints.maxHeight * 0.9, // Use 90% of available height
+                                        minHeight: 80,
+                                      ),
+                                      child: SingleChildScrollView(
+                                        physics: const ClampingScrollPhysics(),
+                                        child: QuickEntryBar(
+                                          quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
+                                          onQuickEntry: _handleQuickEntry,
+                                          onAddButton: _navigateToQuickButtonConfig,
+                                          onEditMode: () {
+                                            if (mounted) {
+                                              safeSetState(() {
+                                                _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                                              });
+                                            }
+                                          },
+                                          isEditing: _isQuickEntryEditMode,
+                                          onReorder: _reorderQuickButtons,
+                                        ),
+                                      ),
+                                    ),
+                            );
+                          },
                         ),
+                      ),
                       
                       // Use FutureBuilder for data-dependent sections to improve loading performance
                       LayoutErrorBoundary(
