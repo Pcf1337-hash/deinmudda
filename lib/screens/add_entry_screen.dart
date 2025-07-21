@@ -51,6 +51,36 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   final SubstanceService _substanceService = SubstanceService();
   late TimerService _timerService;
 
+  // Helper methods for color/icon inheritance
+  IconData? _getIconFromName(String iconName) {
+    const iconMap = {
+      'coffee': Icons.coffee,
+      'leaf': Icons.eco,
+      'wine': Icons.wine_bar,
+      'sun': Icons.wb_sunny,
+      'pill': Icons.medication,
+      'cigarette': Icons.smoking_rooms,
+      'moon': Icons.bedtime,
+    };
+    return iconMap[iconName];
+  }
+
+  Color? _getColorForSubstance(Substance? substance) {
+    if (substance == null) return null;
+    
+    // Assign colors based on substance category
+    const categoryColors = {
+      SubstanceCategory.medication: Colors.blue,
+      SubstanceCategory.stimulant: Colors.red,
+      SubstanceCategory.depressant: Colors.purple,
+      SubstanceCategory.supplement: Colors.green,
+      SubstanceCategory.recreational: Colors.orange,
+      SubstanceCategory.other: Colors.grey,
+    };
+    
+    return categoryColors[substance.category];
+  }
+
   @override
   void initState() {
     super.initState();
@@ -132,6 +162,11 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         dateTime: _selectedDateTime,
         cost: double.tryParse(_costController.text.replaceAll(',', '.')) ?? 0.0,
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        // Inherit color and icon from substance if available
+        icon: _selectedSubstance?.iconName != null 
+            ? _getIconFromName(_selectedSubstance!.iconName!) 
+            : null,
+        color: _getColorForSubstance(_selectedSubstance),
       );
 
       // Create entry with or without timer

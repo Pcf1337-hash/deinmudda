@@ -179,7 +179,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemBuilder: (context, index) {
               final button = widget.quickButtons[index];
               return QuickButtonWidget(
-                key: ValueKey('normal_${button.id}'), // Make key more specific
+                key: ValueKey('quickbutton_${button.id}_${button.position}'), // More stable key
                 config: button,
                 isEditing: false,
                 onTap: () => widget.onQuickEntry(button),
@@ -190,7 +190,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
         ),
         // Add button always visible on the right
         AddQuickButtonWidget(
-          key: const ValueKey('add_button_normal'), // Add unique key
+          key: ValueKey('add_button_${widget.isEditing ? "edit" : "normal"}_mode'), // Dynamic but stable key
           onTap: widget.onAddButton,
         ),
       ],
@@ -209,7 +209,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemBuilder: (context, index) {
               final button = _reorderedButtons[index];
               return QuickButtonWidget(
-                key: ValueKey('reorder_${button.id}'), // Make key more specific
+                key: ValueKey('reorder_${button.id}_${button.position}'), // More stable key
                 config: button,
                 isEditing: true,
                 onTap: () => Navigator.of(context).push(
@@ -237,7 +237,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
         ),
         // Add button always visible on the right
         AddQuickButtonWidget(
-          key: const ValueKey('add_button_reorder'), // More specific key
+          key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), // Stable key based on list length
           onTap: widget.onAddButton,
         ),
       ],
