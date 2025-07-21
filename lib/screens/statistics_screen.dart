@@ -783,21 +783,6 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     );
   }
 
-  String _getPeriodDisplayName(TimePeriod period) {
-    switch (period) {
-      case TimePeriod.today:
-        return 'Heute';
-      case TimePeriod.thisWeek:
-        return 'Woche';
-      case TimePeriod.thisMonth:
-        return 'Monat';
-      case TimePeriod.thisYear:
-        return 'Jahr';
-      case TimePeriod.allTime:
-        return 'Gesamt';
-    }
-  }
-
   String _getPeriodAxisLabel() {
     switch (_selectedPeriod) {
       case TimePeriod.today:

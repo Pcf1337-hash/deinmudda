@@ -103,8 +103,8 @@ class Spacing {
 
   // Component-specific spacing widgets
   static const Widget cardSpacing = SizedBox(height: componentSpacing);
-  static const Widget sectionSpacing = SizedBox(height: sectionSpacing);
-  static const Widget textSpacing = SizedBox(height: textSpacing);
+  static const Widget sectionSpacingWidget = SizedBox(height: sectionSpacing);
+  static const Widget textSpacingWidget = SizedBox(height: textSpacing);
 
   // Responsive breakpoints
   static const double mobileBreakpoint = 480.0;
