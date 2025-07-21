@@ -525,7 +525,7 @@ class TimerService extends ChangeNotifier {
     try {
       ErrorHandler.logTimer('UPDATE', 'Timer-Dauer wird für ${entry.substanceName} aktualisiert');
       
-      if (!_activeTimers.any((e) => e.id == entry.id)) {
+      if (!_activeTimers.containsKey(entry.id)) {
         throw StateError('Timer not found in active timers');
       }
 
@@ -542,11 +542,8 @@ class TimerService extends ChangeNotifier {
       if (!_isDisposed) {
         await _entryService.updateEntry(updatedEntry);
 
-        // Update the active timer in the list
-        final index = _activeTimers.indexWhere((e) => e.id == entry.id);
-        if (index != -1) {
-          _activeTimers[index] = updatedEntry;
-        }
+        // Update the active timer in the map
+        _activeTimers[entry.id] = updatedEntry;
 
         // Save to preferences
         await _saveTimersToPrefs();
@@ -620,14 +617,15 @@ class TimerService extends ChangeNotifier {
     try {
       await _prefs!.setInt(_activeTimerCountKey, _activeTimers.length);
       
-      for (int i = 0; i < _activeTimers.length; i++) {
-        final entry = _activeTimers[i];
+      int i = 0;
+      for (final entry in _activeTimers.values) {
         await _prefs!.setString('${_activeTimerKeyPrefix}${i}_id', entry.id);
         await _prefs!.setString('${_activeTimerKeyPrefix}${i}_substance', entry.substanceName);
         await _prefs!.setString('${_activeTimerKeyPrefix}${i}_start_time', entry.timerStartTime?.toIso8601String() ?? '');
         await _prefs!.setString('${_activeTimerKeyPrefix}${i}_end_time', entry.timerEndTime?.toIso8601String() ?? '');
         await _prefs!.setBool('${_activeTimerKeyPrefix}${i}_completed', entry.timerCompleted);
         await _prefs!.setBool('${_activeTimerKeyPrefix}${i}_notification_sent', entry.timerNotificationSent);
+        i++;
       }
     } catch (e) {
       if (kDebugMode) {
@@ -688,7 +686,7 @@ class TimerService extends ChangeNotifier {
                 // Add directly to database and active timers without calling startTimer
                 // to avoid overwriting the restored times
                 await _entryService.createEntry(entry);
-                _activeTimers.add(entry);
+                _activeTimers[entry.id] = entry;
                 
                 // Notify listeners of timer state change
                 _notifyListenersDebounced();
@@ -754,8 +752,8 @@ class TimerService extends ChangeNotifier {
                 final allEntries = await _entryService.getAllEntries();
                 final entry = allEntries.firstWhere((e) => e.id == id);
                 
-                if (!_activeTimers.any((e) => e.id == id)) {
-                  _activeTimers.add(entry);
+                if (!_activeTimers.containsKey(id)) {
+                  _activeTimers[entry.id] = entry;
                   ErrorHandler.logSuccess('TIMER_SERVICE', 'Timer für $substance erfolgreich wiederhergestellt');
                 }
               } catch (e) {
