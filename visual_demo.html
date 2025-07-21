@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dosage Calculator Improvements - Visual Demo</title>
+    <style>
+        body {
+            font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 30px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .before, .after {
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e2e8f0;
+        }
+        
+        .before {
+            background: #fed7d7;
+            border-color: #fc8181;
+        }
+        
+        .after {
+            background: #c6f6d5;
+            border-color: #68d391;
+        }
+        
+        .card-demo {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin: 15px 0;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .substance-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .substance-icon {
+            width: 40px;
+            height: 40px;
+            background: #667eea;
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .substance-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #667eea;
+        }
+        
+        .duration-separate {
+            font-size: 12px;
+            color: #718096;
+            margin: 8px 0;
+        }
+        
+        .dosage-box {
+            background: rgba(102, 126, 234, 0.1);
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 12px;
+            padding: 12px;
+            text-align: center;
+            margin: 12px 0;
+        }
+        
+        .dosage-box.improved {
+            padding: 16px; /* Increased height */
+        }
+        
+        .dosage-label {
+            font-size: 10px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 4px;
+        }
+        
+        .dosage-amount {
+            font-size: 14px;
+            font-weight: 800;
+            color: #667eea;
+        }
+        
+        .duration-integrated {
+            font-size: 10px;
+            color: rgba(102, 126, 234, 0.7);
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .duration-integrated::before {
+            content: "⏱";
+            margin-right: 4px;
+        }
+        
+        .button {
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 13px;
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        .button.old {
+            height: 36px; /* Original */
+            border-radius: 10px;
+        }
+        
+        .button.new {
+            height: 44px; /* Improved */
+            border-radius: 12px;
+            font-size: 14px;
+        }
+        
+        .strategy-selector {
+            margin: 20px 0;
+        }
+        
+        .strategy-option {
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .strategy-option.selected {
+            border-color: #68d391;
+            background: rgba(104, 211, 145, 0.1);
+        }
+        
+        .strategy-icon {
+            width: 32px;
+            height: 32px;
+            background: #68d391;
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .strategy-text {
+            flex: 1;
+        }
+        
+        .strategy-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .strategy-percentage {
+            color: #68d391;
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .improvement-list {
+            background: #f7fafc;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .improvement-list h3 {
+            color: #2d3748;
+            margin-top: 0;
+        }
+        
+        .improvement-list ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .improvement-list li {
+            margin: 8px 0;
+            color: #4a5568;
+        }
+        
+        .checkmark {
+            color: #68d391;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧮 Dosage Calculator Improvements</h1>
+        
+        <div class="improvement-list">
+            <h3>✅ Key Improvements Implemented</h3>
+            <ul>
+                <li><span class="checkmark">✓</span>Duration integrated into dosage field (no longer separate)</li>
+                <li><span class="checkmark">✓</span>Button height increased (36px → 44px) for better proportions</li>
+                <li><span class="checkmark">✓</span>Dosage box height increased (60-80px → 80-100px) for better balance</li>
+                <li><span class="checkmark">✓</span>Dosage strategy selection in user profile (0%, -20%, -40%, -60%)</li>
+                <li><span class="checkmark">✓</span>Percentage display in dosage labels: "Empfohlene Dosis (-X%):"</li>
+                <li><span class="checkmark">✓</span>Database migration for backward compatibility</li>
+            </ul>
+        </div>
+
+        <h2>🔄 Before vs After Comparison</h2>
+        
+        <div class="comparison">
+            <div class="before">
+                <h3>❌ Before (Issues)</h3>
+                <div class="card-demo">
+                    <div class="substance-header">
+                        <div class="substance-icon">M</div>
+                        <div class="substance-name">MDMA</div>
+                    </div>
+                    
+                    <div class="duration-separate">🕒 8-12 Stunden</div>
+                    
+                    <div class="dosage-box">
+                        <div class="dosage-label">Empfohlene Dosis</div>
+                        <div class="dosage-amount">80.0 mg</div>
+                    </div>
+                    
+                    <button class="button old">Berechnen</button>
+                </div>
+                
+                <ul>
+                    <li>Duration in separate widget</li>
+                    <li>No percentage indicator</li>
+                    <li>Dosage box too flat</li>
+                    <li>Button too compact (36px)</li>
+                    <li>Hardcoded -20% reduction</li>
+                    <li>No user strategy selection</li>
+                </ul>
+            </div>
+            
+            <div class="after">
+                <h3>✅ After (Improved)</h3>
+                <div class="card-demo">
+                    <div class="substance-header">
+                        <div class="substance-icon">M</div>
+                        <div class="substance-name">MDMA</div>
+                    </div>
+                    
+                    <div class="dosage-box improved">
+                        <div class="dosage-label">Empfohlene Dosis (-40%):</div>
+                        <div class="dosage-amount">60.0 mg</div>
+                        <div class="duration-integrated">8-12 Stunden</div>
+                    </div>
+                    
+                    <button class="button new">Berechnen</button>
+                </div>
+                
+                <ul>
+                    <li>Duration integrated into dosage field</li>
+                    <li>Percentage clearly shown (-40%)</li>
+                    <li>Increased dosage box height</li>
+                    <li>Better button proportions (44px)</li>
+                    <li>User-selected strategy applied</li>
+                    <li>Clean, consistent layout</li>
+                </ul>
+            </div>
+        </div>
+
+        <h2>⚙️ New User Profile - Dosage Strategy Selection</h2>
+        
+        <div class="strategy-selector">
+            <div class="strategy-option">
+                <div class="strategy-icon">🧮</div>
+                <div class="strategy-text">
+                    <div class="strategy-name">Errechnete Dosis</div>
+                    <div class="strategy-percentage">-0%</div>
+                </div>
+            </div>
+            
+            <div class="strategy-option">
+                <div class="strategy-icon">✅</div>
+                <div class="strategy-text">
+                    <div class="strategy-name">Optimal</div>
+                    <div class="strategy-percentage">-20%</div>
+                </div>
+            </div>
+            
+            <div class="strategy-option selected">
+                <div class="strategy-icon">🛡️</div>
+                <div class="strategy-text">
+                    <div class="strategy-name">Auf nummer sicher</div>
+                    <div class="strategy-percentage">-40%</div>
+                </div>
+            </div>
+            
+            <div class="strategy-option">
+                <div class="strategy-icon">🎓</div>
+                <div class="strategy-text">
+                    <div class="strategy-name">Schnupperkurs</div>
+                    <div class="strategy-percentage">-60%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="improvement-list">
+            <h3>🎯 Problem Statement Resolution</h3>
+            <p>All 8 issues from the German problem statement have been successfully addressed:</p>
+            <ul>
+                <li><strong>Duration integration:</strong> Moved from separate text widget into dosage field</li>
+                <li><strong>Button sizing:</strong> Increased from 134×36 to full width×44 for better balance</li>
+                <li><strong>Dosage box height:</strong> Increased constraints for better visual proportions</li>
+                <li><strong>Strategy selection:</strong> Added comprehensive UI in user profile</li>
+                <li><strong>User connection:</strong> Calculations now use selected strategy instead of hardcoded values</li>
+                <li><strong>Percentage display:</strong> Clear "(-X%)" indication in all dosage labels</li>
+                <li><strong>Redundancy removal:</strong> Duration no longer duplicated in substance name area</li>
+                <li><strong>Full implementation:</strong> Complete dosage strategy system with visual feedback</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

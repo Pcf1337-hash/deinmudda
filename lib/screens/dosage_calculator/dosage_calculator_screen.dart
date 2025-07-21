@@ -843,9 +843,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   Widget _buildEnhancedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance, bool isDark) {
     final theme = Theme.of(context);
     final substanceColor = _getSubstanceColor(substance.name);
-    final recommendedDose = _currentUser != null
-        ? (substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.light) * 0.8) // 20% reduction
+    final calculatedDose = _currentUser != null
+        ? substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.light)
         : substance.lightDosePerKg * 70; // Default weight estimate
+    final recommendedDose = _currentUser != null
+        ? _currentUser!.getRecommendedDose(calculatedDose)
+        : calculatedDose * 0.8; // Default 20% reduction
 
     return Container(
       decoration: BoxDecoration(
@@ -962,40 +965,15 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   ),
                 ),
                 
-                const SizedBox(height: 8),
-                
-                // Duration with icon
-                Row(
-                  children: [
-                    Icon(
-                      Icons.schedule_rounded,
-                      color: isDark ? Colors.white70 : Colors.grey[600],
-                      size: 14,
-                    ),
-                    const SizedBox(width: 4),
-                    Expanded(
-                      child: Text(
-                        substance.duration,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: isDark ? Colors.white70 : Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                ),
-                
                 const SizedBox(height: 12),
                 
-                // Recommended dose section with flexible height
+                // Recommended dose section with flexible height - INCREASED HEIGHT
                 Flexible(
                   child: Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(
-                      minHeight: 60,
-                      maxHeight: 80,
+                      minHeight: 80, // Increased from 60 to 80
+                      maxHeight: 100, // Increased from 80 to 100
                     ),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -1009,8 +987,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        // Dosage label with percentage
                         Text(
-                          'Empfohlene Dosis',
+                          _currentUser != null 
+                              ? _currentUser!.getDosageLabel() 
+                              : 'Empfohlene Dosis (-20%):',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w600,
@@ -1020,6 +1001,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
+                        // Dosage amount
                         Text(
                           '${recommendedDose.toStringAsFixed(1)} mg',
                           style: theme.textTheme.titleSmall?.copyWith(
@@ -1030,6 +1012,30 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        const SizedBox(height: 6),
+                        // Duration integrated into dosage field
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.schedule_rounded,
+                              color: substanceColor.withOpacity(0.7),
+                              size: 12,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                substance.duration,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: substanceColor.withOpacity(0.7),
+                                  fontSize: 10,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ],
                     ),
                   ),
@@ -1037,12 +1043,12 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 
                 const SizedBox(height: 12),
                 
-                // Action button
+                // Action button - INCREASED HEIGHT for better visual balance
                 Consumer<service.PsychedelicThemeService>(
                   builder: (context, themeService, child) {
                     final button = SizedBox(
                       width: double.infinity,
-                      height: 36,
+                      height: 44, // Increased from 36 to 44 for better proportions
                       child: ElevatedButton(
                         onPressed: () => _calculateDosage(substance),
                         style: ElevatedButton.styleFrom(
@@ -1053,7 +1059,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             width: 1,
                           ),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
+                            borderRadius: BorderRadius.circular(12), // Slightly increased border radius
                           ),
                           elevation: 0,
                         ),
@@ -1061,7 +1067,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           'Berechnen',
                           style: theme.textTheme.bodyMedium?.copyWith(
                             fontWeight: FontWeight.w600,
-                            fontSize: 13,
+                            fontSize: 14, // Slightly increased font size
                           ),
                         ),
                       ),
@@ -2225,7 +2231,7 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Empfohlene Dosis',
+                  widget.user.getDosageLabel(),
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: color,
@@ -2249,6 +2255,29 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
                   style: theme.textTheme.bodyMedium,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 8),
+                // Duration information integrated
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: color.withOpacity(0.7),
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        widget.substance.duration,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: color.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2403,14 +2432,21 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
   }
 
   double _getDoseForIntensity(DosageIntensity intensity) {
+    double baseDose;
     switch (intensity) {
       case DosageIntensity.light:
-        return widget.calculation.lightDose;
+        baseDose = widget.calculation.lightDose;
+        break;
       case DosageIntensity.normal:
-        return widget.calculation.normalDose;
+        baseDose = widget.calculation.normalDose;
+        break;
       case DosageIntensity.strong:
-        return widget.calculation.strongDose;
+        baseDose = widget.calculation.strongDose;
+        break;
     }
+    
+    // Apply user's dosage strategy
+    return widget.user.getRecommendedDose(baseDose);
   }
 
   Color _getDosageColor(DosageIntensity intensity) {

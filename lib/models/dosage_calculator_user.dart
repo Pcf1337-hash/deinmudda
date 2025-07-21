@@ -7,12 +7,65 @@ enum Gender {
   other,
 }
 
+enum DosageStrategy {
+  calculated,     // 0% - Errechnete Dosis (Bzgl Gewicht)
+  optimal,        // -20% - Optimal  
+  safe,           // -40% - Auf nummer sicher
+  beginner,       // -60% - Schnupperkurs
+}
+
+extension DosageStrategyExtension on DosageStrategy {
+  String get displayName {
+    switch (this) {
+      case DosageStrategy.calculated:
+        return 'Errechnete Dosis (Bzgl Gewicht) -0%';
+      case DosageStrategy.optimal:
+        return 'Optimal -20%';
+      case DosageStrategy.safe:
+        return 'Auf nummer sicher -40%';
+      case DosageStrategy.beginner:
+        return 'Schnupperkurs -60%';
+    }
+  }
+
+  String get shortName {
+    switch (this) {
+      case DosageStrategy.calculated:
+        return 'Errechnete Dosis';
+      case DosageStrategy.optimal:
+        return 'Optimal';
+      case DosageStrategy.safe:
+        return 'Auf nummer sicher';
+      case DosageStrategy.beginner:
+        return 'Schnupperkurs';
+    }
+  }
+
+  double get reductionPercentage {
+    switch (this) {
+      case DosageStrategy.calculated:
+        return 0.0;
+      case DosageStrategy.optimal:
+        return 0.2;  // 20%
+      case DosageStrategy.safe:
+        return 0.4;  // 40%
+      case DosageStrategy.beginner:
+        return 0.6;  // 60%
+    }
+  }
+
+  int get percentageDisplay {
+    return (reductionPercentage * 100).round();
+  }
+}
+
 class DosageCalculatorUser {
   final String id;
   final Gender gender;
   final double weightKg;
   final double heightCm;
   final int ageYears;
+  final DosageStrategy dosageStrategy;
   final DateTime lastUpdated;
   final DateTime createdAt;
 
@@ -22,6 +75,7 @@ class DosageCalculatorUser {
     required this.weightKg,
     required this.heightCm,
     required this.ageYears,
+    this.dosageStrategy = DosageStrategy.optimal, // Default to -20%
     required this.lastUpdated,
     required this.createdAt,
   });
@@ -32,6 +86,7 @@ class DosageCalculatorUser {
     required double weightKg,
     required double heightCm,
     required int ageYears,
+    DosageStrategy dosageStrategy = DosageStrategy.optimal,
   }) {
     final now = DateTime.now();
     return DosageCalculatorUser(
@@ -40,6 +95,7 @@ class DosageCalculatorUser {
       weightKg: weightKg,
       heightCm: heightCm,
       ageYears: ageYears,
+      dosageStrategy: dosageStrategy,
       lastUpdated: now,
       createdAt: now,
     );
@@ -124,6 +180,7 @@ class DosageCalculatorUser {
       'weightKg': weightKg,
       'heightCm': heightCm,
       'ageYears': ageYears,
+      'dosageStrategy': dosageStrategy.index,
       'lastUpdated': lastUpdated.toIso8601String(),
       'createdAt': createdAt.toIso8601String(),
     };
@@ -136,6 +193,9 @@ class DosageCalculatorUser {
       weightKg: (json['weightKg'] as num).toDouble(),
       heightCm: (json['heightCm'] as num).toDouble(),
       ageYears: json['ageYears'] as int,
+      dosageStrategy: json['dosageStrategy'] != null 
+          ? DosageStrategy.values[json['dosageStrategy'] as int]
+          : DosageStrategy.optimal, // Default for backward compatibility
       lastUpdated: DateTime.parse(json['lastUpdated'] as String),
       createdAt: DateTime.parse(json['createdAt'] as String),
     );
@@ -149,6 +209,7 @@ class DosageCalculatorUser {
       'weightKg': weightKg,
       'heightCm': heightCm,
       'ageYears': ageYears,
+      'dosageStrategy': dosageStrategy.index,
       'lastUpdated': lastUpdated.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
     };
@@ -161,6 +222,9 @@ class DosageCalculatorUser {
       weightKg: (map['weightKg'] as num).toDouble(),
       heightCm: (map['heightCm'] as num).toDouble(),
       ageYears: map['ageYears'] as int,
+      dosageStrategy: map['dosageStrategy'] != null 
+          ? DosageStrategy.values[map['dosageStrategy'] as int]
+          : DosageStrategy.optimal, // Default for backward compatibility
       lastUpdated: DateTime.parse(map['lastUpdated'] as String),
       createdAt: DateTime.parse(map['created_at'] as String),
     );
@@ -173,6 +237,7 @@ class DosageCalculatorUser {
     double? weightKg,
     double? heightCm,
     int? ageYears,
+    DosageStrategy? dosageStrategy,
     DateTime? lastUpdated,
     DateTime? createdAt,
   }) {
@@ -182,6 +247,7 @@ class DosageCalculatorUser {
       weightKg: weightKg ?? this.weightKg,
       heightCm: heightCm ?? this.heightCm,
       ageYears: ageYears ?? this.ageYears,
+      dosageStrategy: dosageStrategy ?? this.dosageStrategy,
       lastUpdated: lastUpdated ?? DateTime.now(),
       createdAt: createdAt ?? this.createdAt,
     );
@@ -247,5 +313,26 @@ class DosageCalculatorUser {
     }
     
     return factor.clamp(0.5, 1.5); // Limit adjustment range
+  }
+
+  // Calculate recommended dose with strategy applied
+  double getRecommendedDose(double calculatedDose) {
+    return calculatedDose * (1.0 - dosageStrategy.reductionPercentage);
+  }
+
+  // Get formatted recommended dose string with percentage
+  String getFormattedRecommendedDose(double calculatedDose) {
+    final recommendedDose = getRecommendedDose(calculatedDose);
+    final percentage = dosageStrategy.percentageDisplay;
+    return '${recommendedDose.toStringAsFixed(1)} mg';
+  }
+
+  // Get dosage label with percentage
+  String getDosageLabel() {
+    final percentage = dosageStrategy.percentageDisplay;
+    if (percentage == 0) {
+      return 'Empfohlene Dosis:';
+    }
+    return 'Empfohlene Dosis (-$percentage%):';
   }
 }

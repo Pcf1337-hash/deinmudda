@@ -17,7 +17,7 @@ class DatabaseService {
 
   static Database? _database;
   static const String _databaseName = 'konsum_tracker.db';
-  static const int _databaseVersion = 3;
+  static const int _databaseVersion = 4;
 
   Future<Database> get database async {
     _database ??= await _initDatabase();
@@ -105,6 +105,7 @@ class DatabaseService {
         weightKg REAL NOT NULL,
         heightCm REAL NOT NULL,
         ageYears INTEGER NOT NULL,
+        dosageStrategy INTEGER NOT NULL DEFAULT 1,
         lastUpdated TEXT NOT NULL,
         created_at TEXT NOT NULL
       )
@@ -208,6 +209,11 @@ class DatabaseService {
       // Add icon and color fields to quick_buttons table
       await _addColumnIfNotExists(db, 'quick_buttons', 'iconCodePoint', 'INTEGER');
       await _addColumnIfNotExists(db, 'quick_buttons', 'colorValue', 'INTEGER');
+    }
+    
+    if (oldVersion < 4) {
+      // Add dosage strategy field to dosage_calculator_users table
+      await _addColumnIfNotExists(db, 'dosage_calculator_users', 'dosageStrategy', 'INTEGER NOT NULL DEFAULT 1');
     }
     
     // Migration for any version that doesn't have created_at/updated_at columns
