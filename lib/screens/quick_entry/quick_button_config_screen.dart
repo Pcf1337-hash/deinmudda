@@ -81,8 +81,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     // Supplements & Fitness
     Icons.fitness_center_rounded,
     Icons.water_drop_rounded,
-    Icons.nutrition_rounded,
-    Icons.self_care_rounded,
+    Icons.restaurant_rounded,
+    Icons.health_and_safety_rounded,
     
     // Recreational & Psychedelic
     Icons.psychology_rounded,
@@ -101,10 +101,10 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     // Science & Research
     Icons.science_rounded,
     Icons.biotech_rounded,
-    Icons.chemistry_rounded,
+    Icons.auto_awesome_rounded,
     
     // Food & Consumption
-    Icons.restaurant_rounded,
+    Icons.dining_rounded,
     Icons.fastfood_rounded,
     Icons.lunch_dining_rounded,
     Icons.local_dining_rounded,
