@@ -562,17 +562,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           builder: (context, timerService, child) {
                             final activeTimer = timerService.getActiveTimer();
                             if (activeTimer != null && mounted) {
-                              return Container(
-                                constraints: const BoxConstraints(
-                                  maxHeight: 100, // Prevent extreme height
-                                ),
-                                child: ActiveTimerBar(
-                                  timer: activeTimer,
-                                  onTap: () => _navigateToTimerDashboard(),
-                                ).animate().fadeIn(
-                                  duration: DesignTokens.animationMedium,
-                                  delay: const Duration(milliseconds: 200),
-                                ),
+                              return LayoutBuilder(
+                                builder: (context, constraints) {
+                                  return Container(
+                                    constraints: BoxConstraints(
+                                      maxHeight: constraints.maxHeight * 0.15, // Use 15% of available height max
+                                      minHeight: 25, // Ensure minimum usable height
+                                    ),
+                                    child: ActiveTimerBar(
+                                      timer: activeTimer,
+                                      onTap: () => _navigateToTimerDashboard(),
+                                    ).animate().fadeIn(
+                                      duration: DesignTokens.animationMedium,
+                                      delay: const Duration(milliseconds: 200),
+                                    ),
+                                  );
+                                },
                               );
                             }
                             return const SizedBox.shrink();

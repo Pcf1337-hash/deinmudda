@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../../models/quick_button_config.dart';
+import '../../services/timer_service.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/app_icon_generator.dart';
@@ -74,6 +76,42 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
 
   void _handleTapCancel() {
     _animationController.reverse();
+  }
+
+  // Helper method to format timer text for compact display
+  String _formatTimerText(String originalText) {
+    if (originalText.isEmpty) return '';
+    
+    // Handle "abgelaufen" case specifically
+    if (originalText.toLowerCase().contains('abgelaufen') || 
+        originalText.toLowerCase().contains('expired')) {
+      return 'Ende';
+    }
+    
+    // Shorten common time formats more aggressively
+    String formatted = originalText
+        .replaceAll('Stunde', 'h')
+        .replaceAll('Std', 'h')
+        .replaceAll('Minute', 'm')
+        .replaceAll('Min', 'm')
+        .replaceAll(' ', '');
+    
+    // If still too long, truncate further
+    if (formatted.length > 5) {
+      // Try to extract just numbers and units
+      final regex = RegExp(r'(\d+)([hm])');
+      final matches = regex.allMatches(formatted);
+      if (matches.isNotEmpty) {
+        formatted = matches.map((m) => '${m.group(1)}${m.group(2)}').take(1).join(); // Only first part
+      }
+    }
+    
+    // Final fallback
+    if (formatted.length > 5) {
+      formatted = formatted.substring(0, 5);
+    }
+    
+    return formatted;
   }
 
   @override
@@ -184,6 +222,42 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                        ),
+                        
+                        // Timer status - show if active timer exists for this substance
+                        Consumer<TimerService>(
+                          builder: (context, timerService, child) {
+                            final activeTimer = timerService.getActiveTimer();
+                            final hasActiveTimer = activeTimer?.substanceName == widget.config.substanceName;
+                            
+                            if (!hasActiveTimer) {
+                              return const SizedBox.shrink();
+                            }
+                            
+                            return Flexible(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: DesignTokens.successGreen.withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    _formatTimerText(activeTimer?.formattedRemainingTime ?? ''),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: DesignTokens.successGreen,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 8,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ],
                     ),

@@ -235,36 +235,99 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                       widget.onTap!();
                     }
                   },
-                  child: Container(
-                    margin: const EdgeInsets.all(Spacing.md),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          progressColor.withOpacity(0.15),
-                          progressColor.withOpacity(0.05),
-                        ],
-                      ),
-                      borderRadius: Spacing.borderRadiusLg,
-                      border: Border.all(
-                        color: progressColor.withOpacity(0.3),
-                        width: 1.5,
-                      ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: progressColor.withOpacity(0.2),
-                          blurRadius: 12,
-                          offset: const Offset(0, 4),
-                        ),
-                        if (isPsychedelicMode) ...[
-                          BoxShadow(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // Determine if we have enough space for full layout
+                      final hasMinimalSpace = constraints.maxHeight >= 25;
+                      
+                      if (!hasMinimalSpace) {
+                        // Return minimal compact version for very small constraints
+                        return Container(
+                          margin: EdgeInsets.all(Spacing.xs),
+                          padding: EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs),
+                          decoration: BoxDecoration(
                             color: progressColor.withOpacity(0.1),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                            borderRadius: BorderRadius.circular(4),
+                            border: Border.all(
+                              color: progressColor.withOpacity(0.3),
+                              width: 1,
+                            ),
                           ),
-                        ],
-                      ],
-                    ),
-                    child: _buildTimerInnerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.timer_rounded,
+                                color: progressColor,
+                                size: 12,
+                              ),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  widget.timer.substanceName ?? 'Timer',
+                                  style: TextStyle(
+                                    color: textColor,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              Text(
+                                _formatTimerText(widget.timer.formattedRemainingTime),
+                                style: TextStyle(
+                                  color: textColor,
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        );
+                      }
+                      
+                      // Regular layout for sufficient space
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
+                        constraints: BoxConstraints(
+                          minHeight: 25, // Ensure minimum height
+                          maxHeight: constraints.maxHeight, // Respect parent constraints
+                        ),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              progressColor.withOpacity(0.15),
+                              progressColor.withOpacity(0.05),
+                            ],
+                          ),
+                          borderRadius: Spacing.borderRadiusLg,
+                          border: Border.all(
+                            color: progressColor.withOpacity(0.3),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: progressColor.withOpacity(0.2),
+                              blurRadius: 12,
+                              offset: const Offset(0, 4),
+                            ),
+                            if (isPsychedelicMode) ...[
+                              BoxShadow(
+                                color: progressColor.withOpacity(0.1),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: Spacing.borderRadiusLg,
+                          child: _buildTimerInnerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
+                        ),
+                      );
+                    },
                   ),
                 ),
               );
@@ -486,14 +549,19 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
     }
   }
 
-  // Helper method to get responsive font size
-  double _getResponsiveFontSize(double availableWidth, {required bool isTitle}) {
+  // Helper method to get responsive font size with height awareness
+  double _getResponsiveFontSize(double availableWidth, {required bool isTitle, bool isSmallHeight = false}) {
+    // Reduce all sizes for very small heights
+    if (isSmallHeight) {
+      return isTitle ? 11.0 : 9.0;
+    }
+    
     if (availableWidth < 280) {
-      return isTitle ? 14.0 : 12.0; // Very small screens
+      return isTitle ? 12.0 : 10.0; // Very small screens
     } else if (availableWidth < 350) {
-      return isTitle ? 16.0 : 13.0; // Small screens
+      return isTitle ? 14.0 : 11.0; // Small screens
     } else {
-      return isTitle ? 18.0 : 14.0; // Normal screens
+      return isTitle ? 16.0 : 12.0; // Normal screens
     }
   }
 
@@ -505,7 +573,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       return 'Ende';
     }
     
-    // Shorten common time formats
+    // Shorten common time formats more aggressively for small spaces
     String formatted = originalText
         .replaceAll('Stunde', 'h')
         .replaceAll('Std', 'h')
@@ -514,13 +582,19 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         .replaceAll(' ', '');
     
     // If still too long, truncate further
-    if (formatted.length > 8) {
+    if (formatted.length > 6) {
       // Try to extract just numbers and units
       final regex = RegExp(r'(\d+)([hm])');
       final matches = regex.allMatches(formatted);
       if (matches.isNotEmpty) {
-        formatted = matches.map((m) => '${m.group(1)}${m.group(2)}').join(' ');
+        final parts = matches.map((m) => '${m.group(1)}${m.group(2)}').take(2); // Only take first 2 parts
+        formatted = parts.join('');
       }
+    }
+    
+    // Final fallback - truncate if still too long
+    if (formatted.length > 6) {
+      formatted = formatted.substring(0, 6);
     }
     
     return formatted;
@@ -574,86 +648,93 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
             );
           },
         ),
-        // Content
+        // Content with proper constraints to prevent overflow
         Padding(
-          padding: const EdgeInsets.all(Spacing.md),
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs), // Reduced padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min, // Use minimum space required
             children: [
+              // Compact row layout with proper flex distribution
               LayoutBuilder(
                 builder: (context, constraints) {
-                  return Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(Spacing.sm),
-                        decoration: BoxDecoration(
-                          color: progressColor.withOpacity(0.2),
-                          borderRadius: Spacing.borderRadiusMd,
+                  // Calculate available height for content
+                  final availableHeight = constraints.maxHeight;
+                  final isVerySmall = availableHeight < 40;
+                  
+                  return IntrinsicHeight(
+                    child: Row(
+                      children: [
+                        // Icon container with reduced size for small heights
+                        Container(
+                          padding: EdgeInsets.all(isVerySmall ? Spacing.xxs : Spacing.xs),
+                          decoration: BoxDecoration(
+                            color: progressColor.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(isVerySmall ? 4 : 6),
+                          ),
+                          child: Icon(
+                            Icons.timer_rounded,
+                            color: progressColor,
+                            size: isVerySmall ? 14 : 16, // Smaller icon for tight constraints
+                          ),
                         ),
-                        child: Icon(
-                          Icons.timer_rounded,
-                          color: progressColor,
-                          size: 20,
-                        ),
-                      ),
-                      const SizedBox(width: Spacing.sm),
-                      Expanded(
-                        flex: 3, // Give more space to the substance name
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ConstrainedBox(
-                              constraints: BoxConstraints(
-                                maxWidth: constraints.maxWidth * 0.4, // Use 40% of available width
-                              ),
-                              child: Text(
-                                widget.timer.substanceName ?? 'Unbekannte Substanz',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true),
+                        SizedBox(width: isVerySmall ? Spacing.xs : Spacing.sm),
+                        Expanded(
+                          flex: 3, // Give more space to the substance name
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min, // Prevent overflow
+                            children: [
+                              // Substance name with strict height control
+                              Flexible(
+                                child: Text(
+                                  widget.timer.substanceName ?? 'Unbekannte Substanz',
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true, isSmallHeight: isVerySmall),
+                                  ),
+                                  maxLines: isVerySmall ? 1 : 2, // Single line for very small heights
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                maxLines: 2, // Allow 2 lines for long names
-                                overflow: TextOverflow.ellipsis,
                               ),
-                            ),
-                            Text(
-                              'Timer läuft',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: textColor.withOpacity(0.7),
-                                fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false),
-                              ),
+                              // Only show status text if there's enough space
+                              if (!isVerySmall) 
+                                Text(
+                                  'Timer läuft',
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: textColor.withOpacity(0.7),
+                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false, isSmallHeight: isVerySmall),
+                                  ),
                             ),
                           ],
                         ),
-                      ),
-                      Flexible(
-                        flex: 2, // Give space to timer display
-                        child: Container(
-                          constraints: BoxConstraints(
-                            maxWidth: constraints.maxWidth * 0.25, // Use 25% of available width
-                          ),
+                        Flexible(
+                          flex: 2, // Timer display area
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                _formatTimerText(widget.timer.formattedRemainingTime),
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true),
+                              Flexible(
+                                child: Text(
+                                  _formatTimerText(widget.timer.formattedRemainingTime),
+                                  style: theme.textTheme.titleMedium?.copyWith(
+                                    color: textColor,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true, isSmallHeight: isVerySmall),
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.right,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.right,
                               ),
-                              if (widget.timer.isTimerExpired) 
+                              if (widget.timer.isTimerExpired && !isVerySmall) 
                                 Text(
                                   'Abgelaufen',
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: DesignTokens.errorRed,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false),
+                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false, isSmallHeight: isVerySmall),
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
@@ -661,94 +742,128 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                             ],
                           ),
                         ),
-                      ),
-                      const SizedBox(width: Spacing.sm),
-                      IconButton(
-                        onPressed: () {
-                          if (mounted && !_isDisposed) {
-                            safeSetState(() {
-                              _showTimerInput = !_showTimerInput;
-                            });
-                          }
-                        },
-                        icon: Icon(
-                          _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
-                          color: textColor,
-                          size: 20,
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
-              const SizedBox(height: Spacing.sm),
-              // Enhanced progress bar with animation
-              TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 800),
-                tween: Tween(begin: 0.0, end: progress),
-                builder: (context, animatedProgress, child) {
-                  return Container(
-                    height: 6,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(3),
-                      color: progressColor.withOpacity(0.2),
-                    ),
-                    child: Stack(
-                      children: [
-                        // Background progress
-                        Container(
-                          height: 6,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(3),
-                            gradient: LinearGradient(
-                              begin: Alignment.centerLeft,
-                              end: Alignment.centerRight,
-                              colors: [
-                                progressColor,
-                                progressColor.withOpacity(0.8),
-                              ],
-                              stops: [0.0, animatedProgress],
-                            ),
-                          ),
-                        ),
-                        // Animated shine effect - only if Impeller supports it
-                        if (isPsychedelicMode && ImpellerHelper.shouldEnableFeature('shine'))
-                          AnimatedBuilder(
-                            animation: _animationController,
-                            builder: (context, child) {
-                              return Container(
-                                height: 6,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(3),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Colors.white.withOpacity(0.0),
-                                      Colors.white.withOpacity(0.3 * _pulseAnimation.value),
-                                      Colors.white.withOpacity(0.0),
-                                    ],
-                                    stops: [
-                                      (animatedProgress - 0.1).clamp(0.0, 1.0),
-                                      animatedProgress.clamp(0.0, 1.0),
-                                      (animatedProgress + 0.1).clamp(0.0, 1.0),
-                                    ],
-                                  ),
-                                ),
-                              );
+                        // Only show edit button if there's enough space
+                        if (!isVerySmall) SizedBox(width: isVerySmall ? Spacing.xxs : Spacing.xs),
+                        if (!isVerySmall)
+                          IconButton(
+                            onPressed: () {
+                              if (mounted && !_isDisposed) {
+                                safeSetState(() {
+                                  _showTimerInput = !_showTimerInput;
+                                });
+                              }
                             },
+                            icon: Icon(
+                              _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
+                              color: textColor,
+                              size: 16, // Smaller icon
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 32,
+                              minHeight: 32,
+                            ),
+                            padding: EdgeInsets.zero,
                           ),
                       ],
                     ),
                   );
                 },
               ),
-              
-              // Timer input field with animation
-              AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                child: _showTimerInput ? _buildTimerInputField(progressColor, textColor) : const SizedBox.shrink(),
+              // Only show progress bar if there's enough vertical space
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableHeight = constraints.maxHeight;
+                  final showProgressBar = availableHeight > 25; // Show only if enough space
+                  
+                  if (!showProgressBar) {
+                    return const SizedBox.shrink();
+                  }
+                  
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(height: availableHeight < 40 ? Spacing.xxs : Spacing.xs),
+                      // Enhanced progress bar with animation
+                      TweenAnimationBuilder<double>(
+                        duration: const Duration(milliseconds: 800),
+                        tween: Tween(begin: 0.0, end: progress),
+                        builder: (context, animatedProgress, child) {
+                          return Container(
+                            height: availableHeight < 40 ? 3 : 4, // Smaller bar for tight space
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(2),
+                              color: progressColor.withOpacity(0.2),
+                            ),
+                            child: Stack(
+                              children: [
+                                // Background progress
+                                Container(
+                                  height: availableHeight < 40 ? 3 : 4,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(2),
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        progressColor,
+                                        progressColor.withOpacity(0.8),
+                                      ],
+                                      stops: [0.0, animatedProgress],
+                                    ),
+                                  ),
+                                ),
+                                // Animated shine effect - only if Impeller supports it and there's space
+                                if (isPsychedelicMode && ImpellerHelper.shouldEnableFeature('shine') && availableHeight >= 40)
+                                  AnimatedBuilder(
+                                    animation: _animationController,
+                                    builder: (context, child) {
+                                      return Container(
+                                        height: 4,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(2),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                            colors: [
+                                              Colors.white.withOpacity(0.0),
+                                              Colors.white.withOpacity(0.3 * _pulseAnimation.value),
+                                              Colors.white.withOpacity(0.0),
+                                            ],
+                                            stops: [
+                                              (animatedProgress - 0.1).clamp(0.0, 1.0),
+                                              animatedProgress.clamp(0.0, 1.0),
+                                              (animatedProgress + 0.1).clamp(0.0, 1.0),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
+              ),
+              // Timer input field with animation - only shown if enough space
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final availableHeight = constraints.maxHeight;
+                  final hasSpaceForInput = availableHeight > 50;
+                  
+                  if (!hasSpaceForInput) {
+                    return const SizedBox.shrink();
+                  }
+                  
+                  return AnimatedSize(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: _showTimerInput ? _buildTimerInputField(progressColor, textColor) : const SizedBox.shrink(),
+                  );
+                },
               ),
             ],
           ),
