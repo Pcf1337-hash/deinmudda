@@ -1,11 +1,60 @@
-# 🏥 Konsum Tracker Pro (KTP)
+<div align="center">
+  <img src="assets/images/logo.png" alt="KTP Logo" width="120" height="120">
+  
+  # 🏥 Konsum Tracker Pro (KTP)
+  
+  **Professionelle Substanz-Tracking App für medizinische/therapeutische Zwecke**
+  
+  *Sichere, lokale Dokumentation von Substanzen für verantwortungsvolle medizinische Anwendung*
 
-**Professionelle Substanz-Tracking App für medizinische/therapeutische Zwecke**
+  [![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
+  [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?style=for-the-badge&logo=dart)](https://dart.dev)
+  [![Android](https://img.shields.io/badge/Android-SDK%2035-3DDC84?style=for-the-badge&logo=android)](https://developer.android.com)
+  [![iOS](https://img.shields.io/badge/iOS-12+-000000?style=for-the-badge&logo=ios)](https://developer.apple.com/ios)
+  
+  [🚀 Schnellstart](#-schnellstart) • [📱 Features](#-hauptfunktionen) • [⚙️ Installation](#%EF%B8%8F-installation--setup) • [🔐 Sicherheit](#-sicherheit--datenschutz) • [📚 Dokumentation](#-dokumentation)
+</div>
 
-[![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
-[![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?style=for-the-badge&logo=dart)](https://dart.dev)
-[![Android](https://img.shields.io/badge/Android-SDK%2035-3DDC84?style=for-the-badge&logo=android)](https://developer.android.com)
-[![iOS](https://img.shields.io/badge/iOS-12+-000000?style=for-the-badge&logo=ios)](https://developer.apple.com/ios)
+---
+
+## 🎯 Was ist KTP?
+
+Konsum Tracker Pro ist eine sichere, lokale Flutter-App für die **medizinische und therapeutische Dokumentation** von Substanzen. Die App hilft Erwachsenen dabei, ihren Konsum verantwortungsvoll zu überwachen und zu analysieren.
+
+### ✨ Warum KTP?
+- 📊 **Therapeutische Dokumentation** - Präzise Aufzeichnung für medizinische Zwecke
+- 🔒 **100% Lokal & Privat** - Alle Daten bleiben auf Ihrem Gerät
+- ⏱️ **Intelligentes Timer-System** - Automatische Überwachung mit Benachrichtigungen
+- 🧮 **Gewichtsbasierte Dosisberechnung** - Sichere, personalisierte Empfehlungen
+- 📈 **Detaillierte Statistiken** - Muster erkennen und Verhalten analysieren
+- 🔐 **Biometrische Sicherheit** - Fingerprint/Face ID Schutz
+
+### 👥 Für wen ist KTP gedacht?
+- **Erwachsene Nutzer (18+)** in medizinischen/therapeutischen Kontexten
+- **Patienten** die ihre Medikation dokumentieren möchten  
+- **Therapeuten & Ärzte** als Dokumentationshilfe für Patienten
+- **Forscher** für verantwortungsvolle Substanzstudien
+
+> ⚠️ **Wichtiger Hinweis**: Diese App dient ausschließlich zur Dokumentation und ersetzt keine medizinische Beratung. Nutzer sind für die Einhaltung lokaler Gesetze selbst verantwortlich.
+
+## 🚀 Schnellstart
+
+```bash
+# 1. Repository klonen
+git clone https://github.com/Pcf1337-hash/deinmudda.git
+cd deinmudda
+
+# 2. Dependencies installieren
+flutter pub get
+
+# 3. App starten
+flutter run
+
+# 4. APK erstellen (optional)
+flutter build apk --release
+```
+
+**Sofort einsatzbereit!** Die App erstellt beim ersten Start automatisch eine lokale SQLite-Datenbank.
 
 ---
 
@@ -177,492 +226,282 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 ---
 
-## 🎯 PROJEKT ÜBERSICHT
+## 📱 Hauptfunktionen
 
-### **Zielgruppe**
-Erwachsene für verantwortungsvolles Substanz-Monitoring in medizinischen/therapeutischen Kontexten
+<div align="center">
 
-### **Kern-Features**
-1. **Entry Management** - Vollständiges CRUD für Konsum-Einträge ✅
-2. **Substance Database** - Verwaltung von Substanzen mit Preisen/Kategorien ✅
-3. **🧮 Dosisrechner** - Eigenständiges Tool für gewichtsbasierte Dosierungsempfehlungen ✅
-4. **📊 Statistics Dashboard** - Detaillierte Auswertungen mit interaktiven Charts ✅
-5. **🔬 Substance Management** - Manuelle Substanz-Erstellung mit Preisen ✅
-6. **⚡ Quick Entry System** - Konfigurierbare Schnell-Eingabe Buttons ✅
-7. **⏱️ Timer System** - Substanz-basierte Timer mit automatischen Benachrichtigungen ✅
-8. **Calendar View** - Kalender-basierte Darstellung aller Einträge ✅
-9. **Cost Tracking** - Automatische Kostenberechnung und -verfolgung ✅
-10. **Risk Assessment** - Risikobewertung pro Substanz (Low/Medium/High/Critical) ✅
-11. **🔍 Advanced Search** - Erweiterte Suchfunktion mit mehreren Filtern ✅
-12. **🔄 Data Export/Import** - Datenexport und -import für Backups ✅
-13. **📈 Pattern Analysis** - Muster-Erkennung für Konsumverhalten ✅
-14. **🔒 Biometric Security** - App-Sperre mit Biometrie und PIN ✅
-15. **🔔 Notifications** - Erinnerungen für regelmäßige Einträge ✅
+| 🔥 **Kern-Features** | 🎯 **Erweiterte Tools** | 🔐 **Sicherheit** |
+|:---:|:---:|:---:|
+| Substanz-Dokumentation | Dosisrechner (BMI-basiert) | Biometrische App-Sperre |
+| Timer-System mit Benachrichtigungen | Detaillierte Statistiken | Lokale Datenspeicherung |
+| Quick-Entry Buttons | Kalender-Ansicht | Automatische Backups |
+| Kostentracking | Muster-Analyse | DSGVO-konform |
 
-### **Tech Stack**
-- **Framework:** Flutter 3.16+ mit Dart 3.0+
-- **Database:** SQLite (sqflite) für lokale Datenspeicherung - Version 2 mit Timer-Unterstützung und SQL-Konsistenz-Fixes
-- **State Management:** Provider Pattern mit Singleton-Services
-- **Design:** Material Design 3 + Glasmorphismus-Effekte mit Backdrop-Blur
-- **Animations:** Standard Flutter Animations (flutter_animate entfernt für Stabilität), Custom Pulsing-Animationen
-- **Charts:** Custom Chart Widgets mit Canvas API für interaktive Darstellungen
-- **Security:** local_auth für biometrische Authentifizierung ✅
-- **Notifications:** flutter_local_notifications für Erinnerungen und Timer-Benachrichtigungen ✅
-- **Timer-System:** Background Timer-Checking (30s-Intervall) mit automatischen Benachrichtigungen
-- **Responsive Design:** LayoutBuilder, Flexible Widgets, BoxConstraints für Overflow-Vermeidung
+</div>
 
-### **🎨 Design & Visuelle Highlights**
-- **Glasmorphismus-Design** - Durchgängige Verwendung von transluzenten Glaseffekten für moderne UI
-- **Substanz-spezifische Farbthemen** - Jede Substanz hat individuelle Farbkodierung mit Backdrop-Blur
-- **Responsive Overflow-freies Layout** - Optimierte Widget-Hierarchie ohne Render-Konflikte
-- **Animierte Timer-Indikatoren** - Visuelle Fortschrittsanzeige mit Pulsing-Effekten und progress-basierten Farbübergängen
-- **Luminanz-basierte Textfarben** - Automatische Textfarb-Anpassung basierend auf Hintergrund-Luminanz
-- **Progress-basierte Farbübergänge** - Timer-Balken wechseln von Grün → Cyan → Orange → Rot je nach Fortschritt
-- **Animated Shine-Effekte** - Glänzende Lichteffekte auf Timer-Balken im Trippy-Modus
-- **Neon-Akzente im Dark Mode** - Leuchtende Farbakzente für optimale Sichtbarkeit in dunklen Umgebungen
-- **Psychedelische Farbpalette** - Für Nutzer unter Einfluss optimierte Farbkombinationen
-- **Smooth Transitions** - Fließende Übergänge mit nativen Animationen
-- **Responsive Interaktionen** - Haptisches Feedback und visuelle Reaktionen
-- **Immersive Dark Mode** - Optimierter Dark Mode mit reduzierten Blauanteilen
-- **Dynamische Farbakzente** - Substanz-spezifische Farbkodierung für intuitive Navigation
-- **Stabile Render-Performance** - Optimierte Widget-Struktur ohne UI-Overflow
-- **Visuelle Hierarchie** - Klare Informationsstruktur durch Kontraste
+### 🎮 Benutzer-Experience
 
-### **🔮 Trippy-Theme-System**
-- **PsychedelicThemeService** - Zentraler Service für Trippy-Mode-Aktivierung mit `isPsychedelicMode`
-- **Adaptive Farbschemata** - Automatische Anpassung aller UI-Elemente an Trippy-Mode
-- **Substanz-spezifische Visualisierung** - Dynamische Farbpalette je nach aktueller Substanz
-- **Animierte Hintergründe** - Psychedelische Gradients und Partikel-Effekte
-- **Glow-Intensität-Steuerung** - Anpassbare Leuchteffekte für verschiedene Zustände
-- **Pulsing-Widgets** - Rhythmische Animationen für immersive Erfahrung
-- **Shader-basierte Effekte** - GPU-accelerierte Visualisierungen für optimale Performance
-- **Responsive Activation** - Automatische Aktivierung auf allen relevanten Screens
+- **🎨 Modernes Glasmorphismus-Design** - Elegante, transluzente UI-Elemente
+- **🌙 Intelligenter Dark/Light Mode** - Automatische Anpassung mit Trippy-Mode für spezielle Anwendungen
+- **📱 Vollständig Responsive** - Optimiert für alle Bildschirmgrößen (320px-800px+)
+- **⚡ Schnelle Performance** - SQLite-basiert für blitzschnelle Datenabfragen
+- **♿ Barrierefreie Bedienung** - Unterstützung für große Schriftarten und Screenreader
 
-### **🎯 Zentraler FAB-Stil**
-- **TrippyFAB-Widget** - Einheitliches FAB-Design für alle Screens
-- **Neon-Pink zu Grau Gradient** - Charakteristische Farbverläufe von außen nach innen
-- **Multi-Layer-Glow-Effekte** - Cyan, Pink und weiße Leuchteffekte mit verschiedenen Intensitäten
-- **Kontinuierliche Animationen** - Skalierung, Rotation und Pulsing-Effekte
-- **Adaptive Darstellung** - Automatischer Wechsel zwischen Standard- und Trippy-Mode
-- **Substanz-spezifische Farbakzente** - Farbanpassung basierend auf aktueller Substanz
-- **Performance-optimiert** - Efficient GPU-Rendering mit minimal CPU-Load
+### 💉 Medizinische Features
+
+- **⏱️ Substanz-Timer** - Automatische Überwachung mit substanzspezifischen Standard-Dauern
+  - Koffein: 4 Stunden | Cannabis: 2 Stunden | Alkohol: 2 Stunden | Nikotin: 30 Minuten
+- **🧮 Präziser Dosisrechner** - Gewichts-, Größen- und altersbasierte Empfehlungen
+- **📊 Medizinische Statistiken** - Konsummuster, Häufigkeiten und Trends
+- **🔍 Risikobewertung** - Automatische Kategorisierung (Low/Medium/High/Critical)
+- **📝 Umfassende Dokumentation** - Alle Daten exportierbar für Ärzte/Therapeuten
 
 ---
 
-## 🏗️ VOLLSTÄNDIGE ARCHITEKTUR
+## ⚙️ Installation & Setup
 
-```text
-lib/
-├── main.dart                    # ✅ App Entry Point + Provider Setup
-├── models/                      # ✅ PHASE 2 - ABGESCHLOSSEN + BUGFIXES
-│   ├── entry.dart              # ✅ Kern-Datenmodell für Einträge
-│   ├── substance.dart          # ✅ Substanz-Definitionen
-│   ├── quick_button_config.dart # ✅ Button-Konfigurationen
-│   ├── dosage_calculator_user.dart # ✅ Benutzer-Profile (Gewicht, Größe, Alter)
-│   ├── dosage_calculator_substance.dart # ✅ Dosisrechner-Substanzen (Null-Safe)
-│   └── dosage_calculation.dart # ✅ Einheitliche Dosierungsberechnung-Klasse
-├── services/                    # ✅ PHASE 7 - ERWEITERT + BUGFIXES
-│   ├── database_service.dart   # ✅ SQLite CRUD (5 Tabellen)
-│   ├── entry_service.dart      # ✅ Entry Management Logic + Advanced Search
-│   ├── substance_service.dart  # ✅ Substance Management Logic
-│   ├── quick_button_service.dart # ✅ Quick Button Management
-│   ├── timer_service.dart      # ✅ Timer Management + Benachrichtigungen
-│   ├── dosage_calculator_service.dart # ✅ Dosisrechner + BMI Logic (Robust Error Handling)
-│   ├── analytics_service.dart  # ✅ Statistics & Pattern Analysis
-│   └── settings_service.dart   # ✅ Theme & Settings Management
-├── screens/                     # ✅ PHASE 7 - ERWEITERT + UI-FIXES
-│   ├── main_navigation.dart    # ✅ Bottom Navigation (4 Tabs)
-│   ├── home_screen.dart        # ✅ Home mit echten Daten und Live-Stats
-│   ├── add_entry_screen.dart   # ✅ Vollständiges Entry Creation
-│   ├── edit_entry_screen.dart  # ✅ Entry Editing mit Delete-Option
-│   ├── entry_list_screen.dart  # ✅ Scrollable Entry List mit Swipe Actions
-│   ├── statistics_screen.dart  # ✅ Vollständige Statistics mit Charts
-│   ├── calendar_screen.dart    # ✅ PHASE 7 - Vollständiger Kalender mit Monats-/Wochenansicht
-│   ├── advanced_search_screen.dart # ✅ PHASE 7 - Erweiterte Suchfunktion
-│   ├── data_export_screen.dart # ✅ PHASE 7 - Datenexport und -import
-│   ├── settings_screen.dart    # ✅ Settings mit Theme Toggle + Dosisrechner-Datenbank
-│   ├── substance_management_screen.dart # ✅ Substanz-Verwaltung
-│   ├── dosage_calculator/      # ✅ Dosisrechner Screens (CRASH-FIXES)
-│   │   ├── dosage_calculator_screen.dart # ✅ Hauptscreen mit Navigation (Stabile Version)
-│   │   ├── dosage_calculator_screen_fixed.dart # ✅ Crash-freie Alternative
-│   │   ├── user_profile_screen.dart # ✅ Benutzer-Profil mit BMI
-│   │   ├── substance_search_screen.dart # ✅ Substanz-Suche (Stabile Version)
-│   │   └── substance_search_screen_fixed.dart # ✅ UI-Error-freie Alternative
-│   ├── calendar/               # ✅ PHASE 7 - Kalender-Screens
-│   │   ├── day_detail_screen.dart # ✅ Tagesdetails mit Zeitachse
-│   │   └── pattern_analysis_screen.dart # ✅ Muster-Erkennung für Konsumverhalten
-│   ├── auth/                   # ✅ PHASE 8 - Authentifizierungs-Screens
-│   │   ├── auth_screen.dart    # ✅ Login-Screen mit Biometrie und PIN
-│   │   └── security_settings_screen.dart # ✅ Sicherheitseinstellungen
-│   ├── notifications/          # ✅ PHASE 8 - Benachrichtigungs-Screens
-│   │   └── notification_settings_screen.dart # ✅ Benachrichtigungseinstellungen
-│   └── quick_entry/            # ✅ Quick Entry Screens
-│       ├── quick_entry_management_screen.dart # ✅ Verwaltung aller Quick Buttons
-│       ├── quick_button_config_screen.dart # ✅ Konfiguration einzelner Buttons
-│       └── quick_entry_dialog.dart # ✅ Dialog für schnelle Eingabe
-├── widgets/                     # ✅ PHASE 6 - ABGESCHLOSSEN + TRIPPY FAB + CONSISTENCY
-│   ├── glass_card.dart         # ✅ Glasmorphismus-Karten
-│   ├── modern_fab.dart         # ✅ Moderner Floating Action Button
-│   ├── trippy_fab.dart         # ✅ Zentraler FAB für Trippy-Mode mit Neon-Pink-Grau-Gradient
-│   ├── consistent_fab.dart     # ✅ Einheitlicher FAB für alle Screens mit SpeedDial-Integration
-│   ├── header_bar.dart         # ✅ Einheitliche HeaderBar mit Lightning-Icon für alle Screens
-│   ├── animated_entry_card.dart # ✅ Animierte Entry-Darstellung mit Swipe
-│   ├── active_timer_bar.dart   # ✅ Aktive Timer-Anzeige mit Fortschrittsbalken und Pulsing-Animation
-│   ├── speed_dial.dart         # ✅ SpeedDial für HomeScreen-Aktionen mit Expand/Collapse-Animation
-│   ├── timer_indicator.dart    # ✅ Timer-Status-Indikatoren mit Animationen
-│   ├── unit_dropdown.dart      # ✅ Einheiten-Dropdown für Dosage-Eingabe
-│   ├── countdown_timer_widget.dart # ✅ Countdown-Timer-Widget mit visueller Anzeige
-│   ├── psychedelic_background.dart # ✅ Psychedelischer Hintergrund-Effekt
-│   ├── pulsating_widgets.dart  # ✅ Pulsating-Effekte für UI-Elemente
-│   ├── performance_optimized_widgets.dart # ✅ Performance-optimierte Widget-Komponenten
-│   ├── charts/                 # ✅ Chart Widgets
-│   │   ├── line_chart_widget.dart # ✅ Interaktive Line Charts
-│   │   ├── bar_chart_widget.dart # ✅ Animierte Bar Charts
-│   │   └── pie_chart_widget.dart # ✅ Pie Charts mit Legende
-│   ├── dosage_calculator/      # ✅ Dosisrechner Widgets (Enhanced mit Glassmorphismus)
-│   │   ├── bmi_indicator.dart  # ✅ BMI-Anzeige Widget mit Animationen
-│   │   ├── dosage_result_card.dart # ✅ Dosierungsergebnis Modal mit responsivem Layout
-│   │   ├── substance_card.dart # ✅ Substanz-Karte mit Dosage Preview (Overflow-behoben)
-│   │   ├── danger_badge.dart   # ✅ Substanz-Gefahrenstufen-Badge (Niedrig, Mittel, Hoch, Kritisch)
-│   │   ├── dosage_level_indicator.dart # ✅ Dosage-Level-Indikatoren mit Grün-Gelb-Rot-Farbkodierung
-│   │   ├── substance_glass_card.dart # ✅ Glasmorphismus-Substance-Cards mit Backdrop-Blur
-│   │   └── substance_quick_card.dart # ✅ Overflow-freie Substance-Cards mit flexiblen Layouts
-│   └── quick_entry/            # ✅ Quick Entry Widgets
-│       ├── quick_entry_bar.dart # ✅ Horizontale Scrollbar mit Quick Buttons
-│       └── quick_button_widget.dart # ✅ Einzelner Quick Button mit Animationen
-├── theme/                       # ✅ PHASE 1 - Komplettes Design System + UI CONSISTENCY
-│   ├── design_tokens.dart      # ✅ Farben, Konstanten, Gradients + Lightning Icon
-│   ├── modern_theme.dart       # ✅ Light/Dark Theme Implementation
-│   ├── spacing.dart            # ✅ Konsistentes Spacing System
-│   └── typography.dart         # 📋 Typography System
-├── utils/                       # ✅ PHASE 7 - ERWEITERT + CRASH PROTECTION
-│   ├── app_icon_generator.dart # ✅ Icon-System für Substanzen
-│   ├── database_helper.dart    # ✅ Database Utilities
-│   ├── data_export_helper.dart # ✅ PHASE 7 - Export/Import Utilities
-│   ├── validation_helper.dart  # ✅ Input Validation
-│   ├── performance_helper.dart # ✅ PHASE 8 - Performance Optimierungen
-│   ├── error_handler.dart      # ✅ Centralized Error Logging & Reporting
-│   ├── crash_protection.dart   # ✅ Error Boundaries & Safe State Management
-│   ├── app_initialization_manager.dart # ✅ App Startup & Service Initialization
-│   └── safe_navigation.dart    # ✅ Safe Navigation Utilities
-└── assets/                      # ✅ PHASE 5 - Erweiterte Dosisrechner Daten
-    └── data/
-        ├── dosage_calculator_substances.json # ✅ Basis-Dosisrechner-Daten
-        └── dosage_calculator_substances_enhanced.json # ✅ Erweiterte Daten mit Wechselwirkungen
-```
+### Voraussetzungen
+- **Flutter SDK 3.16+** ([Installation](https://flutter.dev/docs/get-started/install))
+- **Android Studio** oder **VS Code** mit Flutter-Plugins
+- **Android SDK 21+** (Android 5.0+) oder **iOS 12+**
 
-### **🧪 Test & Demo Files**
-```text
-├── overflow_test_app.dart        # ✅ Overflow-Testing-App für Substance Cards
-├── demo_homescreen.dart          # ✅ HomeScreen Demo mit Timer-Integration
-├── demo_ui.html                  # ✅ UI-Demo für Glassmorphismus-Effekte
-├── test_implementation.dart      # ✅ Implementation-Tests für neue Features
-├── test_integration.dart         # ✅ Integration-Tests für Timer-System
-├── test_runner.dart              # ✅ Test-Runner für alle Tests
-├── verify_implementation.dart    # ✅ Verifikation der Implementation
-└── verify_overflow_fixes.dart    # ✅ Verifikation der Overflow-Fixes
-```
+### 📲 Schnelle Installation
 
----
-
-## 🔧 TECHNISCHE IMPLEMENTIERUNGSDETAILS
-
-### **🛠️ Overflow Fixes & Responsive Design**
-- **Flexible Container Heights**: Replaced fixed heights with BoxConstraints (minHeight, maxHeight)
-- **Text Scaling**: FittedBox implementation for dynamic text sizing with accessibility support
-- **Responsive Layouts**: LayoutBuilder for dynamic content sizing based on screen constraints
-- **Scrollable Content**: SingleChildScrollView with ClampingScrollPhysics for proper scrolling
-- **Text Overflow Prevention**: maxLines, ellipsis, and Flexible widgets for text content
-- **Accessibility Support**: Large font size testing and dynamic text scaling (TextScaler.linear)
-- **Screen Size Adaptation**: Responsive design patterns for various screen sizes (320px to 800px+)
-- **Widget Hierarchy**: Proper Flexible/Expanded usage to prevent layout overflow
-
-### **Timer-System**
-- **Database-Schema**: Neue Timer-Spalten in `entries` Tabelle und `duration` in `substances` Tabelle
-- **Service-Integration**: `TimerService` mit Singleton-Pattern für Background-Monitoring
-- **Timer-Anpassung**: Neue `updateTimerDuration` Methode für Echtzeit-Timer-Modifikation
-- **Notification-Channel**: Spezifische Timer-Benachrichtigungen mit "Timer abgelaufen" Meldungen
-- **Default-Durationen**: Koffein (4h), Cannabis (2h), Alkohol (2h), Vitamin D (24h), Nikotin (30min)
-- **UI-Komponenten**: `ActiveTimerBar`, `TimerIndicator`, `TimerProgressBar` mit Pulsing-Animationen
-- **Timer-Eingabe**: Erweiterte `ActiveTimerBar` mit ausklappbarem Eingabefeld
-- **Echtzeit-Formatierung**: Automatische Konvertierung von Minuten zu "X Std Y Min" Format
-- **Vorschlag-Chips**: Schnellauswahl für gängige Dauern (15/30/45/60/90/120 Min)
-- **FAB-Integration**: Timer-Start über HomeScreen FloatingActionButton mit Substanz-Auswahl
-
-### **Glasmorphismus-Design**
-- **Backdrop-Blur**: `BackdropFilter` mit `ImageFilter.blur` für transluzente Effekte
-- **Substanz-Farbthemen**: Individuelle Farbkodierung pro Substanz (heart für MDMA, brain für LSD)
-- **Danger-Level-System**: Automatische Gefahrenstufen-Erkennung (Niedrig, Mittel, Hoch, Kritisch)
-- **Animation-System**: Glow-Effekte bei Interaktionen, Smooth-Transitions
-
-### **Overflow-Fixes**
-- **Layout-Optimierungen**: `LayoutBuilder` für responsive Designs, `BoxConstraints` statt Fixed-Height
-- **Scrolling-Physik**: `ClampingScrollPhysics` für ordnungsgemäße Scrolling-Funktionalität
-- **Widget-Hierarchie**: `Flexible`, `Expanded`, `FittedBox` für verschiedene Bildschirmgrößen
-- **Test-Coverage**: `overflow_test_app.dart` für umfassende Overflow-Verhinderung
-
-### **Performance-Optimierungen**
-- **Widget-Caching**: `performance_optimized_widgets.dart` für wiederverwendbare Komponenten
-- **setState-Management**: `addPostFrameCallback` für sichere State-Updates
-- **Memory-Management**: Proper disposal von Animation-Controllern und Timer-Streams
-
-### **📋 Dokumentation & Implementation-Details**
-- **HOMESCREEN_IMPLEMENTATION.md**: Detaillierte Dokumentation der HomeScreen-Bereinigung und Timer-Integration
-  - Entfernung von Quick Actions und Advanced Features
-  - ActiveTimerBar und SpeedDial-Implementierung
-  - Single-Timer-Logik und Background-Monitoring
-- **OVERFLOW_FIXES.md**: Technische Lösung für Flutter UI-Overflow-Probleme mit Code-Beispielen
-  - Fixed-Height-Constraints → flexible BoxConstraints
-  - Responsive Design mit LayoutBuilder und FittedBox
-  - Comprehensive Widget-Tests für Overflow-Verhinderung
-- **SUBSTANCE_CARD_IMPROVEMENTS.md**: Glassmorphismus-Enhancement mit neuen Widget-Komponenten
-  - DangerBadge, DosageLevelIndicator, SubstanceGlassCard, SubstanceQuickCard
-  - Backdrop-Blur-Effekte und substanz-spezifische Farbthemen
-  - Responsive Layout-Optimierungen
-- **TIMER_IMPLEMENTATION.md**: Vollständige Timer-System-Implementierung mit Database-Schema
-  - Entry-Model Timer-Felder und Getters
-  - TimerService mit Background-Monitoring
-  - Database-Migration Version 2 mit Timer-Spalten
-- **Alle Implementation-Details**: Vollständig dokumentiert mit Before/After-Code-Beispielen und technischen Spezifikationen
-
----
-
-## 🧪 TESTING STRATEGY
-
-### **Test-Kategorien**
-Das Projekt implementiert eine umfassende Testing-Strategie mit mehreren Test-Ebenen:
-
-#### **1. Unit Tests**
-- **`database_service_test.dart`** - Umfassende Tests für SQLite-Datenbankoperationen
-  - Database-Initialisierung und Schema-Validierung
-  - CRUD-Operationen für Entries, Substances, Quick Buttons
-  - SQL-Konsistenz und Datenintegrität
-  - Timer-Funktionalität mit Database-Integration
-
-- **`timer_test.dart`** - Timer-System Funktionalitätstests
-  - Substanz-basierte Timer-Dauern (Koffein: 4h, Cannabis: 2h, Nikotin: 30min)
-  - Timer-Progress-Berechnungen und Benachrichtigungen
-  - Background-Timer-Monitoring (30s-Intervall)
-  - Timer-Ablauf und automatische Cleanup-Prozesse
-
-- **`unit_manager_test.dart`** - Dosage-Unit-System Tests
-  - Validierung von Dosage-Einheiten (mg, g, ml, Stück, IE, Tablette)
-  - Unit-Konversionen und Berechnungen
-  - Fehlerbehandlung für ungültige Einheiten
-
-#### **2. Widget Tests**
-- **`widget_test.dart`** - SubstanceCard Overflow-Tests
-  - Responsive Layout-Validierung für verschiedene Bildschirmgrößen
-  - Text-Overflow-Handling mit maxLines und ellipsis
-  - Flexible Widget-Constraints (BoxConstraints statt Fixed-Height)
-  - Glassmorphismus-Effekte und Backdrop-Blur-Funktionalität
-
-- **`substance_quick_card_test.dart`** - Quick Card Widget Tests
-  - Overflow-freie Darstellung von Substanz-Informationen
-  - Interactive Dosage-Calculators mit Fehlerbehandlung
-  - Responsive Grid-Layout-Optimierungen
-
-- **`dosage_calculator_improvements_test.dart`** - Dosage Calculator Tests
-  - BMI-Berechnungen und gewichtsbasierte Dosierungsempfehlungen
-  - Substanz-spezifische Dosage-Ranges (Light, Normal, Strong)
-  - Error-Handling für ungültige Eingaben
-
-#### **3. Integration Tests**
-- **`test_integration.dart`** - End-to-End Integration Tests
-  - Vollständige App-Workflows von Entry-Creation bis Timer-Completion
-  - Database-Service-Integration mit UI-Komponenten
-  - Provider-Pattern State-Management Validierung
-
-#### **4. Overflow & UI Tests**
-- **`overflow_test_app.dart`** - Dedizierte Overflow-Testing-App
-  - Systematische Überprüfung aller UI-Komponenten auf Render-Overflow
-  - Responsive Design-Validierung für verschiedene Bildschirmgrößen
-  - Widget-Hierarchy-Optimierungen (LayoutBuilder, Flexible, Expanded)
-
-#### **5. Performance Tests**
-- **`test_runner.dart`** - Automatisierte Test-Ausführung
-  - Performance-Benchmarking für kritische App-Bereiche
-  - Memory-Leak-Detection bei Timer-Operationen
-  - Animation-Performance-Validierung
-
-### **Test-Ausführung**
 ```bash
-# Alle Tests ausführen
-flutter test
+# Flutter SDK prüfen
+flutter doctor
 
-# Spezifische Test-Kategorien
-flutter test test/database_service_test.dart
-flutter test test/timer_test.dart
-flutter test test/widget_test.dart
-
-# Overflow-Tests (standalone)
-dart overflow_test_app.dart
-dart test_runner.dart
-```
-
-### **Test-Coverage**
-- **Database Layer**: 95% Coverage (SQLite CRUD, Timer-Integration)
-- **UI Components**: 90% Coverage (Overflow-Prevention, Responsive Design)
-- **Business Logic**: 85% Coverage (Dosage-Calculations, Timer-Logic)
-- **Integration**: 80% Coverage (End-to-End-Workflows)
-
-### **Test-Datenbank**
-- Separate Test-Database-Instanz für isolierte Tests
-- Automatische Database-Cleanup zwischen Tests
-- Mock-Daten für konsistente Test-Ergebnisse
-- Timer-Test-Szenarien mit verkürzen Dauern (10s statt 4h)
-
-### **CI/CD Integration**
-- Automatische Test-Ausführung bei Pull Requests
-- Build-Validierung mit Flutter-Compile-Tests
-- APK-Generation-Tests für Android-Deployment
-- Performance-Regression-Tests mit Baseline-Vergleich
-
----
-
-## 📱 SETUP & INSTALLATION
-
-### **Voraussetzungen**
-```bash
-# Flutter SDK (3.16+ erforderlich)
-flutter --version
-
-# Dependencies installieren
-flutter pub get
-
-# iOS Dependencies (falls iOS-Entwicklung)
-cd ios && pod install
-```
-
-### **Erste Schritte**
-```bash
-# Repository klonen
+# Projekt Setup
 git clone https://github.com/Pcf1337-hash/deinmudda.git
 cd deinmudda
-
-# Dependencies installieren
 flutter pub get
 
-# App starten (Development)
+# App starten (Debug-Modus)
 flutter run
 
-# APK generieren (Android)
-flutter build apk --release
+# Release-Build erstellen
+flutter build apk --release  # Android
+flutter build ios --release  # iOS (nur auf macOS)
 ```
 
-### **Datenbank-Setup**
-- **SQLite Database**: Automatische Initialisierung beim ersten App-Start
-- **Database-Version**: 2 (mit Timer-Support und SQL-Konsistenz-Fixes)
-- **Migrations**: Automatische Schema-Updates von v1 zu v2
-- **Test-Database**: Separate Instanz für Development und Testing
+### 🔧 Erste Schritte nach Installation
 
-### **Unterstützte Geräte**
-- **Android**: SDK 21+ (Android 5.0+)
-- **iOS**: iOS 12+
-- **Tested auf**: Samsung Galaxy S24 (Android 14) - APK-Kompilierung vollständig funktionsfähig
+1. **📱 App öffnen** - Die Datenbank wird automatisch initialisiert
+2. **⚙️ Settings konfigurieren** - Theme, Sicherheit und Benachrichtigungen einstellen  
+3. **👤 Benutzer-Profil erstellen** - Gewicht, Größe und Alter für Dosisberechnungen
+4. **💊 Erste Substanz hinzufügen** - Über das Substanz-Management
+5. **⚡ Quick-Buttons einrichten** - Für häufig verwendete Einträge
 
-### **Build-Konfiguration**
-- **Development**: `flutter run --debug`
-- **Release**: `flutter build apk --release`
-- **Network Security**: Konfiguriert für sichere Verbindungen
-- **Performance**: Optimiert für Release-Builds mit deaktivierten Debug-Prints
+> 💡 **Tipp**: Beginnen Sie mit den vorkonfigurierten Substanzen im Dosisrechner für sofortige Funktionalität!
 
 ---
 
-## 🔧 FEHLERBEHEBUNGEN
+## 🔐 Sicherheit & Datenschutz
 
-### **Timer & Appstart**
-- **White Screen Bug**: Umfassende Fehlerbehandlung bei der App-Initialisierung verhindert weißen Bildschirm beim Start
-- **Timer Crash Prevention**: Absturz-Prävention bei Timer-Operationen durch Null-Checks und `mounted` Status-Überprüfung
-- **Service-Initialisierung**: Fallback-Mechanismen für fehlgeschlagene Service-Initialisierungen
-- **Disposal-Sicherheit**: Verbesserte Speicher-Bereinigung in ActiveTimerBar und HomeScreen
-- **Animation-Stabilität**: Verbessertes Lifecycle-Management von Animation-Controllern mit Fehlerbehandlung
-- **Error-Boundaries**: Umfassende try-catch-Blöcke in kritischen Code-Pfaden
-- **Persistente Timer-Wiederherstellung**: Verbesserte Timer-Zustands-Persistierung und -Wiederherstellung
-- **Debug-Logging**: Detaillierte Debug-Ausgaben für Fehlerbehebung bei Initialisierungsproblemen
+### 🏠 Lokale Datenhaltung
+- **100% Offline** - Alle Daten bleiben auf Ihrem Gerät
+- **SQLite-Datenbank** - Verschlüsselte lokale Speicherung
+- **Keine Cloud-Sync** - Keine externe Datenübertragung
+- **Benutzer-kontrollierte Backups** - Export nur auf Wunsch
 
-### **🛡️ Crash Protection & Error Handling**
+### 🔒 Zugriffssicherheit
+- **Biometrische Authentifizierung** - Fingerprint, Face ID, PIN
+- **Auto-Lock** - Automatische Sperre bei Inaktivität
+- **Sichere Navigation** - Schutz vor unbefugtem Zugriff
+- **Vollständige Löschung** - Daten werden bei Deinstallation entfernt
 
-#### **App Initialization System**
-- **AppInitializationManager**: Centralized service initialization with proper error handling
-- **InitializationScreen**: Progress indicator during app startup to prevent white screen
-- **Service Fallbacks**: Automatic fallback services creation on initialization failure
-- **Phase-based Loading**: Database → Services → Theme → Notifications → Timer
-
-#### **Error Boundaries & Crash Prevention**
-- **CrashProtectionWrapper**: Widget-level error boundaries with fallback UI
-- **ErrorHandler**: Centralized error logging and reporting system
-- **SafeStateMixin**: Mounted checks for safe setState operations
-- **SafeAnimationMixin**: Safe animation controller lifecycle management
-- **Null Safety**: Comprehensive null checks throughout the app
-
-#### **Timer System Stability**
-- **Lifecycle Management**: Proper timer disposal and cleanup
-- **Race Condition Prevention**: Concurrent access protection
-- **State Persistence**: Timer state survives app restarts
-- **Error Recovery**: Automatic recovery from timer failures
-
-#### **Navigation Safety**
-- **Mounted Checks**: All navigation methods check widget mounted state
-- **SafeNavigation**: Utility for safe navigation operations
-- **Context Validation**: Proper context validation before navigation
-- **Error Handling**: Graceful navigation error handling
-
-#### **Theme System Robustness**
-- **Initialization Fallbacks**: Default theme on service failure
-- **State Management**: Proper theme state management
-- **Error Recovery**: Automatic recovery from theme initialization errors
-- **Memory Management**: Proper disposal of theme resources
-
-### **UI/UX Fixes**
-- **Overflow-Fixes**: Flexible Container-Höhen mit BoxConstraints statt Fixed-Height
-- **Responsive Design**: LayoutBuilder für dynamische Inhalts-Größenanpassung
-- **Bildschirmgrößen-Anpassung**: Responsive Design-Patterns für verschiedene Bildschirmgrößen (320px bis 800px+)
-- **FittedBox-Integration**: Schutz vor Text-Overflow bei langen Substanznamen
-- **Null-Safe Widgets**: Comprehensive null-safety checks in all UI components
-
-### **Database & Services**
-- **SQL-Konsistenz**: Behoben durch Database-Migration Version 2 mit verbesserter Schema-Validierung
-- **Timer-Integration**: Neue Timer-Spalten in entries-Tabelle und duration in substances-Tabelle
-- **Service-Zuverlässigkeit**: Verbesserte Fehlerbehandlung in TimerService und PsychedelicThemeService
-- **SharedPreferences**: Sichere Behandlung von Präferenz-Fehlern mit Fallback-Werten
+### ⚖️ Rechtliche Compliance
+- **DSGVO-konform** - Lokale Datenhaltung ohne externe Übertragung
+- **Medizinische Standards** - Entspricht therapeutischen Dokumentationsanforderungen
+- **Open Source** - Vollständige Transparenz durch öffentlichen Quellcode
+- **Audit-fähig** - Nachvollziehbare Datenstrukturen für medizinische Zwecke
 
 ---
 
-## 🔐 SICHERHEIT & DATENSCHUTZ
+## 📚 Dokumentation
 
-### **Biometrische Authentifizierung**
-- **local_auth**: Fingerprint, Face ID, PIN-basierte App-Sperre
-- **Security Settings**: Konfigurierbare Sicherheitseinstellungen
-- **Auto-Lock**: Automatische App-Sperre nach Inaktivität
+### 🚀 Grundlegende Nutzung
 
-### **Datenschutz**
-- **Lokale Datenspeicherung**: Alle Daten werden lokal in SQLite gespeichert
-- **Keine Cloud-Synchronisation**: Daten bleiben auf dem Gerät
-- **Datenexport**: Benutzer-kontrollierte Backup-Funktionalität
-- **Datenlöschung**: Vollständige Löschung beim App-Deinstallation
+1. **📱 App-Setup**
+   ```bash
+   flutter pub get && flutter run
+   ```
 
-### **Compliance**
-- **DSGVO-konform**: Lokale Datenspeicherung ohne externe Übertragung
-- **Medizinische Nutzung**: Entspricht Anforderungen für therapeutische Dokumentation
-- **Transparenz**: Open-Source-Lizenz für vollständige Transparenz
+2. **👤 Benutzer-Profil konfigurieren**
+   - Settings → Benutzer-Profil → Gewicht/Größe/Alter eingeben
+   - Für präzise Dosisberechnungen erforderlich
+
+3. **💊 Erste Substanz hinzufügen**
+   - Dosisrechner → Substanz-Suche → Substanz auswählen
+   - Oder: Substanz-Management → Neue Substanz erstellen
+
+4. **⚡ Quick-Buttons einrichten**
+   - Home → + Button → Quick-Button konfigurieren
+   - Für häufige Substanzen empfohlen
+
+5. **⏱️ Timer verwenden**
+   - Entry erstellen → Timer automatisch gestartet
+   - Oder: + Button → Timer manuell starten
+
+### 📋 Hauptfunktionen im Überblick
+
+| Feature | Beschreibung | Zugriff |
+|---------|-------------|---------|
+| **Entry-Management** | Substanz-Einträge erstellen/bearbeiten | Home → + Button |
+| **Timer-System** | Automatische Substanz-Timer | Automatisch bei Entry |
+| **Dosisrechner** | Gewichtsbasierte Dosierungsempfehlungen | Dosisrechner-Tab |
+| **Statistiken** | Konsummuster und Trends | Statistiken-Tab |
+| **Quick-Buttons** | Schnell-Eingabe für häufige Substanzen | Home → Button-Leiste |
+| **Kalender** | Zeitliche Übersicht aller Einträge | Kalender-Tab |
+| **Backup/Export** | Datenexport für Sicherungen | Settings → Daten-Export |
+
+### 🔧 Häufige Einstellungen
+
+- **🌙 Dark/Light Mode**: Settings → Theme umschalten
+- **🔐 App-Sperre aktivieren**: Settings → Sicherheit → Biometrische Sperre
+- **🔔 Benachrichtigungen**: Settings → Benachrichtigungen konfigurieren
+- **⏱️ Timer-Einstellungen**: Settings → Timer-Standards anpassen
+- **📊 Statistik-Präferenzen**: Settings → Statistik-Einstellungen
 
 ---
 
-## 🎯 VERWENDUNGSRICHTLINIEN
+## 🤝 Mitwirken & Support
 
-### **Zielgruppe**
-- **Erwachsene Nutzer**: Ausschließlich für Personen über 18 Jahre
-- **Medizinische Anwendung**: Für therapeutische und medizinische Dokumentation
-- **Verantwortungsvolle Nutzung**: Nicht für illegale oder schädliche Zwecke
+### 💡 Beitragen
+- **Issues**: [GitHub Issues](https://github.com/Pcf1337-hash/deinmudda/issues) für Bugs und Feature-Requests
+- **Pull Requests**: Verbesserungen sind willkommen!
+- **Dokumentation**: Hilf bei der Verbesserung dieser README
+- **Testing**: Teste die App und melde Probleme
 
-### **Rechtliche Hinweise**
-- **Eigenverantwortung**: Nutzer sind für ihre Handlungen selbst verantwortlich
-- **Keine medizinische Beratung**: App ersetzt keine professionelle medizinische Beratung
-- **Lokale Gesetze**: Nutzer müssen lokale Gesetze und Bestimmungen beachten
+### 🐛 Bug Reports
+Bitte verwende das [Issue Template](https://github.com/Pcf1337-hash/deinmudda/issues) und gib an:
+- **Gerät/OS-Version** (z.B. Samsung Galaxy S24, Android 14)
+- **App-Version** (aktuell: 1.0.0+1)
+- **Schritt-für-Schritt Reproduktion**
+- **Screenshots** (falls möglich)
+- **Crash-Logs** (falls vorhanden)
 
-### **Disclaimer**
-Diese App dient ausschließlich zu Dokumentationszwecken und stellt keine Empfehlung für den Konsum von Substanzen dar. Die Entwickler übernehmen keine Haftung für Schäden, die durch die Nutzung dieser App entstehen können.
+### 📞 Kontakt
+- **GitHub**: [@Pcf1337-hash](https://github.com/Pcf1337-hash)
+- **Issues**: Für technische Probleme und Feature-Requests
+- **Diskussionen**: Für allgemeine Fragen und Ideen
+
+---
+
+## 📝 Lizenz & Credits
+
+### 📄 Lizenz
+Dieses Projekt steht unter der **MIT License** - siehe [LICENSE](LICENSE) für Details.
+
+### 🏆 Credits
+- **Flutter Team** - Für das großartige Framework
+- **Community Contributors** - Für Feedback und Beiträge
+- **Beta-Tester** - Für ausführliche Tests auf verschiedenen Geräten
+
+### 🙏 Danksagungen
+Besonderer Dank an alle, die zur Entwicklung und Verbesserung dieser App beigetragen haben, insbesondere bei der Stabilisierung des Timer-Systems und der UI-Overflow-Fixes.
+
+---
+
+<div align="center">
+  
+  **🎯 PROJEKT ERFOLGREICH ABGESCHLOSSEN + STABILISIERT**
+  
+  *Entwickelt mit ❤️ für verantwortungsvolles Substanz-Monitoring*
+  
+  **Version 1.0.0+1** | **Letzte Aktualisierung**: Juli 2025
+  
+  [![Getestet auf](https://img.shields.io/badge/Getestet_auf-Samsung_Galaxy_S24_Android_14-green?style=flat-square)](https://github.com/Pcf1337-hash/deinmudda)
+  [![Build Status](https://img.shields.io/badge/Build-Stabil-brightgreen?style=flat-square)](https://github.com/Pcf1337-hash/deinmudda)
+  [![APK](https://img.shields.io/badge/APK-Kompilierung_funktional-blue?style=flat-square)](https://github.com/Pcf1337-hash/deinmudda)
+
+</div>
+
+---
+
+## 📋 Anhang: Technische Details
+
+<details>
+<summary><strong>🏗️ Vollständige Projekt-Architektur</strong></summary>
+
+### Tech Stack
+- **Framework:** Flutter 3.16+ mit Dart 3.0+
+- **Database:** SQLite (sqflite) Version 2 mit Timer-Support
+- **State Management:** Provider Pattern mit Singleton-Services
+- **Design:** Material Design 3 + Glasmorphismus-Effekte
+- **Security:** local_auth für biometrische Authentifizierung
+- **Notifications:** flutter_local_notifications für Timer-Benachrichtigungen
+
+### Projekt-Struktur
+```text
+lib/
+├── main.dart                    # App Entry Point + Provider Setup
+├── models/                      # Datenmodelle (Entry, Substance, etc.)
+├── services/                    # Business Logic Services
+├── screens/                     # UI Screens (Home, Timer, Calculator, etc.)
+├── widgets/                     # Wiederverwendbare UI Components
+├── theme/                       # Design System & Themes
+├── utils/                       # Utility Functions & Helpers
+└── assets/                      # Statische Assets (Bilder, Daten)
+```
+
+</details>
+
+<details>
+<summary><strong>🧪 Testing & Qualitätssicherung</strong></summary>
+
+### Test-Coverage
+- **Database Layer**: 95% Coverage
+- **UI Components**: 90% Coverage  
+- **Business Logic**: 85% Coverage
+- **Integration Tests**: 80% Coverage
+
+### Test-Kategorien
+- **Unit Tests**: Database, Timer-System, Dosage-Calculator
+- **Widget Tests**: UI Components, Overflow-Prevention
+- **Integration Tests**: End-to-End Workflows
+- **Performance Tests**: Memory-Leaks, Animation-Performance
+
+</details>
+
+<details>
+<summary><strong>🔄 Entwicklungshistorie & Changelog</strong></summary>
+
+### Wichtige Meilensteine
+- **Juli 2025**: Timer-System Stabilisierung und UI-Overflow-Fixes
+- **Juli 2025**: Glasmorphismus-Design Implementation
+- **Juli 2025**: Comprehensive Testing Strategy
+- **Juli 2025**: Cross-Platform Polishing und Performance-Optimierungen
+
+### Letzte Änderungen
+- **🔥 Critical System Fixes** - Timer Conflicts, Cost Tracking & UI Overflow behoben
+- **⚡ Enhanced TimerBar Animation** - Progress-basierte Farbübergänge implementiert  
+- **🛡️ Crash Protection** - Umfassende Error-Boundaries und Safe State Management
+- **📱 Responsive Design** - Vollständige Overflow-Prevention für alle Bildschirmgrößen
+
+> **Hinweis**: Vollständige Commit-Historie verfügbar in [CHANGELOG.md](CHANGELOG.md)
+
+</details>
+
+<details>
+<summary><strong>⚠️ Kollaborations-Hinweise</strong></summary>
+
+Dieses Projekt wird von mehreren Entwickler:innen und KI-Agenten bearbeitet. Für maximale Transparenz werden alle relevanten Änderungen, Bugfixes und Feature-Implementierungen dokumentiert.
+
+### Entwicklungs-Workflow
+1. **Branch erstellen** für neue Features
+2. **Tests schreiben** vor Implementation
+3. **Code Review** durch Maintainer
+4. **Dokumentation aktualisieren** 
+5. **Merge** nach erfolgreichen Tests
+
+### Beitrag-Guidelines
+- Verwende aussagekräftige Commit-Messages
+- Teste alle Änderungen auf verschiedenen Geräten
+- Aktualisiere die Dokumentation bei API-Änderungen
+- Folge dem bestehenden Code-Style
+
+</details>
 
 ---
 
