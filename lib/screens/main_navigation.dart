@@ -232,9 +232,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     return Flexible(
       child: GestureDetector(
         onTap: onTap,
-        child: AnimatedContainer(
-          duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-          curve: DesignTokens.curveEaseOut,
+        child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: Spacing.sm,
             vertical: Spacing.sm,
@@ -245,33 +243,31 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                 : Colors.transparent,
             borderRadius: Spacing.borderRadiusLg,
           ),
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(
-              maxHeight: 60, // Ensure navigation item doesn't exceed reasonable height
-              minHeight: 40, // Ensure minimum height for usability
-            ),
+          child: SizedBox(
+            height: 54, // Fixed height to prevent layout shifts
             child: Column(
               mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-              Flexible(
-                child: AnimatedSwitcher(
-                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
-                  child: Icon(
-                    isActive ? item.activeIcon : item.icon,
-                    key: ValueKey('nav_${index}_$isActive'),
-                    color: isActive
-                        ? DesignTokens.primaryIndigo
-                        : (isDark
-                            ? DesignTokens.iconSecondaryDark
-                            : DesignTokens.iconSecondaryLight),
-                    size: Spacing.iconMd,
-                  ),
+              // Fixed size icon container to prevent scaling issues
+              SizedBox(
+                height: Spacing.iconMd + 4, // Fixed height for icon area
+                child: Icon(
+                  isActive ? item.activeIcon : item.icon,
+                  color: isActive
+                      ? DesignTokens.primaryIndigo
+                      : (isDark
+                          ? DesignTokens.iconSecondaryDark
+                          : DesignTokens.iconSecondaryLight),
+                  size: Spacing.iconMd,
                 ),
               ),
               const SizedBox(height: 2), // Fixed small spacing
-              Flexible(
-                child: AnimatedDefaultTextStyle(
-                  duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationFast),
+              // Fixed size text container to prevent scaling issues
+              SizedBox(
+                height: 14, // Fixed height for text area
+                child: Text(
+                  item.label,
                   style: theme.textTheme.labelSmall!.copyWith(
                     color: isActive
                         ? DesignTokens.primaryIndigo
@@ -281,22 +277,15 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                     fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
                     fontSize: 10,
                   ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      item.label,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
-                    ),
-                  ),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
                 ),
               ),
             ],
           ),
         ),
       ),
-    ),
     );
   }
 }

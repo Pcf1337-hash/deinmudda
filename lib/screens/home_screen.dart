@@ -59,6 +59,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   
   // Loading State
   Future<List<Entry>>? _entriesFuture;
+  
+  // Navigation state to prevent SnackBar overlays during transitions
+  bool _isNavigationTransition = false;
 
   @override
   void initState() {
@@ -181,6 +184,33 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    
+    // Reset navigation transition flag when widget updates
+    _isNavigationTransition = false;
+  }
+
+  @override
+  void deactivate() {
+    // Set navigation transition flag when widget is being deactivated
+    _isNavigationTransition = true;
+    super.deactivate();
+  }
+
+  @override
+  void activate() {
+    super.activate();
+    
+    // Clear navigation transition flag after a short delay when reactivated
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) {
+        _isNavigationTransition = false;
+      }
+    });
+  }
+
   void _onScroll() {
     if (!mounted) return;
     
@@ -270,7 +300,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       final entryWithTimer = await _timerService.startTimer(entry, customDuration: timerDuration);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('${config.substanceName} (${config.formattedDosage}) hinzugefügt - Timer gestartet'),
             backgroundColor: DesignTokens.successGreen,
@@ -293,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('Fehler beim Hinzufügen: $e'),
             backgroundColor: DesignTokens.errorRed,
@@ -311,7 +341,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       await _timerService.stopTimer(activeTimer);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('Timer für ${activeTimer.substanceName} gestoppt'),
             backgroundColor: DesignTokens.warningYellow,
@@ -324,7 +354,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       }
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('Fehler beim Stoppen des Timers: $e'),
             backgroundColor: DesignTokens.errorRed,
@@ -367,7 +397,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       });
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           const SnackBar(
             content: Text('Reihenfolge erfolgreich aktualisiert'),
             backgroundColor: Colors.green,
@@ -375,7 +405,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      _safeShowSnackBar(
         SnackBar(
           content: Text('Fehler beim Sortieren: $e'),
           backgroundColor: DesignTokens.errorRed,
@@ -422,7 +452,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       final timerEntry = await _timerService.startTimer(entry, customDuration: duration);
       
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('Timer für $substanceName gestartet (${_formatDuration(duration)})'),
             backgroundColor: DesignTokens.successGreen,
@@ -431,7 +461,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+        _safeShowSnackBar(
           SnackBar(
             content: Text('Fehler beim Timer-Start: $e'),
             backgroundColor: DesignTokens.errorRed,
@@ -450,6 +480,21 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     } else {
       return '${minutes}min';
     }
+  }
+
+  // Helper method to safely show SnackBars, preventing overlays during navigation
+  void _safeShowSnackBar(SnackBar snackBar) {
+    if (!mounted || _isNavigationTransition) return;
+    
+    // Clear any existing SnackBars first to prevent overlay effects
+    ScaffoldMessenger.of(context).clearSnackBars();
+    
+    // Small delay to ensure clean transition
+    Future.delayed(const Duration(milliseconds: 100), () {
+      if (mounted && !_isNavigationTransition) {
+        ScaffoldMessenger.of(context).showSnackBar(snackBar);
+      }
+    });
   }
 
   @override
