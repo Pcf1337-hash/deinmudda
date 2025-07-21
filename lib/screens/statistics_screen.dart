@@ -789,6 +789,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         return 'Stunden';
       case TimePeriod.thisWeek:
       case TimePeriod.thisMonth:
+      case TimePeriod.last30Days:
         return 'Tage';
       case TimePeriod.thisYear:
       case TimePeriod.allTime:
