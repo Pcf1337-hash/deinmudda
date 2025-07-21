@@ -179,7 +179,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemBuilder: (context, index) {
               final button = widget.quickButtons[index];
               return QuickButtonWidget(
-                key: ValueKey('normal_${button.id}'), // Make key more specific
+                key: ValueKey('quickbutton_${button.id}_${button.position}'), // More stable key
                 config: button,
                 isEditing: false,
                 onTap: () => widget.onQuickEntry(button),
@@ -190,7 +190,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
         ),
         // Add button always visible on the right
         AddQuickButtonWidget(
-          key: const ValueKey('add_button_normal'), // Add unique key
+          key: ValueKey('add_button_${widget.isEditing ? "edit" : "normal"}_mode'), // Dynamic but stable key
           onTap: widget.onAddButton,
         ),
       ],
@@ -209,7 +209,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemBuilder: (context, index) {
               final button = _reorderedButtons[index];
               return QuickButtonWidget(
-                key: ValueKey('reorder_${button.id}'), // Make key more specific
+                key: ValueKey('reorder_${button.id}_${button.position}'), // More stable key
                 config: button,
                 isEditing: true,
                 onTap: () => Navigator.of(context).push(
@@ -237,7 +237,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
         ),
         // Add button always visible on the right
         AddQuickButtonWidget(
-          key: const ValueKey('add_button_reorder'), // More specific key
+          key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), // Stable key based on list length
           onTap: widget.onAddButton,
         ),
       ],
@@ -295,23 +295,34 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                 overflow: TextOverflow.ellipsis,
               ),
               Spacing.verticalSpaceSm, // Reduced from verticalSpaceMd
-              ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: 200, // Limit button width to prevent cut-off
-                ),
-                child: ElevatedButton.icon(
-                  onPressed: widget.onAddButton,
-                  icon: const Icon(Icons.add_rounded, size: 18), // Smaller icon
-                  label: const Text(
-                    'Ersten Button erstellen',
-                    style: TextStyle(fontSize: 13), // Smaller text
+              // Use Flexible instead of ConstrainedBox to prevent overflow
+              Flexible(
+                child: Container(
+                  width: double.infinity,
+                  constraints: const BoxConstraints(
+                    maxWidth: 220, // Slightly increased for better text fit
+                    minHeight: 36, // Minimum height to prevent cut-off
                   ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: DesignTokens.primaryIndigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), // Smaller padding
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8), // Smaller radius
+                  child: ElevatedButton.icon(
+                    onPressed: widget.onAddButton,
+                    icon: const Icon(Icons.add_rounded, size: 16), // Even smaller icon
+                    label: const Text(
+                      'Ersten Button erstellen',
+                      style: TextStyle(fontSize: 12), // Smaller text
+                      maxLines: 1, // Prevent text wrapping
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: DesignTokens.primaryIndigo,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Even smaller padding
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(6), // Smaller radius
+                      ),
+                      // Add minimum size to prevent shrinking too much
+                      minimumSize: const Size(120, 32),
+                      // Add maximum size to prevent expanding too much
+                      maximumSize: const Size(220, 40),
                     ),
                   ),
                 ),

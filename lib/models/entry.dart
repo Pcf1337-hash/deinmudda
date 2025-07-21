@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
 enum SubstanceCategory {
@@ -33,6 +34,10 @@ class Entry {
   final DateTime? timerEndTime;
   final bool timerCompleted;
   final bool timerNotificationSent;
+  
+  // Visual customization fields
+  final int? iconCodePoint; // Store icon as codePoint for serialization
+  final int? colorValue; // Store color as int value for serialization
 
   const Entry({
     required this.id,
@@ -49,7 +54,13 @@ class Entry {
     this.timerEndTime,
     this.timerCompleted = false,
     this.timerNotificationSent = false,
+    this.iconCodePoint,
+    this.colorValue,
   });
+
+  // Helper getters for icon and color
+  IconData? get icon => iconCodePoint != null ? IconData(iconCodePoint!, fontFamily: 'MaterialIcons') : null;
+  Color? get color => colorValue != null ? Color(colorValue!) : null;
 
   // Factory constructor for creating new entries
   factory Entry.create({
@@ -64,6 +75,8 @@ class Entry {
     DateTime? timerEndTime,
     bool timerCompleted = false,
     bool timerNotificationSent = false,
+    IconData? icon,
+    Color? color,
   }) {
     final now = DateTime.now();
     return Entry(
@@ -81,6 +94,8 @@ class Entry {
       timerEndTime: timerEndTime,
       timerCompleted: timerCompleted,
       timerNotificationSent: timerNotificationSent,
+      iconCodePoint: icon?.codePoint,
+      colorValue: color?.value,
     );
   }
 
@@ -170,6 +185,8 @@ class Entry {
       'timerEndTime': timerEndTime?.toIso8601String(),
       'timerCompleted': timerCompleted,
       'timerNotificationSent': timerNotificationSent,
+      'iconCodePoint': iconCodePoint,
+      'colorValue': colorValue,
     };
   }
 
@@ -189,6 +206,8 @@ class Entry {
       timerEndTime: json['timerEndTime'] != null ? DateTime.parse(json['timerEndTime'] as String) : null,
       timerCompleted: json['timerCompleted'] as bool? ?? false,
       timerNotificationSent: json['timerNotificationSent'] as bool? ?? false,
+      iconCodePoint: json['iconCodePoint'] as int?,
+      colorValue: json['colorValue'] as int?,
     );
   }
 
@@ -209,6 +228,8 @@ class Entry {
       'timerEndTime': timerEndTime?.toIso8601String(),
       'timerCompleted': timerCompleted ? 1 : 0,
       'timerNotificationSent': timerNotificationSent ? 1 : 0,
+      'iconCodePoint': iconCodePoint,
+      'colorValue': colorValue,
     };
   }
 
@@ -228,6 +249,8 @@ class Entry {
       timerEndTime: map['timerEndTime'] != null ? DateTime.parse(map['timerEndTime'] as String) : null,
       timerCompleted: (map['timerCompleted'] as int?) == 1,
       timerNotificationSent: (map['timerNotificationSent'] as int?) == 1,
+      iconCodePoint: map['iconCodePoint'] as int?,
+      colorValue: map['colorValue'] as int?,
     );
   }
 
@@ -247,6 +270,8 @@ class Entry {
     DateTime? timerEndTime,
     bool? timerCompleted,
     bool? timerNotificationSent,
+    int? iconCodePoint,
+    int? colorValue,
   }) {
     return Entry(
       id: id ?? this.id,
@@ -263,6 +288,8 @@ class Entry {
       timerEndTime: timerEndTime ?? this.timerEndTime,
       timerCompleted: timerCompleted ?? this.timerCompleted,
       timerNotificationSent: timerNotificationSent ?? this.timerNotificationSent,
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      colorValue: colorValue ?? this.colorValue,
     );
   }
 
