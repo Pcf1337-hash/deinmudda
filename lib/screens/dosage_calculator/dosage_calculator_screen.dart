@@ -898,56 +898,57 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 width: 1,
               ),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header with icon and administration route
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: substanceColor.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        _getSubstanceIcon(substance.name),
-                        color: substanceColor,
-                        size: 24,
-                      ),
-                    ),
-                    const Spacer(),
-                    Flexible(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with icon and administration route
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
-                          color: substanceColor.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: substanceColor.withOpacity(0.3),
-                            width: 1,
-                          ),
+                          color: substanceColor.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: Text(
-                          substance.administrationRoute,
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 10,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                        child: Icon(
+                          _getSubstanceIcon(substance.name),
+                          color: substanceColor,
+                          size: 24,
                         ),
                       ),
-                    ),
-                  ],
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Substance name - constrained to prevent overflow
-                Flexible(
-                  child: Container(
+                      const Spacer(),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: substanceColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: substanceColor.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Text(
+                            substance.administrationRoute,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: substanceColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 10,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Substance name - constrained to prevent overflow
+                  Container(
                     constraints: const BoxConstraints(
                       minHeight: 35,
                       maxHeight: 50,
@@ -963,19 +964,17 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Recommended dose section with flexible height - INCREASED HEIGHT
-                Flexible(
-                  child: Container(
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Recommended dose section with flexible height - FIXED OVERFLOW
+                  Container(
                     width: double.infinity,
                     constraints: const BoxConstraints(
-                      minHeight: 80, // Increased from 60 to 80
-                      maxHeight: 100, // Increased from 80 to 100
+                      minHeight: 70, // Reduced from 80 to fit better
+                      maxHeight: 90, // Reduced from 100 to fit better
                     ),
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(10), // Reduced from 12 to 10
                     decoration: BoxDecoration(
                       color: substanceColor.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -986,6 +985,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
                         // Dosage label with percentage
                         Text(
@@ -995,24 +995,24 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w600,
-                            fontSize: 10,
+                            fontSize: 9, // Reduced from 10 to fit better
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 2), // Reduced from 4 to 2
                         // Dosage amount
                         Text(
                           '${recommendedDose.toStringAsFixed(1)} mg',
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w800,
-                            fontSize: 14,
+                            fontSize: 13, // Reduced from 14 to fit better
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 4), // Reduced from 6 to 4
                         // Duration integrated into dosage field
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
@@ -1020,7 +1020,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             Icon(
                               Icons.schedule_rounded,
                               color: substanceColor.withOpacity(0.7),
-                              size: 12,
+                              size: 11, // Reduced from 12 to fit better
                             ),
                             const SizedBox(width: 4),
                             Flexible(
@@ -1028,7 +1028,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                                 substance.duration,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: substanceColor.withOpacity(0.7),
-                                  fontSize: 10,
+                                  fontSize: 9, // Reduced from 10 to fit better
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
@@ -1039,53 +1039,53 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       ],
                     ),
                   ),
-                ),
-                
-                const SizedBox(height: 12),
-                
-                // Action button - INCREASED HEIGHT for better visual balance
-                Consumer<service.PsychedelicThemeService>(
-                  builder: (context, themeService, child) {
-                    final button = SizedBox(
-                      width: double.infinity,
-                      height: 44, // Increased from 36 to 44 for better proportions
-                      child: ElevatedButton(
-                        onPressed: () => _calculateDosage(substance),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: substanceColor.withOpacity(0.2),
-                          foregroundColor: substanceColor,
-                          side: BorderSide(
-                            color: substanceColor.withOpacity(0.5),
-                            width: 1,
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Action button - REDUCED HEIGHT to prevent overflow
+                  Consumer<service.PsychedelicThemeService>(
+                    builder: (context, themeService, child) {
+                      final button = SizedBox(
+                        width: double.infinity,
+                        height: 38, // Reduced from 44 to prevent overflow
+                        child: ElevatedButton(
+                          onPressed: () => _calculateDosage(substance),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: substanceColor.withOpacity(0.2),
+                            foregroundColor: substanceColor,
+                            side: BorderSide(
+                              color: substanceColor.withOpacity(0.5),
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 0,
                           ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12), // Slightly increased border radius
+                          child: Text(
+                            'Berechnen',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13, // Reduced from 14 to fit better
+                            ),
                           ),
-                          elevation: 0,
                         ),
-                        child: Text(
-                          'Berechnen',
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14, // Slightly increased font size
-                          ),
-                        ),
-                      ),
-                    );
-
-                    // Add pulsating effect in trippy mode
-                    if (themeService.isPsychedelicMode) {
-                      return PulsatingWidget(
-                        isEnabled: true,
-                        glowColor: substanceColor,
-                        child: button,
                       );
-                    }
 
-                    return button;
-                  },
-                ),
-              ],
+                      // Add pulsating effect in trippy mode
+                      if (themeService.isPsychedelicMode) {
+                        return PulsatingWidget(
+                          isEnabled: true,
+                          glowColor: substanceColor,
+                          child: button,
+                        );
+                      }
+
+                      return button;
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
