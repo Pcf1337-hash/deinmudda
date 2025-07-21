@@ -881,7 +881,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                   return Transform.rotate(
                                     angle: value * 6.28, // Full rotation
                                     child: ShaderMask(
-                                  shaderCallback: (bounds) {
+                                      shaderCallback: (bounds) {
                                     return LinearGradient(
                                       begin: Alignment.topLeft,
                                       end: Alignment.bottomRight,
@@ -1055,7 +1055,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ),
         ),
       ),
-    );
+    ));
   }
 
   // Helper method to get responsive header size
