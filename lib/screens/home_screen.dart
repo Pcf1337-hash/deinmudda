@@ -691,21 +691,54 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           }
                           
                           // Wrap content sections individually for more granular error handling
-                          return LayoutErrorBoundary(
-                            debugLabel: 'Main Content Sections',
-                            fallback: _buildErrorFallback(context, isDark),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisSize: MainAxisSize.min, // Use minimum required space
-                              children: [
-                                Spacing.verticalSpaceLg,
-                                _buildRecentEntriesSection(context, isDark, entries),
-                                Spacing.verticalSpaceLg,
-                                _buildTodayStatsSection(context, isDark),
-                                Spacing.verticalSpaceLg,
-                                _buildQuickInsightsSection(context, isDark),
-                              ],
-                            ),
+                          // Only show error fallback for actual rendering errors, not layout overflow warnings
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min, // Use minimum required space
+                            children: [
+                              Spacing.verticalSpaceLg,
+                              LayoutErrorBoundary(
+                                debugLabel: 'Recent Entries Section',
+                                fallback: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    'Fehler beim Laden der letzten Einträge',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+                                child: _buildRecentEntriesSection(context, isDark, entries),
+                              ),
+                              Spacing.verticalSpaceLg,
+                              LayoutErrorBoundary(
+                                debugLabel: 'Today Stats Section',
+                                fallback: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    'Statistiken temporär nicht verfügbar',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+                                child: _buildTodayStatsSection(context, isDark),
+                              ),
+                              Spacing.verticalSpaceLg,
+                              LayoutErrorBoundary(
+                                debugLabel: 'Quick Insights Section',
+                                fallback: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Text(
+                                    'Insights temporär nicht verfügbar',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                    ),
+                                  ),
+                                ),
+                                child: _buildQuickInsightsSection(context, isDark),
+                              ),
+                            ],
                           );
                         },
                       ),

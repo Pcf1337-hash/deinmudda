@@ -27,20 +27,8 @@ class _LayoutErrorBoundaryState extends State<LayoutErrorBoundary> with SafeStat
   @override
   void initState() {
     super.initState();
-    
-    // Set up error handler for uncaught layout errors
-    FlutterError.onError = (FlutterErrorDetails details) {
-      // Check if this is a layout-related error
-      if (_isLayoutError(details.exception.toString())) {
-        print('🚨 Layout error caught by boundary: ${details.exception}');
-        // Don't call setState during build - just log the error
-        _error = details.exception;
-        _stackTrace = details.stack;
-      }
-      
-      // Call the original error handler
-      FlutterError.presentError(details);
-    };
+    // Note: Removed global error handler to prevent interference with other components
+    // Each LayoutErrorBoundary now only handles errors from its own child widget
   }
 
   bool _isLayoutError(String errorMessage) {
