@@ -122,8 +122,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       print('📥 HomeScreen: Lade initiale Daten...');
     }
     
-    _loadEntries();
-    _loadQuickButtons();
+    // Defer data loading to prevent setState during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadEntries();
+        _loadQuickButtons();
+      }
+    });
   }
 
   void _refreshData() {
@@ -136,13 +141,20 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   }
 
   void _loadEntries() {
+    if (!mounted) return;
+    
     if (kDebugMode) {
       print('📋 HomeScreen: Lade Einträge...');
     }
     
-    safeSetState(() {
-      _isLoadingEntries = true;
-      _entriesFuture = _entryService.getAllEntries();
+    // Defer setState to prevent calling during build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        safeSetState(() {
+          _isLoadingEntries = true;
+          _entriesFuture = _entryService.getAllEntries();
+        });
+      }
     });
     
     // Log the result
@@ -212,6 +224,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   }
 
   Future<void> _loadQuickButtons() async {
+    if (!mounted) return;
+    
     try {
       if (kDebugMode) {
         print('⚡ HomeScreen: Lade QuickButtons...');
@@ -219,18 +233,23 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       
       final buttons = await _quickButtonService.getAllQuickButtons();
       
+      // Defer setState to prevent calling during build
       if (mounted) {
-        safeSetState(() {
-          _quickButtons = buttons;
-          _isLoadingQuickButtons = false;
-        });
-        
-        if (kDebugMode) {
-          print('✅ HomeScreen: QuickButtons geladen: ${buttons.length} Buttons');
-          for (int i = 0; i < buttons.length.clamp(0, 3); i++) {
-            print('  - ${buttons[i].substanceName}: ${buttons[i].dosage}${buttons[i].unit}');
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            safeSetState(() {
+              _quickButtons = buttons;
+              _isLoadingQuickButtons = false;
+            });
+            
+            if (kDebugMode) {
+              print('✅ HomeScreen: QuickButtons geladen: ${buttons.length} Buttons');
+              for (int i = 0; i < buttons.length.clamp(0, 3); i++) {
+                print('  - ${buttons[i].substanceName}: ${buttons[i].dosage}${buttons[i].unit}');
+              }
+            }
           }
-        }
+        });
       }
     } catch (e) {
       if (kDebugMode) {
@@ -238,9 +257,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       }
       
       if (mounted) {
-        safeSetState(() {
-          _quickButtons = [];
-          _isLoadingQuickButtons = false;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            safeSetState(() {
+              _quickButtons = [];
+              _isLoadingQuickButtons = false;
+            });
+          }
         });
       }
     }

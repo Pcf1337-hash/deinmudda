@@ -32,9 +32,14 @@ class _OptimizedListViewState extends State<OptimizedListView> {
       itemCount: widget.children.length,
       itemBuilder: (context, index) {
         return RepaintBoundary(
-          child: AnimatedSwitcher(
-            duration: widget.animationDuration,
-            child: widget.children[index],
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              maxHeight: 200, // Prevent items from becoming too tall
+            ),
+            child: AnimatedSwitcher(
+              duration: widget.animationDuration,
+              child: widget.children[index],
+            ),
           ),
         );
       },
