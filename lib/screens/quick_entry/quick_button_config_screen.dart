@@ -240,6 +240,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         dosage: dosage,
         unit: unit,
         cost: finalCost,
+        iconCodePoint: _selectedIcon?.codePoint,
+        colorValue: _selectedColor?.value,
       ) ?? QuickButtonConfig.create(
         substanceId: _selectedSubstance!.id,
         substanceName: _selectedSubstance!.name,
@@ -247,6 +249,8 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         unit: unit,
         cost: finalCost,
         position: position,
+        icon: _selectedIcon,
+        color: _selectedColor,
       );
 
       if (widget.existingConfig != null) {

@@ -80,7 +80,10 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-    final substanceColor = AppIconGenerator.getSubstanceColor(widget.config.substanceName);
+    
+    // Use stored icon/color if available, otherwise fall back to generated ones
+    final substanceIcon = widget.config.icon ?? AppIconGenerator.getSubstanceIcon(widget.config.substanceName);
+    final substanceColor = widget.config.color ?? AppIconGenerator.getSubstanceColor(widget.config.substanceName);
 
     return AnimatedBuilder(
       animation: _animationController,
@@ -140,7 +143,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                             borderRadius: Spacing.borderRadiusSm,
                           ),
                           child: Icon(
-                            AppIconGenerator.getSubstanceIcon(widget.config.substanceName),
+                            substanceIcon,
                             color: substanceColor,
                             size: Spacing.iconMd,
                           ),

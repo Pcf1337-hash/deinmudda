@@ -1,4 +1,5 @@
 import 'package:uuid/uuid.dart';
+import 'package:flutter/material.dart';
 
 class QuickButtonConfig {
   final String id;
@@ -11,6 +12,8 @@ class QuickButtonConfig {
   final bool isActive;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final int? iconCodePoint; // Store icon as codePoint for serialization
+  final int? colorValue; // Store color as int value for serialization
 
   const QuickButtonConfig({
     required this.id,
@@ -23,7 +26,13 @@ class QuickButtonConfig {
     required this.isActive,
     required this.createdAt,
     required this.updatedAt,
+    this.iconCodePoint,
+    this.colorValue,
   });
+
+  // Helper getters for icon and color
+  IconData? get icon => iconCodePoint != null ? IconData(iconCodePoint!, fontFamily: 'MaterialIcons') : null;
+  Color? get color => colorValue != null ? Color(colorValue!) : null;
 
   // Factory constructor for creating new quick buttons
   factory QuickButtonConfig.create({
@@ -34,6 +43,8 @@ class QuickButtonConfig {
     double cost = 0.0,
     required int position,
     bool isActive = true,
+    IconData? icon,
+    Color? color,
   }) {
     final now = DateTime.now();
     return QuickButtonConfig(
@@ -47,6 +58,8 @@ class QuickButtonConfig {
       isActive: isActive,
       createdAt: now,
       updatedAt: now,
+      iconCodePoint: icon?.codePoint,
+      colorValue: color?.value,
     );
   }
 
@@ -72,6 +85,8 @@ class QuickButtonConfig {
       'isActive': isActive,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
+      'iconCodePoint': iconCodePoint,
+      'colorValue': colorValue,
     };
   }
 
@@ -87,6 +102,8 @@ class QuickButtonConfig {
       isActive: json['isActive'] as bool,
       createdAt: DateTime.parse(json['createdAt'] as String),
       updatedAt: DateTime.parse(json['updatedAt'] as String),
+      iconCodePoint: json['iconCodePoint'] as int?,
+      colorValue: json['colorValue'] as int?,
     );
   }
 
@@ -103,6 +120,8 @@ class QuickButtonConfig {
       'isActive': isActive ? 1 : 0,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt.toIso8601String(),
+      'iconCodePoint': iconCodePoint,
+      'colorValue': colorValue,
     };
   }
 
@@ -118,6 +137,8 @@ class QuickButtonConfig {
       isActive: (map['isActive'] as int) == 1,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
+      iconCodePoint: map['iconCodePoint'] as int?,
+      colorValue: map['colorValue'] as int?,
     );
   }
 
@@ -133,6 +154,8 @@ class QuickButtonConfig {
     bool? isActive,
     DateTime? createdAt,
     DateTime? updatedAt,
+    int? iconCodePoint,
+    int? colorValue,
   }) {
     return QuickButtonConfig(
       id: id ?? this.id,
@@ -145,6 +168,8 @@ class QuickButtonConfig {
       isActive: isActive ?? this.isActive,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? DateTime.now(),
+      iconCodePoint: iconCodePoint ?? this.iconCodePoint,
+      colorValue: colorValue ?? this.colorValue,
     );
   }
 
