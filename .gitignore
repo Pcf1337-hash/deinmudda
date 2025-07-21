@@ -54,3 +54,8 @@ node_modules/
 
 # Downloaded SDK for testing
 sdk-*/
+
+# Test and validation files
+test_database_fix.dart
+validate_changes.dart
+*_test_*.dart
