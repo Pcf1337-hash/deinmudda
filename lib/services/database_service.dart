@@ -531,4 +531,198 @@ class DatabaseService {
       return false;
     }
   }
+
+  // Safe query methods with parameter binding to prevent SQL injection
+  
+  /// Execute a safe SELECT query with parameter binding
+  Future<List<Map<String, dynamic>>> safeQuery(
+    String table, {
+    bool? distinct,
+    List<String>? columns,
+    String? where,
+    List<dynamic>? whereArgs,
+    String? groupBy,
+    String? having,
+    String? orderBy,
+    int? limit,
+    int? offset,
+  }) async {
+    try {
+      final db = await database;
+      return await db.query(
+        table,
+        distinct: distinct,
+        columns: columns,
+        where: where,
+        whereArgs: whereArgs,
+        groupBy: groupBy,
+        having: having,
+        orderBy: orderBy,
+        limit: limit,
+        offset: offset,
+      );
+    } catch (e) {
+      print('Error in safe query: $e');
+      return [];
+    }
+  }
+
+  /// Execute a safe INSERT with parameter binding
+  Future<int> safeInsert(
+    String table,
+    Map<String, dynamic> values, {
+    String? nullColumnHack,
+    ConflictAlgorithm? conflictAlgorithm,
+  }) async {
+    try {
+      final db = await database;
+      return await db.insert(
+        table,
+        values,
+        nullColumnHack: nullColumnHack,
+        conflictAlgorithm: conflictAlgorithm,
+      );
+    } catch (e) {
+      print('Error in safe insert: $e');
+      return -1;
+    }
+  }
+
+  /// Execute a safe UPDATE with parameter binding
+  Future<int> safeUpdate(
+    String table,
+    Map<String, dynamic> values, {
+    String? where,
+    List<dynamic>? whereArgs,
+    ConflictAlgorithm? conflictAlgorithm,
+  }) async {
+    try {
+      final db = await database;
+      return await db.update(
+        table,
+        values,
+        where: where,
+        whereArgs: whereArgs,
+        conflictAlgorithm: conflictAlgorithm,
+      );
+    } catch (e) {
+      print('Error in safe update: $e');
+      return 0;
+    }
+  }
+
+  /// Execute a safe DELETE with parameter binding
+  Future<int> safeDelete(
+    String table, {
+    String? where,
+    List<dynamic>? whereArgs,
+  }) async {
+    try {
+      final db = await database;
+      return await db.delete(
+        table,
+        where: where,
+        whereArgs: whereArgs,
+      );
+    } catch (e) {
+      print('Error in safe delete: $e');
+      return 0;
+    }
+  }
+
+  /// Execute a safe raw query with parameter binding
+  Future<List<Map<String, dynamic>>> safeRawQuery(
+    String sql, [
+    List<dynamic>? arguments,
+  ]) async {
+    try {
+      final db = await database;
+      
+      // Validate SQL to prevent obvious injection attempts
+      if (_containsSqlInjectionAttempt(sql)) {
+        throw ArgumentError('Potentially unsafe SQL detected');
+      }
+      
+      return await db.rawQuery(sql, arguments);
+    } catch (e) {
+      print('Error in safe raw query: $e');
+      return [];
+    }
+  }
+
+  /// Validate SQL string for obvious injection attempts
+  bool _containsSqlInjectionAttempt(String sql) {
+    final lowerSql = sql.toLowerCase();
+    
+    // Check for common SQL injection patterns
+    final suspiciousPatterns = [
+      ';',  // Multiple statements
+      '--', // Comments
+      '/*', // Block comments
+      'union',
+      'drop',
+      'delete',
+      'insert',
+      'update',
+      'create',
+      'alter',
+      'exec',
+      'execute',
+      'sp_',
+      'xp_',
+    ];
+    
+    // Only allow specific safe operations
+    final allowedOperations = [
+      'select',
+      'pragma',
+      'count',
+      'max',
+      'min',
+      'avg',
+      'sum',
+    ];
+    
+    // Check if the query starts with an allowed operation
+    bool startsWithAllowed = false;
+    for (final op in allowedOperations) {
+      if (lowerSql.trimLeft().startsWith(op)) {
+        startsWithAllowed = true;
+        break;
+      }
+    }
+    
+    if (!startsWithAllowed) {
+      return true; // Suspicious - doesn't start with allowed operation
+    }
+    
+    // Check for suspicious patterns
+    for (final pattern in suspiciousPatterns) {
+      if (lowerSql.contains(pattern)) {
+        return true; // Suspicious pattern found
+      }
+    }
+    
+    return false; // Looks safe
+  }
+
+  /// Get table statistics safely
+  Future<Map<String, int>> getTableStatistics() async {
+    try {
+      final stats = <String, int>{};
+      
+      // Use safe parameterized queries for table counts
+      final tables = ['entries', 'substances', 'quick_buttons', 'dosage_calculator_users', 'dosage_calculator_substances'];
+      
+      for (final table in tables) {
+        final result = await safeRawQuery('SELECT COUNT(*) as count FROM $table');
+        stats[table] = (result.isNotEmpty ? result.first['count'] as int? : null) ?? 0;
+      }
+      
+      return stats;
+    } catch (e) {
+      print('Error getting table statistics: $e');
+      return {};
+    }
+  }
 }

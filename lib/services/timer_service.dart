@@ -19,11 +19,15 @@ class TimerService extends ChangeNotifier {
 
   Timer? _timerCheckTimer;
   Timer? _notificationDebounceTimer;
-  final List<Entry> _activeTimers = [];
+  final Map<String, Entry> _activeTimers = {}; // Use Map for efficient lookups
+  final Map<String, Timer> _individualTimers = {}; // Track individual timers
   SharedPreferences? _prefs;
   bool _isDisposed = false;
   bool _isInitialized = false;
   bool _pendingNotification = false;
+  
+  // Performance optimization: limit maximum concurrent timers
+  static const int _maxConcurrentTimers = 10;
 
   // Timer persistence keys
   static const String _activeTimerCountKey = 'active_timer_count';
@@ -76,7 +80,7 @@ class TimerService extends ChangeNotifier {
     });
   }
 
-  // Load active timers from database
+  // Load active timers from database with optimization
   Future<void> _loadActiveTimers() async {
     try {
       if (kDebugMode) {
@@ -86,20 +90,46 @@ class TimerService extends ChangeNotifier {
       final allEntries = await _entryService.getAllEntries();
       _activeTimers.clear();
       
-      for (final entry in allEntries) {
-        if (entry.hasTimer && entry.isTimerActive) {
-          _activeTimers.add(entry);
-        }
+      // Use efficient filtering and limit concurrent timers
+      var activeEntries = allEntries
+          .where((entry) => entry.hasTimer && entry.isTimerActive)
+          .take(_maxConcurrentTimers)
+          .toList();
+      
+      for (final entry in activeEntries) {
+        _activeTimers[entry.id] = entry;
+        
+        // Set up individual timer for this entry if needed
+        _setupIndividualTimer(entry);
       }
       
       if (kDebugMode) {
-        print('✅ ${_activeTimers.length} aktive Timer geladen');
+        print('✅ ${_activeTimers.length} aktive Timer geladen (max: $_maxConcurrentTimers)');
       }
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Laden aktiver Timer: $e');
       
-      // Ensure the list is cleared on error
+      // Ensure the map is cleared on error
       _activeTimers.clear();
+    }
+  }
+
+  // Set up individual timer for entry-specific management
+  void _setupIndividualTimer(Entry entry) {
+    if (_individualTimers.containsKey(entry.id)) {
+      _individualTimers[entry.id]?.cancel();
+    }
+    
+    if (entry.timerEndTime == null) return;
+    
+    final now = DateTime.now();
+    final remaining = entry.timerEndTime!.difference(now);
+    
+    if (remaining.inMilliseconds > 0) {
+      _individualTimers[entry.id] = Timer(remaining, () {
+        _handleTimerExpired(entry);
+        _individualTimers.remove(entry.id);
+      });
     }
   }
 
@@ -121,7 +151,7 @@ class TimerService extends ChangeNotifier {
     }
   }
 
-  // Check for expired timers with improved error handling
+  // Check for expired timers with improved efficiency
   Future<void> _checkTimers() async {
     if (_isDisposed || _timerCheckTimer == null || !_timerCheckTimer!.isActive) {
       return; // Service was disposed or timer was cancelled, don't proceed
@@ -129,38 +159,38 @@ class TimerService extends ChangeNotifier {
     
     try {
       final now = DateTime.now();
-      final expiredTimers = <Entry>[];
+      final expiredEntries = <Entry>[];
 
-      // Create a copy of the list to avoid concurrent modification
-      final activeTimersCopy = List<Entry>.from(_activeTimers);
-
-      for (final entry in activeTimersCopy) {
+      // Use Map values for efficient iteration
+      for (final entry in _activeTimers.values) {
         if (entry.timerEndTime != null && 
             now.isAfter(entry.timerEndTime!) && 
             !entry.timerCompleted &&
             !entry.timerNotificationSent) {
-          expiredTimers.add(entry);
+          expiredEntries.add(entry);
         }
       }
 
-      for (final entry in expiredTimers) {
+      for (final entry in expiredEntries) {
         if (!_isDisposed) {
           await _handleTimerExpired(entry);
         }
       }
 
-      // Remove expired timers from active list
-      if (!_isDisposed) {
-        _activeTimers.removeWhere((entry) => expiredTimers.contains(entry));
+      // Remove expired timers from active map
+      if (!_isDisposed && expiredEntries.isNotEmpty) {
+        for (final entry in expiredEntries) {
+          _activeTimers.remove(entry.id);
+          _individualTimers[entry.id]?.cancel();
+          _individualTimers.remove(entry.id);
+        }
         
         // Notify listeners if any timers were removed
-        if (expiredTimers.isNotEmpty) {
-          _notifyListenersDebounced();
-        }
+        _notifyListenersDebounced();
       }
       
-      if (expiredTimers.isNotEmpty) {
-        ErrorHandler.logTimer('CHECK', '${expiredTimers.length} Timer abgelaufen und verarbeitet');
+      if (expiredEntries.isNotEmpty) {
+        ErrorHandler.logTimer('CHECK', '${expiredEntries.length} Timer abgelaufen und verarbeitet');
       }
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Überprüfen der Timer: $e');
@@ -207,7 +237,7 @@ class TimerService extends ChangeNotifier {
     }
   }
 
-  // Start timer for entry
+  // Start timer for entry with improved management
   Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
     if (_isDisposed) {
       ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu starten, aber Service ist disposed');
@@ -217,15 +247,18 @@ class TimerService extends ChangeNotifier {
     try {
       ErrorHandler.logTimer('START', 'Timer wird für ${entry.substanceName} gestartet');
       
-      // Check for duplicate timer instances for the same entry
-      if (hasTimerWithId(entry.id)) {
-        ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für ${entry.substanceName} bereits aktiv - stoppe den vorhandenen');
-        await stopTimer(entry);
+      // Check if we've reached the maximum number of concurrent timers
+      if (_activeTimers.length >= _maxConcurrentTimers) {
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Maximale Anzahl gleichzeitiger Timer erreicht ($_maxConcurrentTimers). Ältester Timer wird gestoppt.');
+        _removeOldestTimer();
       }
       
-      // Allow multiple timers to run concurrently - no need to stop existing timers
-      ErrorHandler.logTimer('CONCURRENT', 'Erlaube gleichzeitige Timer. Aktive Timer: ${_activeTimers.length}');
-
+      // Check for duplicate timer instances for the same entry
+      if (_activeTimers.containsKey(entry.id)) {
+        ErrorHandler.logWarning('TIMER_SERVICE', 'Timer für ${entry.substanceName} bereits aktiv - stoppe den vorhandenen');
+        await _stopTimerById(entry.id);
+      }
+      
       Duration? duration = customDuration;
       
       // If no custom duration, try to get duration from substance
@@ -250,8 +283,11 @@ class TimerService extends ChangeNotifier {
       if (!_isDisposed) {
         await _entryService.updateEntry(updatedEntry);
 
-        // Add to active timers
-        _activeTimers.add(updatedEntry);
+        // Add to active timers map
+        _activeTimers[updatedEntry.id] = updatedEntry;
+        
+        // Set up individual timer for this entry
+        _setupIndividualTimer(updatedEntry);
 
         // Save to preferences using the specific format requested
         await _saveTimerToSpecificPrefs(now, duration, entry.substanceId);
@@ -273,7 +309,37 @@ class TimerService extends ChangeNotifier {
     }
   }
 
-  // Stop timer for entry
+  // Helper method to remove the oldest timer when limit is reached
+  void _removeOldestTimer() {
+    if (_activeTimers.isEmpty) return;
+    
+    Entry? oldestEntry;
+    DateTime? oldestTime;
+    
+    for (final entry in _activeTimers.values) {
+      if (entry.timerStartTime != null) {
+        if (oldestTime == null || entry.timerStartTime!.isBefore(oldestTime)) {
+          oldestTime = entry.timerStartTime;
+          oldestEntry = entry;
+        }
+      }
+    }
+    
+    if (oldestEntry != null) {
+      _stopTimerById(oldestEntry.id);
+      ErrorHandler.logTimer('CLEANUP', 'Ältester Timer entfernt: ${oldestEntry.substanceName}');
+    }
+  }
+
+  // Helper method to stop timer by ID
+  Future<void> _stopTimerById(String entryId) async {
+    final entry = _activeTimers[entryId];
+    if (entry != null) {
+      await stopTimer(entry);
+    }
+  }
+
+  // Stop timer for entry with improved efficiency
   Future<Entry> stopTimer(Entry entry) async {
     if (_isDisposed) {
       ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu stoppen, aber Service ist disposed');
@@ -290,8 +356,12 @@ class TimerService extends ChangeNotifier {
       if (!_isDisposed) {
         await _entryService.updateEntry(updatedEntry);
 
-        // Remove from active timers
-        _activeTimers.removeWhere((e) => e.id == entry.id);
+        // Remove from active timers map
+        _activeTimers.remove(entry.id);
+        
+        // Cancel and remove individual timer
+        _individualTimers[entry.id]?.cancel();
+        _individualTimers.remove(entry.id);
 
         // Clear specific timer preferences when stopping
         await _clearSpecificTimerPrefs();
@@ -329,12 +399,12 @@ class TimerService extends ChangeNotifier {
   }
 
   // Get all active timers
-  List<Entry> get activeTimers => List.unmodifiable(_activeTimers);
+  List<Entry> get activeTimers => List.unmodifiable(_activeTimers.values);
 
   // Get current active timer (since only one is allowed)
   Entry? get currentActiveTimer {
     try {
-      return _activeTimers.isNotEmpty ? _activeTimers.first : null;
+      return _activeTimers.isNotEmpty ? _activeTimers.values.first : null;
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Abrufen des aktiven Timers: $e');
       return null;
@@ -365,17 +435,14 @@ class TimerService extends ChangeNotifier {
 
   // Check if entry has active timer
   bool hasActiveTimer(String entryId) {
-    return _activeTimers.any((entry) => entry.id == entryId);
+    return _activeTimers.containsKey(entryId);
   }
 
   // Get remaining time for entry
   Duration? getRemainingTime(String entryId) {
     try {
-      final entry = _activeTimers.firstWhere(
-        (e) => e.id == entryId,
-        orElse: () => throw StateError('Timer not found'),
-      );
-      return entry.remainingTime;
+      final entry = _activeTimers[entryId];
+      return entry?.remainingTime;
     } catch (e) {
       if (kDebugMode) {
         print('Error getting remaining time: $e');
@@ -387,8 +454,8 @@ class TimerService extends ChangeNotifier {
   // Get timer progress for entry
   double getTimerProgress(String entryId) {
     try {
-      final entry = _activeTimers.firstWhere((e) => e.id == entryId);
-      return entry.timerProgress;
+      final entry = _activeTimers[entryId];
+      return entry?.timerProgress ?? 0.0;
     } catch (e) {
       return 0.0;
     }
@@ -396,16 +463,12 @@ class TimerService extends ChangeNotifier {
 
   // Check if timer with this ID already exists to prevent duplicates
   bool hasTimerWithId(String entryId) {
-    return _activeTimers.any((timer) => timer.id == entryId);
+    return _activeTimers.containsKey(entryId);
   }
 
   // Safe way to get timer by ID
   Entry? getTimerById(String entryId) {
-    try {
-      return _activeTimers.firstWhere((timer) => timer.id == entryId);
-    } catch (e) {
-      return null;
-    }
+    return _activeTimers[entryId];
   }
 
   // Parse duration from string (e.g., "4–6 hours", "30–60 min")
@@ -734,7 +797,7 @@ class TimerService extends ChangeNotifier {
     }
   }
 
-  // Dispose timer service
+  // Dispose timer service with improved cleanup
   @override
   void dispose() {
     if (_isDisposed) return;
@@ -747,6 +810,13 @@ class TimerService extends ChangeNotifier {
       _timerCheckTimer = null;
       _notificationDebounceTimer?.cancel();
       _notificationDebounceTimer = null;
+      
+      // Cancel all individual timers
+      for (final timer in _individualTimers.values) {
+        timer.cancel();
+      }
+      _individualTimers.clear();
+      
       _activeTimers.clear();
       
       // Clear timer preferences

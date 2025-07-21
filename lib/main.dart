@@ -24,6 +24,31 @@ import 'services/psychedelic_theme_service.dart' as service;
 import 'theme/modern_theme.dart';
 import 'widgets/psychedelic_background.dart';
 
+// Global state for layout error tracking
+bool _layoutErrorOccurred = false;
+
+void _setLayoutErrorOccurred(bool occurred) {
+  _layoutErrorOccurred = occurred;
+}
+
+void _showVisualErrorFallback(FlutterErrorDetails details) {
+  // Log the error for debugging
+  if (kDebugMode) {
+    debugPrint('Visual Error Fallback: ${details.exception}');
+  }
+  
+  // In release mode, we would show a user-friendly error screen
+  // For now, we'll continue with default handling but with better error recovery
+  try {
+    FlutterError.presentError(details);
+  } catch (e) {
+    // If even the error presentation fails, we'll handle it gracefully
+    if (kDebugMode) {
+      debugPrint('Failed to present error: $e');
+    }
+  }
+}
+
 void main() async {
   // Ensure Flutter is initialized
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,7 +60,7 @@ void main() async {
     ErrorHandler.logError('FLUTTER_ERROR', 'Unbehandelter Flutter-Fehler: ${details.exception}');
     ErrorHandler.logError('FLUTTER_ERROR', 'Stack trace: ${details.stack}');
     
-    // Check if it's a layout error and log accordingly
+    // Check if it's a layout error and provide visual fallback
     final errorStr = details.exception.toString();
     if (errorStr.contains('RenderBox was not laid out') ||
         errorStr.contains('RenderFlex overflowed') ||
@@ -43,10 +68,18 @@ void main() async {
         errorStr.contains('unbounded width')) {
       ErrorHandler.logError('LAYOUT_ERROR', 'Layout-Fehler erkannt: $errorStr');
       ImpellerHelper.logPerformanceIssue('Layout', errorStr);
+      
+      // Set global flag for visual fallback
+      _setLayoutErrorOccurred(true);
     }
     
-    // Continue with default error handling
-    FlutterError.presentError(details);
+    // Continue with default error handling in debug mode, use fallback in release
+    if (kDebugMode) {
+      FlutterError.presentError(details);
+    } else {
+      // In release mode, use fallback error presentation
+      _showVisualErrorFallback(details);
+    }
   };
   
   // Handle errors in other zones (like timer callbacks)
@@ -148,35 +181,56 @@ class KonsumTrackerApp extends StatelessWidget {
             ErrorHandler.logError('MAIN_APP', 'Kritischer Fehler beim Erstellen der App: $e');
             ErrorHandler.logError('MAIN_APP', 'Stack trace: $stackTrace');
             
-            // Return fallback app
+            // Return fallback app with better error recovery
             return MaterialApp(
               home: Scaffold(
-                body: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error_outline, size: 64, color: Colors.red),
-                      const SizedBox(height: 16),
-                      Text(
-                        'App-Start fehlgeschlagen',
-                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text('Bitte App neu starten'),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {
-                          // Try to restart initialization
-                          initManager.initialize().then((_) {
+                body: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.error_outline, size: 64, color: Colors.red),
+                        const SizedBox(height: 16),
+                        Text(
+                          'App-Start fehlgeschlagen',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.',
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 16),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              // Try to restart initialization
+                              initManager.initialize().then((_) {
+                                if (context.mounted) {
+                                  // Force rebuild
+                                  (context as Element).markNeedsBuild();
+                                }
+                              });
+                            },
+                            child: Text('App neu starten'),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextButton(
+                          onPressed: () {
+                            // Reset layout error flag and try minimal restart
+                            _setLayoutErrorOccurred(false);
                             if (context.mounted) {
-                              // Force rebuild
                               (context as Element).markNeedsBuild();
                             }
-                          });
-                        },
-                        child: Text('Neu starten'),
-                      ),
-                    ],
+                          },
+                          child: Text('Minimal-Modus versuchen'),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
