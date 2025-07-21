@@ -84,8 +84,9 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       }
       
       ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'Animation Controller erfolgreich initialisiert');
-    } catch (e) {
+    } catch (e, stackTrace) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Initialisieren: $e');
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Stack trace: $stackTrace');
       
       // Log potential Impeller issue
       ImpellerHelper.logPerformanceIssue('ACTIVE_TIMER_BAR', 'Animation initialization failed: $e');
@@ -139,22 +140,25 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       _animationController.stop();
       _animationController.dispose();
       ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'AnimationController erfolgreich disposed');
-    } catch (e) {
+    } catch (e, stackTrace) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des AnimationController: $e');
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Stack trace: $stackTrace');
     }
     
     try {
       _timerInputController.dispose();
       ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'TextEditingController erfolgreich disposed');
-    } catch (e) {
+    } catch (e, stackTrace) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des TextEditingController: $e');
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Stack trace: $stackTrace');
     }
     
     try {
       _focusNode.dispose();
       ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'FocusNode erfolgreich disposed');
-    } catch (e) {
+    } catch (e, stackTrace) {
       ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Fehler beim Dispose des FocusNode: $e');
+      ErrorHandler.logError('ACTIVE_TIMER_BAR', 'Stack trace: $stackTrace');
     }
     
     ErrorHandler.logSuccess('ACTIVE_TIMER_BAR', 'ActiveTimerBar dispose abgeschlossen');
