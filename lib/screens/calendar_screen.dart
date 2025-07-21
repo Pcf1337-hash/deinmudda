@@ -474,42 +474,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
       ),
     );
   }
-            color: isSelected
-                ? DesignTokens.primaryIndigo.withOpacity(0.1)
-                : Colors.transparent,
-            borderRadius: Spacing.borderRadiusMd,
-            border: Border.all(
-              color: isSelected
-                  ? DesignTokens.primaryIndigo
-                  : (isDark
-                      ? DesignTokens.glassBorderDark
-                      : DesignTokens.glassBorderLight),
-              width: isSelected ? 2 : 1,
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: isSelected
-                    ? DesignTokens.primaryIndigo
-                    : theme.iconTheme.color?.withOpacity(0.7),
-                size: Spacing.iconSm,
-              ),
-              Spacing.verticalSpaceXs,
-              Text(
-                label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                  color: isSelected ? DesignTokens.primaryIndigo : null,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _buildCalendarContent(BuildContext context, bool isDark) {
     switch (_currentView) {
