@@ -61,6 +61,8 @@ class AppThemeManager {
         return ThemeMode.light;
       case service.ThemeMode.dark:
         return ThemeMode.dark;
+      case service.ThemeMode.trippy:
+        return ThemeMode.dark; // Use dark mode as base for trippy mode
     }
   }
 }

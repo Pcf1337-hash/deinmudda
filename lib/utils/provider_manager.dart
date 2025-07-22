@@ -31,7 +31,7 @@ class ProviderManager {
   }
 
   /// Build list of providers using ServiceLocator
-  static List<Provider> _buildProviders() {
+  static List<SingleChildWidget> _buildProviders() {
     return [
       // Non-ChangeNotifier providers
       Provider<DatabaseService>.value(

@@ -100,6 +100,12 @@ class ErrorHandler {
     }
   }
 
+  static void logPlatform(String platform, String message) {
+    if (kDebugMode) {
+      print('🖥️ PLATFORM [$platform]: $message');
+    }
+  }
+
   static T? safeCall<T>(String context, T Function() function) {
     try {
       return function();
