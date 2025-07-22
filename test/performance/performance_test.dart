@@ -12,15 +12,12 @@ import '../helpers/test_helpers.dart';
 
 void main() {
   group('Performance Tests', () {
-    late TestSetupHelper testSetup;
-
     setUpAll(() async {
-      testSetup = TestSetupHelper();
-      await testSetup.initializeTestEnvironment();
+      await TestSetupHelper.initializeTestEnvironment();
     });
 
     tearDownAll(() async {
-      await testSetup.cleanupTestEnvironment();
+      await TestSetupHelper.cleanupTestEnvironment();
     });
 
     group('Timer Service Performance', () {
