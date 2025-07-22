@@ -59,3 +59,7 @@ sdk-*/
 test_database_fix.dart
 validate_changes.dart
 *_test_*.dart
+
+# Temporary tools and downloads
+gh_*/
+/tmp/
