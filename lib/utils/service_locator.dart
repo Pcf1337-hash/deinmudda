@@ -20,6 +20,7 @@ import '../repositories/entry_repository.dart';
 import '../repositories/substance_repository.dart';
 import '../use_cases/entry_use_cases.dart';
 import '../use_cases/substance_use_cases.dart';
+import '../interfaces/service_interfaces.dart';
 
 /// Simple Service Locator implementation
 /// TODO: Consider replacing with get_it package for production
@@ -152,6 +153,50 @@ class ServiceLocator {
   /// Check if a service is registered
   static bool isRegistered<T>() {
     return _services.containsKey(T);
+  }
+
+  /// Initialize ServiceLocator for testing with mock services
+  static Future<void> initializeForTesting(Map<String, dynamic> mockServices) async {
+    if (_isInitialized) {
+      await dispose();
+    }
+
+    try {
+      if (kDebugMode) {
+        print('🧪 Initializing ServiceLocator for testing...');
+      }
+
+      // Register mock services
+      if (mockServices.containsKey('entryService')) {
+        _services[IEntryService] = mockServices['entryService'];
+      }
+      if (mockServices.containsKey('substanceService')) {
+        _services[ISubstanceService] = mockServices['substanceService'];
+      }
+      if (mockServices.containsKey('timerService')) {
+        _services[ITimerService] = mockServices['timerService'];
+      }
+      if (mockServices.containsKey('notificationService')) {
+        _services[INotificationService] = mockServices['notificationService'];
+      }
+      if (mockServices.containsKey('settingsService')) {
+        _services[ISettingsService] = mockServices['settingsService'];
+      }
+      if (mockServices.containsKey('authService')) {
+        _services[IAuthService] = mockServices['authService'];
+      }
+
+      _isInitialized = true;
+
+      if (kDebugMode) {
+        print('✅ ServiceLocator initialized for testing with ${_services.length} mock services');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('🚨 Test ServiceLocator initialization failed: $e');
+      }
+      rethrow;
+    }
   }
 
   /// Dispose all services and clear the locator
