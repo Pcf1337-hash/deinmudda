@@ -378,14 +378,22 @@ class _SubstanceCardState extends State<SubstanceCard>
             SizedBox(width: math.max(4.0, availableWidth * 0.01)),
             Flexible(
               child: Text(
-                widget.substance.duration,
+                widget.substance.durationWithIcon,
                 style: theme.textTheme.bodyMedium?.copyWith(
-                  color: Colors.white70,
-                  fontSize: fontSize,
+                  color: Colors.white,
+                  fontSize: math.max(13.0, fontSize), // Increased font size
                   fontWeight: FontWeight.w500,
+                  shadows: [
+                    Shadow(
+                      color: Colors.black.withOpacity(0.7),
+                      blurRadius: 2,
+                      offset: const Offset(1, 1),
+                    ),
+                  ],
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                softWrap: false,
               ),
             ),
           ],
@@ -425,7 +433,7 @@ class _SubstanceCardState extends State<SubstanceCard>
                 child: FittedBox(
                   fit: BoxFit.scaleDown,
                   child: Text(
-                    'Empfohlene Dosis',
+                    'Optimale Dosis',
                     style: theme.textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w700,
                       color: substanceColor,

@@ -356,6 +356,14 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
     final substanceColor = _getSubstanceColor(substance.name);
     final riskColor = _getRiskColor(substance.name);
 
+    // Calculate dosage preview if user exists
+    double? calculatedDose;
+    double? optimalDose;
+    if (_currentUser != null) {
+      calculatedDose = substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.normal);
+      optimalDose = _currentUser!.getRecommendedDose(calculatedDose);
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: isDark ? Colors.grey[800] : Colors.white,
@@ -451,46 +459,145 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
                 
                 const SizedBox(height: 16),
                 
-                // Add recommended dose display if user exists
-                if (_currentUser != null) ...[
+                // Add recommended dose display with enhanced styling if user exists
+                if (_currentUser != null && optimalDose != null) ...[
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          substanceColor.withOpacity(0.15),
+                          substanceColor.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: substanceColor.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.auto_awesome_rounded,
+                              color: substanceColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              _currentUser!.getDosageLabel(),
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: substanceColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          '${optimalDose!.toStringAsFixed(1)} mg bei ${_currentUser!.formattedWeight}',
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        // Enhanced duration display with better styling
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.schedule_rounded,
+                              color: Colors.white,
+                              size: 14,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.5),
+                                  blurRadius: 2,
+                                  offset: const Offset(1, 1),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Text(
+                                '⏱ ${substance.duration}',
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: Colors.white,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black.withOpacity(0.7),
+                                      blurRadius: 2,
+                                      offset: const Offset(1, 1),
+                                    ),
+                                  ],
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                softWrap: false,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ] else ...[
+                  // Show basic duration info even without user profile
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.amberAccent.withOpacity(0.1),
+                      color: substanceColor.withOpacity(0.05),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.amberAccent.withOpacity(0.3),
+                        color: substanceColor.withOpacity(0.2),
                         width: 1,
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
-                          Icons.star_rounded,
-                          color: Colors.amberAccent,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 8),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Empfohlene Dosis',
-                              style: theme.textTheme.bodySmall?.copyWith(
-                                color: Colors.amberAccent,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
-                              ),
-                            ),
-                            Text(
-                              substance.getFormattedDosage(_currentUser!.weightKg, DosageIntensity.normal),
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                color: Colors.amberAccent,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 16,
-                              ),
+                          Icons.schedule_rounded,
+                          color: Colors.white,
+                          size: 14,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
                             ),
                           ],
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            substance.durationWithIcon,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.7),
+                                  blurRadius: 2,
+                                  offset: const Offset(1, 1),
+                                ),
+                              ],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            softWrap: false,
+                          ),
                         ),
                       ],
                     ),
@@ -578,7 +685,7 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
                   child: ElevatedButton.icon(
                     onPressed: () => _calculateDosage(substance),
                     icon: const Icon(Icons.calculate_rounded),
-                    label: const Text('Dosierung berechnen'),
+                    label: Text(_currentUser != null ? 'Detailberechnung starten' : 'Profil erstellen & berechnen'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: substanceColor,
                       foregroundColor: Colors.white,
@@ -699,21 +806,82 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Profil erforderlich'),
-        content: const Text(
-          'Für die Dosierungsberechnung benötigen Sie ein Benutzerprofil mit Ihren körperlichen Daten.',
+        title: Row(
+          children: [
+            Icon(
+              Icons.person_add_rounded,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(width: 8),
+            const Text('Profil erforderlich'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Für präzise Dosierungsberechnungen benötigen Sie ein Benutzerprofil mit Ihren körperlichen Daten.',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.blue.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Vorteile eines Profils:',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• Gewichtsbasierte Dosierung\n• Automatische Sicherheitsreduktion\n• Personalisierte Empfehlungen\n• BMI-berücksichtigte Berechnungen',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Abbrechen'),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Return to main dosage calculator
             },
-            child: const Text('Profil erstellen'),
+            icon: const Icon(Icons.person_add_rounded),
+            label: const Text('Profil erstellen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -823,7 +991,7 @@ class _SimpleDosageResultCard extends StatefulWidget {
 }
 
 class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
-  DosageIntensity _selectedIntensity = DosageIntensity.light;
+  DosageIntensity _selectedIntensity = DosageIntensity.normal; // Start with normal/optimal dose
 
   @override
   Widget build(BuildContext context) {
@@ -1177,7 +1345,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Empfohlene Dosis',
+                  'Optimale Dosis',
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w600,
                     color: color,
@@ -1193,6 +1361,45 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                 Text(
                   '${_selectedIntensity.displayName} Intensität',
                   style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                // Enhanced duration display
+                Row(
+                  children: [
+                    Icon(
+                      Icons.schedule_rounded,
+                      color: Colors.white,
+                      size: 16,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 2,
+                          offset: const Offset(1, 1),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        widget.substance.durationWithIcon,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.white,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.7),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        softWrap: false,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -1292,14 +1499,21 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
   }
 
   double _getDoseForIntensity(DosageIntensity intensity) {
+    double baseDose;
     switch (intensity) {
       case DosageIntensity.light:
-        return widget.calculation.lightDose;
+        baseDose = widget.calculation.lightDose;
+        break;
       case DosageIntensity.normal:
-        return widget.calculation.normalDose;
+        baseDose = widget.calculation.normalDose;
+        break;
       case DosageIntensity.strong:
-        return widget.calculation.strongDose;
+        baseDose = widget.calculation.strongDose;
+        break;
     }
+    
+    // Apply user's dosage strategy (e.g., -20% for optimal)
+    return widget.user.getRecommendedDose(baseDose);
   }
 
   Color _getDosageColor(DosageIntensity intensity) {

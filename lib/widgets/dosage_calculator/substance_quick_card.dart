@@ -195,20 +195,35 @@ class SubstanceQuickCard extends StatelessWidget {
                       children: [
                         Icon(
                           Icons.schedule_rounded,
-                          color: Colors.white70,
+                          color: Colors.white,
                           size: 14,
+                          shadows: [
+                            Shadow(
+                              color: Colors.black.withOpacity(0.5),
+                              blurRadius: 2,
+                              offset: const Offset(1, 1),
+                            ),
+                          ],
                         ),
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            substance.duration,
+                            substance.durationWithIcon,
                             style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white70,
-                              fontSize: 12,
+                              color: Colors.white,
+                              fontSize: 13,
                               fontWeight: FontWeight.w500,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.7),
+                                  blurRadius: 2,
+                                  offset: const Offset(1, 1),
+                                ),
+                              ],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
+                            softWrap: false,
                           ),
                         ),
                       ],

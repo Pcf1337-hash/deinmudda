@@ -530,7 +530,7 @@ class _DosageResultCardState extends State<DosageResultCard>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Empfohlene Dosis',
+                      'Optimale Dosis',
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: color,

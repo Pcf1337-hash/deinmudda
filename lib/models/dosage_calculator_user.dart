@@ -331,8 +331,8 @@ class DosageCalculatorUser {
   String getDosageLabel() {
     final percentage = dosageStrategy.percentageDisplay;
     if (percentage == 0) {
-      return 'Empfohlene Dosis:';
+      return 'Optimale Dosis:';
     }
-    return 'Empfohlene Dosis (-$percentage%):';
+    return 'Optimale Dosis (-$percentage%):';
   }
 }

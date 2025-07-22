@@ -77,6 +77,19 @@ class DosageCalculatorSubstance {
     }
   }
 
+  // Enhanced duration getter with fallback
+  String get durationDisplay {
+    if (duration.isEmpty) {
+      return 'Unbekannte Dauer';
+    }
+    return duration;
+  }
+
+  // Enhanced duration with icon
+  String get durationWithIcon {
+    return '⏱ ${durationDisplay}';
+  }
+
   // Calculate dosage for specific user and intensity
   double calculateDosage(double weightKg, DosageIntensity intensity) {
     double dosePerKg;

@@ -58,7 +58,7 @@ class DosageLevelIndicator extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Empfohlene Dosis',
+          'Optimale Dosis',
           style: theme.textTheme.bodySmall?.copyWith(
             color: Colors.amberAccent,
             fontWeight: FontWeight.w600,
