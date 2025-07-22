@@ -111,7 +111,7 @@ class ServiceLocator {
     // Dispose services that implement dispose pattern
     for (final service in _services.values) {
       if (service is TimerService) {
-        await service.dispose();
+        service.dispose();
       }
       // Add other services that need disposal here
     }
