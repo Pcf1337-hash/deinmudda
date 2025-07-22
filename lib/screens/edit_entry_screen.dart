@@ -4,8 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
-import '../services/entry_service.dart';
-import '../services/substance_service.dart';
+import '../utils/service_locator.dart';
+import '../use_cases/entry_use_cases.dart';
+import '../use_cases/substance_use_cases.dart';
+import '../interfaces/service_interfaces.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
 import '../theme/design_tokens.dart';
@@ -46,19 +48,32 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
   bool _autoCalculateCost = false;
   double _calculatedCost = 0.0;
 
-  // Services
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
+  // Use Cases and Services (injected via ServiceLocator)
+  late final UpdateEntryUseCase _updateEntryUseCase;
+  late final DeleteEntryUseCase _deleteEntryUseCase;
+  late final GetSubstancesUseCase _getSubstancesUseCase;
 
   @override
   void initState() {
     super.initState();
+    _initializeServices();
     _initializeForm();
     _loadSubstances();
     
     // Add listeners for auto-calculation
     _dosageController.addListener(_updateCalculatedCost);
     _unitController.addListener(_updateCalculatedCost);
+  }
+
+  /// Initialize use cases from ServiceLocator
+  void _initializeServices() {
+    try {
+      _updateEntryUseCase = ServiceLocator.get<UpdateEntryUseCase>();
+      _deleteEntryUseCase = ServiceLocator.get<DeleteEntryUseCase>();
+      _getSubstancesUseCase = ServiceLocator.get<GetSubstancesUseCase>();
+    } catch (e) {
+      throw StateError('Failed to initialize EditEntryScreen services: $e');
+    }
   }
 
   @override
@@ -126,7 +141,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     });
 
     try {
-      final substances = await _substanceService.getAllSubstances();
+      final substances = await _getSubstancesUseCase.getAllSubstances();
       setState(() {
         _substances = substances;
         
@@ -173,7 +188,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
         updatedAt: DateTime.now(),
       );
 
-      await _entryService.updateEntry(updatedEntry);
+      await _updateEntryUseCase.execute(updatedEntry);
       
       if (mounted) {
         Navigator.of(context).pop(true);
@@ -220,7 +235,7 @@ class _EditEntryScreenState extends State<EditEntryScreen> {
     });
 
     try {
-      await _entryService.deleteEntry(widget.entry.id);
+      await _deleteEntryUseCase.execute(widget.entry.id);
       
       if (mounted) {
         Navigator.of(context).pop(true);
