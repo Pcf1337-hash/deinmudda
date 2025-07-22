@@ -5,6 +5,7 @@ import '../lib/widgets/quick_entry/quick_button_widget.dart';
 import '../lib/models/quick_button_config.dart';
 import '../lib/models/entry.dart';
 import '../lib/services/timer_service.dart';
+import 'mocks/service_mocks.dart';
 
 void main() {
   group('QuickButton Timer Display Tests', () {
@@ -29,24 +30,29 @@ void main() {
       String substanceName = 'LSD',
       String remainingTime = '2h 30m',
     }) {
-      final timer = Entry.create(
+      final now = DateTime.now();
+      final timer = Entry(
+        id: 'test-timer-id',
         substanceId: 'test-id',
         substanceName: substanceName,
         dosage: 100.0,
         unit: 'μg',
-        dateTime: DateTime.now().subtract(const Duration(hours: 1)),
+        dateTime: now.subtract(const Duration(hours: 1)),
+        cost: 10.0,
         notes: 'Test timer',
+        createdAt: now,
+        updatedAt: now,
+        timerStartTime: now.subtract(const Duration(hours: 1)),
+        timerEndTime: now.add(const Duration(hours: 2, minutes: 30)),
+        timerCompleted: false,
+        timerNotificationSent: false,
       );
-      
-      timer.timerEndTime = DateTime.now().add(const Duration(hours: 2, minutes: 30));
-      timer.formattedRemainingTime = remainingTime;
-      timer.isTimerExpired = false;
       
       return timer;
     }
 
     Widget createTestWidget(QuickButtonConfig config, {Entry? activeTimer}) {
-      final timerService = TimerService();
+      final timerService = MockTimerService();
       
       // Set up active timer if provided
       if (activeTimer != null) {

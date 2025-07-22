@@ -1,14 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
-
-enum SubstanceCategory {
-  medication,
-  stimulant,
-  depressant,
-  supplement,
-  recreational,
-  other
-}
+import 'substance.dart';
 
 enum RiskLevel {
   low,

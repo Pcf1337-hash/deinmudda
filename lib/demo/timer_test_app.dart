@@ -6,6 +6,7 @@ import '../services/psychedelic_theme_service.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/active_timer_bar.dart';
 import '../utils/safe_navigation.dart';
+import '../../test/mocks/service_mocks.dart';
 
 /// Test app to verify timer fixes work correctly
 class TimerTestApp extends StatefulWidget {
@@ -16,7 +17,7 @@ class TimerTestApp extends StatefulWidget {
 }
 
 class _TimerTestAppState extends State<TimerTestApp> {
-  final TimerService _timerService = TimerService();
+  final TimerService _timerService = MockTimerService();
   late Entry _testEntry;
   bool _isTimerActive = false;
 
@@ -27,21 +28,21 @@ class _TimerTestAppState extends State<TimerTestApp> {
   }
 
   void _createTestEntry() {
+    final now = DateTime.now();
     _testEntry = Entry(
       id: 'test-timer-001',
       substanceId: 'test-substance',
       substanceName: 'Test Substance (Long Name That Should Not Overflow)',
       dosage: 100.0,
       unit: 'mg',
-      timestamp: DateTime.now(),
-      notes: 'Test timer entry',
-      mood: 'Test',
-      location: 'Test Location',
+      dateTime: now,
       cost: 10.0,
-      isQuickEntry: false,
+      notes: 'Test timer entry',
+      createdAt: now,
+      updatedAt: now,
       // Timer fields
-      timerStartTime: DateTime.now(),
-      timerEndTime: DateTime.now().add(const Duration(minutes: 5)),
+      timerStartTime: now,
+      timerEndTime: now.add(const Duration(minutes: 5)),
       timerCompleted: false,
       timerNotificationSent: false,
     );
@@ -181,10 +182,9 @@ class _TimerTestAppState extends State<TimerTestApp> {
 
   void _stopTimer() async {
     try {
-      final updatedEntry = await _timerService.stopTimer(_testEntry);
+      await _timerService.stopTimer(_testEntry.id);
       if (mounted) {
         setState(() {
-          _testEntry = updatedEntry;
           _isTimerActive = false;
         });
       }

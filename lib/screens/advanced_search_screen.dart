@@ -6,6 +6,7 @@ import '../models/entry.dart';
 import '../models/substance.dart' as substance_model;
 import '../services/entry_service.dart';
 import '../services/substance_service.dart';
+import '../utils/service_locator.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
 import '../theme/design_tokens.dart';
@@ -24,8 +25,8 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
   final _searchController = TextEditingController();
   
   // Services
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
+  late final EntryService _entryService;
+  late final SubstanceService _substanceService;
   
   // Search state
   String _searchQuery = '';
@@ -50,6 +51,8 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
   @override
   void initState() {
     super.initState();
+    _entryService = ServiceLocator.get<EntryService>();
+    _substanceService = ServiceLocator.get<SubstanceService>();
     _searchController.addListener(_onSearchChanged);
     _loadSubstances();
   }

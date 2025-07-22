@@ -1,9 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:konsum_tracker_pro/utils/crash_protection.dart';
-import 'package:konsum_tracker_pro/utils/error_handler.dart';
-import 'package:konsum_tracker_pro/models/entry.dart';
-import 'package:konsum_tracker_pro/services/timer_service.dart';
+import '../lib/utils/crash_protection.dart';
+import '../lib/utils/error_handler.dart';
+import '../lib/models/entry.dart';
+import '../lib/services/timer_service.dart';
+import 'mocks/service_mocks.dart';
 
 void main() {
   group('Timer Stability Tests', () {
@@ -11,13 +12,20 @@ void main() {
     late Entry testEntry;
 
     setUp(() {
-      timerService = TimerService();
-      testEntry = Entry.create(
+      timerService = MockTimerService();
+      final now = DateTime.now();
+      testEntry = Entry(
+        id: 'test-entry-id',
         substanceId: 'test-substance',
         substanceName: 'Test Substance',
         dosage: 100.0,
         unit: 'mg',
-        dateTime: DateTime.now(),
+        dateTime: now,
+        cost: 10.0,
+        notes: 'Test entry for stability test',
+        createdAt: now,
+        updatedAt: now,
+      );
       );
     });
 

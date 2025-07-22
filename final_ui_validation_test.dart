@@ -11,6 +11,7 @@ import 'lib/screens/auth/security_settings_screen.dart';
 import 'lib/widgets/header_bar.dart';
 import 'lib/widgets/consistent_fab.dart';
 import 'lib/theme/design_tokens.dart';
+import 'lib/interfaces/service_interfaces.dart';
 
 /// Final validation test to ensure UI consistency and proper implementation
 void main() {
@@ -59,7 +60,7 @@ void main() {
       testWidgets('HeaderBar adapts to trippy mode', (WidgetTester tester) async {
         final psychedelicService = PsychedelicThemeService();
         await psychedelicService.init();
-        await psychedelicService.setThemeMode(ThemeMode.trippy);
+        await psychedelicService.setThemeMode(AppThemeMode.trippy);
         
         await tester.pumpWidget(
           MaterialApp(
@@ -162,7 +163,7 @@ void main() {
         expect(find.byType(ConsistentFAB), findsOneWidget);
         
         // Switch to trippy mode
-        await psychedelicService.setThemeMode(ThemeMode.trippy);
+        await psychedelicService.setThemeMode(AppThemeMode.trippy);
         await tester.pumpAndSettle();
         
         // Should still have ConsistentFAB but with trippy styling

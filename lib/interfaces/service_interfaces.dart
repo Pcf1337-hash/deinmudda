@@ -30,6 +30,8 @@ abstract class IEntryService extends ChangeNotifier {
   Future<List<Entry>> getActiveTimerEntries();
   Future<void> updateEntryTimer(String id, DateTime? timerStartTime, Duration? duration);
   Future<Map<String, dynamic>> getStatistics();
+  Future<Map<String, dynamic>> getCostStatistics();
+  Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams);
 }
 
 /// Interface for Substance Service operations  

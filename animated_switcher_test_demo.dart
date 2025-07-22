@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../lib/screens/home_screen.dart';
-import '../lib/services/entry_service.dart';
-import '../lib/services/quick_button_service.dart';
-import '../lib/services/timer_service.dart';
-import '../lib/services/substance_service.dart';
-import '../lib/services/psychedelic_theme_service.dart';
+import 'lib/screens/home_screen.dart';
+import 'lib/services/entry_service.dart';
+import 'lib/services/quick_button_service.dart';
+import 'lib/services/timer_service.dart';
+import 'lib/services/substance_service.dart';
+import 'lib/services/psychedelic_theme_service.dart';
+import 'test/mocks/service_mocks.dart';
 
 /// Demo app to test the AnimatedSwitcher overflow fix
 /// This simulates the home screen with various loading states
@@ -30,10 +31,10 @@ class AnimatedSwitcherTestApp extends StatelessWidget {
       ),
       home: MultiProvider(
         providers: [
-          Provider<EntryService>(create: (_) => EntryService()),
-          Provider<QuickButtonService>(create: (_) => QuickButtonService()),
-          Provider<TimerService>(create: (_) => TimerService()),
-          Provider<SubstanceService>(create: (_) => SubstanceService()),
+          Provider<EntryService>(create: (_) => MockEntryService()),
+          Provider<QuickButtonService>(create: (_) => MockQuickButtonService()),
+          Provider<TimerService>(create: (_) => MockTimerService()),
+          Provider<SubstanceService>(create: (_) => MockSubstanceService()),
           ChangeNotifierProvider<PsychedelicThemeService>(
             create: (_) => PsychedelicThemeService(),
           ),

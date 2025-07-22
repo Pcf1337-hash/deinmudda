@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../models/entry.dart';
 import '../../services/entry_service.dart';
 import '../../services/analytics_service.dart';
+import '../../utils/service_locator.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/charts/line_chart_widget.dart';
 import '../../widgets/charts/bar_chart_widget.dart';
@@ -19,8 +20,8 @@ class PatternAnalysisScreen extends StatefulWidget {
 }
 
 class _PatternAnalysisScreenState extends State<PatternAnalysisScreen> {
-  final EntryService _entryService = EntryService();
-  final AnalyticsService _analyticsService = AnalyticsService();
+  late final EntryService _entryService;
+  late final AnalyticsService _analyticsService;
   
   bool _isLoading = true;
   String? _errorMessage;
@@ -35,6 +36,8 @@ class _PatternAnalysisScreenState extends State<PatternAnalysisScreen> {
   @override
   void initState() {
     super.initState();
+    _entryService = ServiceLocator.get<EntryService>();
+    _analyticsService = ServiceLocator.get<AnalyticsService>();
     _loadAnalysisData();
   }
 

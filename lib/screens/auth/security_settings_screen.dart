@@ -233,7 +233,7 @@ class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
     }
     
     try {
-      await _authService.setPINCode(pin);
+      await _authService.setPinCode(pin);
       
       setState(() {
         _isPINSet = true;
