@@ -1032,7 +1032,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                             const SizedBox(width: 4),
                             Flexible(
                               child: Text(
-                                '⏱ ${substance.duration}',
+                                substance.durationWithIcon,
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: Colors.white,
                                   fontSize: 13, // Increased to 13-14 range
@@ -1820,7 +1820,7 @@ class _SafeDosageResultCard extends StatefulWidget {
 }
 
 class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
-  DosageIntensity _selectedIntensity = DosageIntensity.light;
+  DosageIntensity _selectedIntensity = DosageIntensity.normal; // Start with normal/optimal dose
 
   @override
   Widget build(BuildContext context) {
@@ -2291,7 +2291,7 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '⏱ ${widget.substance.duration}',
+                        widget.substance.durationWithIcon,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                           fontSize: 14,

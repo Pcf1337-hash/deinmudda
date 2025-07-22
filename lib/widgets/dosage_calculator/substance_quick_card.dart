@@ -208,7 +208,7 @@ class SubstanceQuickCard extends StatelessWidget {
                         const SizedBox(width: 4),
                         Flexible(
                           child: Text(
-                            '⏱ ${substance.duration}',
+                            substance.durationWithIcon,
                             style: theme.textTheme.bodySmall?.copyWith(
                               color: Colors.white,
                               fontSize: 13,

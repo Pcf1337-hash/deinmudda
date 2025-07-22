@@ -581,7 +581,7 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            '⏱ ${substance.duration}',
+                            substance.durationWithIcon,
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: Colors.white,
                               fontSize: 14,
@@ -806,21 +806,82 @@ class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Profil erforderlich'),
-        content: const Text(
-          'Für die Dosierungsberechnung benötigen Sie ein Benutzerprofil mit Ihren körperlichen Daten.',
+        title: Row(
+          children: [
+            Icon(
+              Icons.person_add_rounded,
+              color: Theme.of(context).primaryColor,
+            ),
+            const SizedBox(width: 8),
+            const Text('Profil erforderlich'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Für präzise Dosierungsberechnungen benötigen Sie ein Benutzerprofil mit Ihren körperlichen Daten.',
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.blue.withOpacity(0.3),
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.auto_awesome_rounded,
+                        color: Colors.blue,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Vorteile eines Profils:',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '• Gewichtsbasierte Dosierung\n• Automatische Sicherheitsreduktion\n• Personalisierte Empfehlungen\n• BMI-berücksichtigte Berechnungen',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: Colors.blue.shade700,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: const Text('Abbrechen'),
           ),
-          ElevatedButton(
+          ElevatedButton.icon(
             onPressed: () {
               Navigator.of(context).pop();
-              Navigator.of(context).pop();
+              Navigator.of(context).pop(); // Return to main dosage calculator
             },
-            child: const Text('Profil erstellen'),
+            icon: const Icon(Icons.person_add_rounded),
+            label: const Text('Profil erstellen'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Theme.of(context).primaryColor,
+              foregroundColor: Colors.white,
+            ),
           ),
         ],
       ),
@@ -930,7 +991,7 @@ class _SimpleDosageResultCard extends StatefulWidget {
 }
 
 class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
-  DosageIntensity _selectedIntensity = DosageIntensity.light;
+  DosageIntensity _selectedIntensity = DosageIntensity.normal; // Start with normal/optimal dose
 
   @override
   Widget build(BuildContext context) {
@@ -1320,7 +1381,7 @@ class _SimpleDosageResultCardState extends State<_SimpleDosageResultCard> {
                     const SizedBox(width: 6),
                     Expanded(
                       child: Text(
-                        '⏱ ${widget.substance.duration}',
+                        widget.substance.durationWithIcon,
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.white,
                           fontSize: 14,
