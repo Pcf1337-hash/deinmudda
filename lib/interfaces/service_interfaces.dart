@@ -29,6 +29,7 @@ abstract class IEntryService extends ChangeNotifier {
   Future<void> deleteEntry(String id);
   Future<List<Entry>> getActiveTimerEntries();
   Future<void> updateEntryTimer(String id, DateTime? timerStartTime, Duration? duration);
+  Future<Map<String, dynamic>> getStatistics();
 }
 
 /// Interface for Substance Service operations  
@@ -65,6 +66,7 @@ abstract class ITimerService extends ChangeNotifier {
   List<Entry> get activeTimers;
   bool get hasAnyActiveTimer;
   Entry? get currentActiveTimer;
+  Future<void> refreshActiveTimers();
   @override
   void dispose();
 }

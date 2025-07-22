@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
-import 'package:provider/provider.dart';
 import 'home_screen.dart';
 import 'statistics_screen.dart';
 import 'dosage_calculator/dosage_calculator_screen.dart'; // Changed from calendar_screen.dart
@@ -13,9 +12,8 @@ import '../widgets/layout_error_boundary.dart';
 import '../utils/performance_helper.dart';
 import '../utils/platform_helper.dart';
 import '../utils/crash_protection.dart';
-import '../services/psychedelic_theme_service.dart';
-// TODO: Import ServiceLocator when PsychedelicThemeService is migrated in Phase 4B
-// import '../utils/service_locator.dart';
+import '../utils/service_locator.dart';
+import '../interfaces/service_interfaces.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -27,6 +25,7 @@ class MainNavigation extends StatefulWidget {
 class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
   int _currentIndex = 0;
   late PageController _pageController;
+  late final IPsychedelicThemeService _psychedelicThemeService;
 
   final List<Widget> _screens = [
     const HomeScreen(key: ValueKey('home_screen')),
@@ -62,6 +61,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
+    _psychedelicThemeService = ServiceLocator.get<IPsychedelicThemeService>();
     
     // Update system UI overlay style based on theme
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -73,15 +73,13 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     if (!mounted) return;
     
     try {
-      // TODO: Replace with ServiceLocator.get<IPsychedelicThemeService>() in Phase 4B
-      final psychedelicService = Provider.of<PsychedelicThemeService>(context, listen: false);
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
       
       SystemChrome.setSystemUIOverlayStyle(
         PlatformHelper.getStatusBarStyle(
           isDark: isDark,
-          isPsychedelicMode: psychedelicService.isPsychedelicMode,
+          isPsychedelicMode: _psychedelicThemeService.isPsychedelicMode,
         ),
       );
     } catch (e) {
@@ -133,9 +131,9 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    // TODO: Replace Consumer with ServiceLocator pattern in Phase 4B when PsychedelicThemeService is migrated
-    return Consumer<PsychedelicThemeService>(
-      builder: (context, psychedelicService, child) {
+    return ListenableBuilder(
+      listenable: _psychedelicThemeService,
+      builder: (context, child) {
         // Update system UI overlay style when theme changes
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _updateSystemUIOverlayStyle();
