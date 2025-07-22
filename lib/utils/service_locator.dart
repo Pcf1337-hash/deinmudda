@@ -16,6 +16,10 @@ import '../services/substance_service.dart';
 import '../services/settings_service.dart';
 import '../services/quick_button_service.dart';
 import '../services/psychedelic_theme_service.dart';
+import '../repositories/entry_repository.dart';
+import '../repositories/substance_repository.dart';
+import '../use_cases/entry_use_cases.dart';
+import '../use_cases/substance_use_cases.dart';
 
 /// Simple Service Locator implementation
 /// TODO: Consider replacing with get_it package for production
@@ -38,7 +42,14 @@ class ServiceLocator {
       }
 
       // Initialize core services first (order matters for dependencies)
-      _services[DatabaseService] = DatabaseService();
+      final databaseService = DatabaseService();
+      _services[DatabaseService] = databaseService;
+      
+      // Initialize repositories (depend on database service)
+      final entryRepository = EntryRepository(databaseService);
+      final substanceRepository = SubstanceRepository(databaseService);
+      _services[IEntryRepository] = entryRepository;
+      _services[ISubstanceRepository] = substanceRepository;
       
       // Initialize notification service
       final notificationService = NotificationService();
@@ -61,6 +72,23 @@ class ServiceLocator {
       
       // Initialize theme service
       _services[PsychedelicThemeService] = PsychedelicThemeService();
+
+      // Initialize use cases (depend on repositories and services)
+      _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);
+      _services[CreateEntryWithTimerUseCase] = CreateEntryWithTimerUseCase(
+        entryRepository, 
+        substanceRepository, 
+        timerService,
+      );
+      _services[UpdateEntryUseCase] = UpdateEntryUseCase(entryRepository, substanceRepository);
+      _services[DeleteEntryUseCase] = DeleteEntryUseCase(entryRepository, timerService);
+      _services[GetEntriesUseCase] = GetEntriesUseCase(entryRepository);
+      
+      _services[CreateSubstanceUseCase] = CreateSubstanceUseCase(substanceRepository);
+      _services[UpdateSubstanceUseCase] = UpdateSubstanceUseCase(substanceRepository);
+      _services[DeleteSubstanceUseCase] = DeleteSubstanceUseCase(substanceRepository, entryRepository);
+      _services[GetSubstancesUseCase] = GetSubstancesUseCase(substanceRepository);
+      _services[SubstanceStatisticsUseCase] = SubstanceStatisticsUseCase(substanceRepository, entryRepository);
 
       _isInitialized = true;
       
