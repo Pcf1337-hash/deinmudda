@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:deinmudda/services/timer_service.dart';
-import 'package:deinmudda/models/entry.dart';
-import 'package:deinmudda/utils/error_handler.dart';
-import 'package:deinmudda/utils/impeller_helper.dart';
+import '../lib/services/timer_service.dart';
+import '../lib/models/entry.dart';
+import '../lib/utils/error_handler.dart';
+import '../lib/utils/impeller_helper.dart';
+import 'mocks/service_mocks.dart';
 
 void main() {
   group('Timer Lifecycle Tests', () {
@@ -11,7 +12,7 @@ void main() {
     late Entry testEntry;
 
     setUp(() {
-      timerService = TimerService();
+      timerService = MockTimerService();
       testEntry = Entry.create(
         substanceId: 'test-substance',
         substanceName: 'Test Substance',
@@ -239,7 +240,7 @@ void main() {
     });
 
     test('should handle timer service disposal gracefully', () async {
-      final timerService = TimerService();
+      final timerService = MockTimerService();
       await timerService.init();
       
       // Start a timer

@@ -7,6 +7,7 @@
 /// Date: Phase 6 - Testing Implementation
 
 import 'package:flutter_test/flutter_test.dart';
+import '../lib/models/substance.dart';
 
 // Import all test suites
 import 'unit/entry_service_test.dart' as entry_service_tests;

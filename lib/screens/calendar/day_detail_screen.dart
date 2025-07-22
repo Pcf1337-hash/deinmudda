@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../../models/entry.dart';
 import '../../services/entry_service.dart';
+import '../../utils/service_locator.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/animated_entry_card.dart';
 import '../../theme/design_tokens.dart';
@@ -23,7 +24,7 @@ class DayDetailScreen extends StatefulWidget {
 }
 
 class _DayDetailScreenState extends State<DayDetailScreen> {
-  final EntryService _entryService = EntryService();
+  late final EntryService _entryService;
   
   List<Entry> _entries = [];
   bool _isLoading = true;
@@ -32,6 +33,7 @@ class _DayDetailScreenState extends State<DayDetailScreen> {
   @override
   void initState() {
     super.initState();
+    _entryService = ServiceLocator.get<EntryService>();
     _loadEntries();
   }
 
