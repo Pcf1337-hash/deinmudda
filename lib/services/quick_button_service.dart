@@ -1,13 +1,17 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/material.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../models/substance.dart';
+import '../interfaces/service_interfaces.dart';
 import 'database_service.dart';
 import 'substance_service.dart';
 
-class QuickButtonService {
-  final DatabaseService _databaseService = DatabaseService();
-  final SubstanceService _substanceService = SubstanceService();
+class QuickButtonService implements IQuickButtonService {
+  final DatabaseService _databaseService;
+  final ISubstanceService _substanceService;
+
+  QuickButtonService(this._databaseService, this._substanceService);
 
   // Create
   Future<String> createQuickButton(QuickButtonConfig config) async {
@@ -111,7 +115,64 @@ class QuickButtonService {
   }
 
   // Reorder quick buttons
-  Future<void> reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
+  @override
+  Future<void> reorderQuickButtons(List<String> orderedIds) async {
+    try {
+      final db = await _databaseService.database;
+      
+      await _databaseService.transaction((txn) async {
+        for (int i = 0; i < orderedIds.length; i++) {
+          await txn.update(
+            'quick_buttons',
+            {'position': i},
+            where: 'id = ?',
+            whereArgs: [orderedIds[i]],
+          );
+        }
+      });
+    } catch (e) {
+      throw Exception('Failed to reorder quick buttons: $e');
+    }
+  }
+
+  // Execute quick button - create entry from quick button
+  @override
+  Future<Entry> executeQuickButton(String quickButtonId) async {
+    try {
+      final config = await getQuickButtonById(quickButtonId);
+      if (config == null) {
+        throw Exception('Quick button not found: $quickButtonId');
+      }
+      return await createEntryFromQuickButton(config);
+    } catch (e) {
+      throw Exception('Failed to execute quick button: $e');
+    }
+  }
+
+  // Get active quick buttons (interface method)
+  @override
+  Future<List<QuickButtonConfig>> getActiveQuickButtons() async {
+    return await getAllQuickButtons(); // getAllQuickButtons already filters by isActive
+  }
+
+  // Update quick button position (interface method)
+  @override
+  Future<void> updateQuickButtonPosition(String id, int newPosition) async {
+    try {
+      final db = await _databaseService.database;
+      await db.update(
+        'quick_buttons',
+        {'position': newPosition},
+        where: 'id = ?',
+        whereArgs: [id],
+      );
+    } catch (e) {
+      throw Exception('Failed to update quick button position: $e');
+    }
+  }
+
+  // Method signature updated for interface compatibility
+  Future<void> reorderQuickButtonsOld(List<QuickButtonConfig> reorderedButtons) async {
     try {
       final db = await _databaseService.database;
       

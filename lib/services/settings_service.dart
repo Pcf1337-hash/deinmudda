@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../interfaces/service_interfaces.dart';
 
-class SettingsService extends ChangeNotifier {
+class SettingsService extends ChangeNotifier implements ISettingsService {
   static const String _isDarkModeKey = 'isDarkMode';
   static const String _isFirstLaunchKey = 'isFirstLaunch';
   static const String _languageKey = 'language';
@@ -206,5 +207,82 @@ class SettingsService extends ChangeNotifier {
   // Mark onboarding as completed
   Future<void> completeOnboarding() async {
     await setFirstLaunch(false);
+  }
+
+  // Generic setting methods for interface compliance
+  @override
+  Future<T?> getSetting<T>(String key) async {
+    await _ensureInitialized();
+    final value = _prefs!.get(key);
+    return value is T ? value : null;
+  }
+
+  @override
+  Future<void> setSetting<T>(String key, T value) async {
+    await _ensureInitialized();
+    if (value is bool) {
+      await _prefs!.setBool(key, value);
+    } else if (value is String) {
+      await _prefs!.setString(key, value);
+    } else if (value is int) {
+      await _prefs!.setInt(key, value);
+    } else if (value is double) {
+      await _prefs!.setDouble(key, value);
+    } else if (value is List<String>) {
+      await _prefs!.setStringList(key, value);
+    }
+    notifyListeners();
+  }
+
+  @override
+  Future<void> deleteSetting(String key) async {
+    await _ensureInitialized();
+    await _prefs!.remove(key);
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+    await _ensureInitialized();
+    return _prefs!.getBool(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setBool(String key, bool value) async {
+    await _ensureInitialized();
+    await _prefs!.setBool(key, value);
+    notifyListeners();
+  }
+
+  @override
+  Future<String> getString(String key, {String defaultValue = ''}) async {
+    await _ensureInitialized();
+    return _prefs!.getString(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setString(String key, String value) async {
+    await _ensureInitialized();
+    await _prefs!.setString(key, value);
+    notifyListeners();
+  }
+
+  @override
+  Future<int> getInt(String key, {int defaultValue = 0}) async {
+    await _ensureInitialized();
+    return _prefs!.getInt(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setInt(String key, int value) async {
+    await _ensureInitialized();
+    await _prefs!.setInt(key, value);
+    notifyListeners();
+  }
+
+  // Initialize method for interface compliance
+  @override
+  Future<void> init() async {
+    await _ensureInitialized();
   }
 }

@@ -55,9 +55,19 @@ class ServiceLocator {
       final notificationService = NotificationService();
       await notificationService.init();
       _services[NotificationService] = notificationService;
+      _services[INotificationService] = notificationService;
+      
+      // Initialize settings service
+      final settingsService = SettingsService();
+      await settingsService.init();
+      _services[SettingsService] = settingsService;
+      _services[ISettingsService] = settingsService;
       
       // Initialize auth service
-      _services[AuthService] = AuthService();
+      final authService = AuthService();
+      await authService.init();
+      _services[AuthService] = authService;
+      _services[IAuthService] = authService;
       
       // Initialize business logic services with repository dependencies
       final substanceService = SubstanceService(substanceRepository);
@@ -66,8 +76,11 @@ class ServiceLocator {
       _services[ISubstanceService] = substanceService;
       _services[EntryService] = entryService;
       _services[IEntryService] = entryService;
-      _services[SettingsService] = SettingsService();
-      _services[QuickButtonService] = QuickButtonService();
+      
+      // Initialize quick button service (depends on database and substance service)
+      final quickButtonService = QuickButtonService(databaseService, substanceService);
+      _services[QuickButtonService] = quickButtonService;
+      _services[IQuickButtonService] = quickButtonService;
       
       // Initialize timer service (depends on other services)
       final timerService = TimerService(
@@ -79,11 +92,11 @@ class ServiceLocator {
       _services[TimerService] = timerService;
       _services[ITimerService] = timerService;
       
-      // Register notification service by interface
-      _services[INotificationService] = notificationService;
-      
       // Initialize theme service
-      _services[PsychedelicThemeService] = PsychedelicThemeService();
+      final themeService = PsychedelicThemeService();
+      await themeService.init();
+      _services[PsychedelicThemeService] = themeService;
+      _services[IPsychedelicThemeService] = themeService;
 
       // Initialize use cases (depend on repositories and services)
       _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);
