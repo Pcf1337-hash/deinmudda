@@ -14,6 +14,8 @@ import '../utils/performance_helper.dart';
 import '../utils/platform_helper.dart';
 import '../utils/crash_protection.dart';
 import '../services/psychedelic_theme_service.dart';
+// TODO: Import ServiceLocator when PsychedelicThemeService is migrated in Phase 4B
+// import '../utils/service_locator.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -71,6 +73,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     if (!mounted) return;
     
     try {
+      // TODO: Replace with ServiceLocator.get<IPsychedelicThemeService>() in Phase 4B
       final psychedelicService = Provider.of<PsychedelicThemeService>(context, listen: false);
       final theme = Theme.of(context);
       final isDark = theme.brightness == Brightness.dark;
@@ -130,6 +133,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
+    // TODO: Replace Consumer with ServiceLocator pattern in Phase 4B when PsychedelicThemeService is migrated
     return Consumer<PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         // Update system UI overlay style when theme changes

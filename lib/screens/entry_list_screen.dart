@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import '../models/entry.dart';
-import '../services/entry_service.dart';
+import '../utils/service_locator.dart';
+import '../use_cases/entry_use_cases.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/modern_fab.dart';
@@ -51,13 +52,26 @@ class _EntryListScreenState extends State<EntryListScreen> {
   FilterOption _currentFilter = FilterOption.all;
   String _searchQuery = '';
 
-  final EntryService _entryService = EntryService();
+  // Use Cases (injected via ServiceLocator)
+  late final GetEntriesUseCase _getEntriesUseCase;
+  late final DeleteEntryUseCase _deleteEntryUseCase;
 
   @override
   void initState() {
     super.initState();
+    _initializeServices();
     _loadEntries();
     _searchController.addListener(_onSearchChanged);
+  }
+
+  /// Initialize use cases from ServiceLocator
+  void _initializeServices() {
+    try {
+      _getEntriesUseCase = ServiceLocator.get<GetEntriesUseCase>();
+      _deleteEntryUseCase = ServiceLocator.get<DeleteEntryUseCase>();
+    } catch (e) {
+      throw StateError('Failed to initialize EntryListScreen services: $e');
+    }
   }
 
   @override
@@ -81,7 +95,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
     });
 
     try {
-      final entries = await _entryService.getAllEntries();
+      final entries = await _getEntriesUseCase.getAllEntries();
       setState(() {
         _allEntries = entries;
         _applyFiltersAndSort();
@@ -706,7 +720,7 @@ class _EntryListScreenState extends State<EntryListScreen> {
     if (confirmed != true) return;
 
     try {
-      await _entryService.deleteEntry(entry.id);
+      await _deleteEntryUseCase.execute(entry.id);
       _loadEntries();
       
       if (mounted) {
