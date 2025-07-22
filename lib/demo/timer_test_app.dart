@@ -182,10 +182,9 @@ class _TimerTestAppState extends State<TimerTestApp> {
 
   void _stopTimer() async {
     try {
-      final updatedEntry = await _timerService.stopTimer(_testEntry);
+      await _timerService.stopTimer(_testEntry.id);
       if (mounted) {
         setState(() {
-          _testEntry = updatedEntry;
           _isTimerActive = false;
         });
       }

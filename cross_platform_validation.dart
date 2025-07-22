@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'lib/utils/platform_helper.dart';
+import 'lib/utils/platform_helper.dart' show PlatformHelper, HapticFeedbackType;
 import 'lib/widgets/platform_adaptive_widgets.dart';
 import 'lib/widgets/platform_adaptive_fab.dart';
 import 'lib/services/psychedelic_theme_service.dart';
@@ -255,7 +255,7 @@ class _CrossPlatformValidationScreenState extends State<CrossPlatformValidationS
             // Haptic Feedback Test
             PlatformAdaptiveButton(
               onPressed: () {
-                PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact);
+                PlatformHelper.performHapticFeedback(PlatformHelper.HapticFeedbackType.lightImpact);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Light haptic feedback triggered!')),
                 );
