@@ -13,6 +13,7 @@ import 'lib/screens/home_screen.dart';
 import 'lib/screens/settings_screen.dart';
 import 'lib/screens/timer_dashboard_screen.dart';
 import 'lib/screens/add_entry_screen.dart';
+import 'lib/interfaces/service_interfaces.dart';
 import 'lib/screens/quick_entry/quick_button_config_screen.dart';
 import 'lib/screens/dosage_calculator/dosage_calculator_screen.dart';
 import 'lib/widgets/header_bar.dart';
@@ -191,7 +192,7 @@ void main() {
       testWidgets('Trippy Mode - color consistency and effects', (WidgetTester tester) async {
         final psychedelicService = PsychedelicThemeService();
         await psychedelicService.init();
-        await psychedelicService.setThemeMode(ThemeMode.trippy);
+        await psychedelicService.setThemeMode(AppThemeMode.trippy);
         
         await tester.pumpWidget(
           MaterialApp(

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import '../lib/utils/platform_helper.dart';
-import '../lib/widgets/platform_adaptive_widgets.dart';
-import '../lib/widgets/platform_adaptive_fab.dart';
-import '../lib/services/psychedelic_theme_service.dart';
-import '../lib/theme/design_tokens.dart';
+import 'lib/utils/platform_helper.dart';
+import 'lib/widgets/platform_adaptive_widgets.dart';
+import 'lib/widgets/platform_adaptive_fab.dart';
+import 'lib/services/psychedelic_theme_service.dart';
+import 'lib/theme/design_tokens.dart';
 
 /// Manual validation app for cross-platform features
 class CrossPlatformValidationApp extends StatelessWidget {
@@ -21,14 +21,8 @@ class CrossPlatformValidationApp extends StatelessWidget {
         builder: (context, psychedelicService, child) {
           return MaterialApp(
             title: 'Cross-Platform Validation',
-            theme: psychedelicService.getTheme().copyWith(
-              pageTransitionsTheme: PageTransitionsTheme(
-                builders: {
-                  TargetPlatform.android: PlatformHelper.getPageTransitionsBuilder(),
-                  TargetPlatform.iOS: PlatformHelper.getPageTransitionsBuilder(),
-                },
-              ),
-            ),
+            theme: psychedelicService.isInitialized ? psychedelicService.getTheme() : ThemeData.light(),
+            darkTheme: psychedelicService.isInitialized ? psychedelicService.darkTheme : ThemeData.dark(),
             home: const CrossPlatformValidationScreen(),
           );
         },
