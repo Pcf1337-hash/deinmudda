@@ -17,7 +17,7 @@ class TimerTestApp extends StatefulWidget {
 }
 
 class _TimerTestAppState extends State<TimerTestApp> {
-  final TimerService _timerService = MockTimerService();
+  final MockTimerService _timerService = MockTimerService();
   late Entry _testEntry;
   bool _isTimerActive = false;
 

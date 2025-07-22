@@ -555,4 +555,60 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
       return null;
     }
   }
+
+  // Add missing interface methods
+  @override
+  Future<void> toggleDarkMode() async {
+    final newMode = _currentThemeMode == AppThemeMode.dark 
+        ? AppThemeMode.light 
+        : AppThemeMode.dark;
+    await setThemeMode(newMode);
+  }
+
+  @override
+  Future<void> initialize() async {
+    if (_isInitialized) return;
+    
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      await _loadSettings();
+      _isInitialized = true;
+      notifyListeners();
+    } catch (e) {
+      ErrorHandler.handleError(e, 'Failed to initialize theme service');
+    }
+  }
+
+  @override
+  Color getPrimaryColorForSubstance(String substance) {
+    final colors = _getSubstanceColors(substance);
+    return colors['primary'] ?? DesignTokens.primaryIndigo;
+  }
+
+  @override
+  LinearGradient getGradientForSubstance(String substance) {
+    final colors = _getSubstanceColors(substance);
+    final primary = colors['primary'] ?? DesignTokens.primaryIndigo;
+    final secondary = colors['secondary'] ?? DesignTokens.primaryPurple;
+    
+    return LinearGradient(
+      colors: [primary, secondary],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    );
+  }
+
+  Map<String, Color> _getSubstanceColors(String substance) {
+    // Default colors for different substances
+    switch (substance.toLowerCase()) {
+      case 'cannabis':
+        return {'primary': const Color(0xFF4CAF50), 'secondary': const Color(0xFF8BC34A)};
+      case 'alcohol':
+        return {'primary': const Color(0xFFFF9800), 'secondary': const Color(0xFFFFB74D)};
+      case 'caffeine':
+        return {'primary': const Color(0xFF795548), 'secondary': const Color(0xFFA1887F)};
+      default:
+        return {'primary': DesignTokens.primaryIndigo, 'secondary': DesignTokens.primaryPurple};
+    }
+  }
 }
