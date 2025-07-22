@@ -7,6 +7,7 @@
 /// Date: Phase 1 - Critical Fixes
 
 import 'package:flutter/foundation.dart';
+import '../interfaces/service_interfaces.dart';
 import '../services/database_service.dart';
 import '../services/timer_service.dart';
 import '../services/notification_service.dart';
@@ -48,6 +49,8 @@ class ServiceLocator {
       // Initialize repositories (depend on database service)
       final entryRepository = EntryRepository(databaseService);
       final substanceRepository = SubstanceRepository(databaseService);
+      _services[EntryRepository] = entryRepository;
+      _services[SubstanceRepository] = substanceRepository;
       _services[IEntryRepository] = entryRepository;
       _services[ISubstanceRepository] = substanceRepository;
       
@@ -57,25 +60,46 @@ class ServiceLocator {
       _services[NotificationService] = notificationService;
       
       // Initialize auth service
-      _services[AuthService] = AuthService();
+      final authService = AuthService();
+      await authService.init();
+      _services[AuthService] = authService;
+      _services[IAuthService] = authService;
+      
+      // Initialize settings service
+      final settingsService = SettingsService();
+      await settingsService.init();
+      _services[SettingsService] = settingsService;
+      _services[ISettingsService] = settingsService;
+      
+      // Initialize theme service
+      final themeService = PsychedelicThemeService();
+      await themeService.init();
+      _services[PsychedelicThemeService] = themeService;
+      _services[IPsychedelicThemeService] = themeService;
       
       // Initialize business logic services with repository dependencies
-      _services[SubstanceService] = SubstanceService(substanceRepository);
-      _services[EntryService] = EntryService(entryRepository);
-      _services[SettingsService] = SettingsService();
-      _services[QuickButtonService] = QuickButtonService();
+      final substanceService = SubstanceService(substanceRepository);
+      _services[SubstanceService] = substanceService;
+      _services[ISubstanceService] = substanceService;
+      
+      final entryService = EntryService(entryRepository);
+      _services[EntryService] = entryService;
+      _services[IEntryService] = entryService;
+      
+      // Initialize quick button service with dependencies
+      final quickButtonService = QuickButtonService(databaseService, substanceService);
+      _services[QuickButtonService] = quickButtonService;
+      _services[IQuickButtonService] = quickButtonService;
       
       // Initialize timer service (depends on other services)
       final timerService = TimerService(
-        _services[EntryService] as IEntryService,
-        _services[SubstanceService] as ISubstanceService,
+        entryService,
+        substanceService,
         notificationService,
       );
       await timerService.init();
       _services[TimerService] = timerService;
-      
-      // Initialize theme service
-      _services[PsychedelicThemeService] = PsychedelicThemeService();
+      _services[ITimerService] = timerService;
 
       // Initialize use cases (depend on repositories and services)
       _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);

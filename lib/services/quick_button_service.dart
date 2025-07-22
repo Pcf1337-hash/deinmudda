@@ -1,31 +1,45 @@
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../models/substance.dart';
+import '../interfaces/service_interfaces.dart';
 import 'database_service.dart';
-import 'substance_service.dart';
 
-class QuickButtonService {
-  final DatabaseService _databaseService = DatabaseService();
-  final SubstanceService _substanceService = SubstanceService();
+/// Quick Button Service Implementation with Dependency Injection
+/// 
+/// PHASE 4B: Service Architecture Migration
+/// Migrated from direct service instantiation to interface-based service
+/// 
+/// Author: Code Quality Improvement Agent
+/// Date: Phase 4B - Service Migration
+class QuickButtonService extends ChangeNotifier implements IQuickButtonService {
+  final DatabaseService _databaseService;
+  final ISubstanceService _substanceService;
+
+  QuickButtonService(this._databaseService, this._substanceService);
 
   // Create
-  Future<String> createQuickButton(QuickButtonConfig config) async {
+  @override
+  Future<String> createQuickButton(dynamic config) async {
+    final quickButtonConfig = config as QuickButtonConfig;
     try {
       final db = await _databaseService.database;
       await db.insert(
         'quick_buttons',
-        config.toDatabase(),
+        quickButtonConfig.toDatabase(),
         conflictAlgorithm: ConflictAlgorithm.replace,
       );
-      return config.id;
+      notifyListeners();
+      return quickButtonConfig.id;
     } catch (e) {
       throw Exception('Failed to create quick button: $e');
     }
   }
 
   // Read - Get all quick buttons
-  Future<List<QuickButtonConfig>> getAllQuickButtons() async {
+  @override
+  Future<List<dynamic>> getAllQuickButtons() async {
     try {
       final db = await _databaseService.database;
       final List<Map<String, dynamic>> maps = await db.query(
@@ -41,7 +55,8 @@ class QuickButtonService {
   }
 
   // Read - Get quick button by ID
-  Future<QuickButtonConfig?> getQuickButtonById(String id) async {
+  @override
+  Future<dynamic> getQuickButtonById(String id) async {
     try {
       final db = await _databaseService.database;
       final List<Map<String, dynamic>> maps = await db.query(
@@ -58,7 +73,7 @@ class QuickButtonService {
     }
   }
 
-  // Read - Get quick buttons by substance
+  // Get quick buttons by substance
   Future<List<QuickButtonConfig>> getQuickButtonsBySubstance(String substanceId) async {
     try {
       final db = await _databaseService.database;
@@ -75,10 +90,12 @@ class QuickButtonService {
   }
 
   // Update
-  Future<void> updateQuickButton(QuickButtonConfig config) async {
+  @override
+  Future<void> updateQuickButton(dynamic config) async {
+    final quickButtonConfig = config as QuickButtonConfig;
     try {
       final db = await _databaseService.database;
-      final updatedConfig = config.copyWith(
+      final updatedConfig = quickButtonConfig.copyWith(
         updatedAt: DateTime.now(),
       );
       
@@ -86,14 +103,16 @@ class QuickButtonService {
         'quick_buttons',
         updatedConfig.toDatabase(),
         where: 'id = ?',
-        whereArgs: [config.id],
+        whereArgs: [quickButtonConfig.id],
       );
+      notifyListeners();
     } catch (e) {
       throw Exception('Failed to update quick button: $e');
     }
   }
 
   // Delete
+  @override
   Future<void> deleteQuickButton(String id) async {
     try {
       final db = await _databaseService.database;
@@ -105,13 +124,65 @@ class QuickButtonService {
       
       // Reorder remaining buttons to ensure no gaps in position
       await _reorderAfterDelete();
+      notifyListeners();
     } catch (e) {
       throw Exception('Failed to delete quick button: $e');
     }
   }
 
   // Reorder quick buttons
-  Future<void> reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
+  @override
+  Future<void> reorderQuickButtons(List<String> orderedIds) async {
+    try {
+      final db = await _databaseService.database;
+      
+      await _databaseService.transaction((txn) async {
+        for (int i = 0; i < orderedIds.length; i++) {
+          await txn.update(
+            'quick_buttons',
+            {'position': i},
+            where: 'id = ?',
+            whereArgs: [orderedIds[i]],
+          );
+        }
+      });
+      notifyListeners();
+    } catch (e) {
+      throw Exception('Failed to reorder quick buttons: $e');
+    }
+  }
+
+  @override
+  Future<void> setQuickButtonActive(String id, bool isActive) async {
+    try {
+      final button = await getQuickButtonById(id);
+      if (button != null) {
+        final quickButtonConfig = button as QuickButtonConfig;
+        final updatedButton = quickButtonConfig.copyWith(isActive: isActive);
+        await updateQuickButton(updatedButton);
+      }
+    } catch (e) {
+      throw Exception('Failed to set quick button active state: $e');
+    }
+  }
+
+  @override
+  Future<dynamic> executeQuickButton(String id) async {
+    try {
+      final button = await getQuickButtonById(id);
+      if (button == null) {
+        throw Exception('Quick button not found');
+      }
+      
+      final quickButtonConfig = button as QuickButtonConfig;
+      return await createEntryFromQuickButton(quickButtonConfig);
+    } catch (e) {
+      throw Exception('Failed to execute quick button: $e');
+    }
+  }
+
+  // Reorder quick buttons with configs (helper method)
+  Future<void> reorderQuickButtonConfigs(List<QuickButtonConfig> reorderedButtons) async {
     try {
       final db = await _databaseService.database;
       
@@ -161,7 +232,7 @@ class QuickButtonService {
       }).toList();
       
       // Save updated order
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtonConfigs(updatedButtons);
     } catch (e) {
       throw Exception('Failed to move quick button to position: $e');
     }
@@ -179,7 +250,7 @@ class QuickButtonService {
         return button.copyWith(position: index);
       }).toList();
       
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtonConfigs(updatedButtons);
     } catch (e) {
       throw Exception('Failed to reorder after delete: $e');
     }
@@ -363,16 +434,8 @@ class QuickButtonService {
     }
   }
 
-  // Toggle quick button active state
+  // Toggle quick button active state (legacy method)
   Future<void> toggleQuickButtonActive(String id, bool isActive) async {
-    try {
-      final button = await getQuickButtonById(id);
-      if (button != null) {
-        final updatedButton = button.copyWith(isActive: isActive);
-        await updateQuickButton(updatedButton);
-      }
-    } catch (e) {
-      throw Exception('Failed to toggle quick button active state: $e');
-    }
+    await setQuickButtonActive(id, isActive);
   }
 }

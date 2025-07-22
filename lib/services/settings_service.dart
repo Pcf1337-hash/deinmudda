@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../interfaces/service_interfaces.dart';
 
-class SettingsService extends ChangeNotifier {
+/// Settings Service Implementation with Dependency Injection
+/// 
+/// PHASE 4B: Service Architecture Migration
+/// Migrated from ad-hoc pattern to clean interface-based service
+/// 
+/// Author: Code Quality Improvement Agent  
+/// Date: Phase 4B - Service Migration
+class SettingsService extends ChangeNotifier implements ISettingsService {
   static const String _isDarkModeKey = 'isDarkMode';
   static const String _isFirstLaunchKey = 'isFirstLaunch';
   static const String _languageKey = 'language';
@@ -206,5 +214,86 @@ class SettingsService extends ChangeNotifier {
   // Mark onboarding as completed
   Future<void> completeOnboarding() async {
     await setFirstLaunch(false);
+  }
+
+  // ISettingsService interface implementation
+  @override
+  Future<T?> getSetting<T>(String key) async {
+    await _ensureInitialized();
+    
+    if (T == bool) {
+      return _prefs!.getBool(key) as T?;
+    } else if (T == String) {
+      return _prefs!.getString(key) as T?;
+    } else if (T == int) {
+      return _prefs!.getInt(key) as T?;
+    } else if (T == double) {
+      return _prefs!.getDouble(key) as T?;
+    }
+    
+    return null;
+  }
+
+  @override
+  Future<void> setSetting<T>(String key, T value) async {
+    await _ensureInitialized();
+    
+    if (value is bool) {
+      await _prefs!.setBool(key, value);
+    } else if (value is String) {
+      await _prefs!.setString(key, value);
+    } else if (value is int) {
+      await _prefs!.setInt(key, value);
+    } else if (value is double) {
+      await _prefs!.setDouble(key, value);
+    }
+    
+    notifyListeners();
+  }
+
+  @override
+  Future<void> deleteSetting(String key) async {
+    await _ensureInitialized();
+    await _prefs!.remove(key);
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+    await _ensureInitialized();
+    return _prefs!.getBool(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setBool(String key, bool value) async {
+    await _ensureInitialized();
+    await _prefs!.setBool(key, value);
+    notifyListeners();
+  }
+
+  @override
+  Future<String> getString(String key, {String defaultValue = ''}) async {
+    await _ensureInitialized();
+    return _prefs!.getString(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setString(String key, String value) async {
+    await _ensureInitialized();
+    await _prefs!.setString(key, value);
+    notifyListeners();
+  }
+
+  @override
+  Future<int> getInt(String key, {int defaultValue = 0}) async {
+    await _ensureInitialized();
+    return _prefs!.getInt(key) ?? defaultValue;
+  }
+
+  @override
+  Future<void> setInt(String key, int value) async {
+    await _ensureInitialized();
+    await _prefs!.setInt(key, value);
+    notifyListeners();
   }
 }

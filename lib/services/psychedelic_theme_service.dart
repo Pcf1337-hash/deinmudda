@@ -4,10 +4,18 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 import '../utils/error_handler.dart';
+import '../interfaces/service_interfaces.dart';
 
 enum ThemeMode { light, dark, trippy, system }
 
-class PsychedelicThemeService extends ChangeNotifier {
+/// Psychedelic Theme Service Implementation with Dependency Injection
+/// 
+/// PHASE 4B: Service Architecture Migration
+/// Migrated to implement IPsychedelicThemeService interface
+/// 
+/// Author: Code Quality Improvement Agent
+/// Date: Phase 4B - Service Migration
+class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThemeService {
   static const String _themeModeKey = 'theme_mode';
   static const String _animatedBackgroundKey = 'animated_background';
   static const String _pulsingButtonsKey = 'pulsing_buttons';
@@ -107,7 +115,7 @@ class PsychedelicThemeService extends ChangeNotifier {
     }
   }
   
-  Future<void> setThemeMode(ThemeMode mode) async {
+  Future<void> _setThemeMode(ThemeMode mode) async {
     _currentThemeMode = mode;
     await _prefs?.setInt(_themeModeKey, mode.index);
     notifyListeners();
@@ -115,22 +123,22 @@ class PsychedelicThemeService extends ChangeNotifier {
   
   Future<void> cycleThemeMode() async {
     final nextIndex = (_currentThemeMode.index + 1) % ThemeMode.values.length;
-    await setThemeMode(ThemeMode.values[nextIndex]);
+    await _setThemeMode(ThemeMode.values[nextIndex]);
   }
   
   Future<void> togglePsychedelicMode() async {
     if (_currentThemeMode == ThemeMode.trippy) {
-      await setThemeMode(ThemeMode.dark);
+      await _setThemeMode(ThemeMode.dark);
     } else {
-      await setThemeMode(ThemeMode.trippy);
+      await _setThemeMode(ThemeMode.trippy);
     }
   }
   
   Future<void> toggleTrippyMode(bool value) async {
     if (value) {
-      await setThemeMode(ThemeMode.trippy);
+      await _setThemeMode(ThemeMode.trippy);
     } else {
-      await setThemeMode(ThemeMode.dark);
+      await _setThemeMode(ThemeMode.dark);
     }
   }
   
@@ -156,6 +164,24 @@ class PsychedelicThemeService extends ChangeNotifier {
     _currentSubstance = substance;
     await _prefs?.setString(_currentSubstanceKey, substance);
     notifyListeners();
+  }
+
+  // IPsychedelicThemeService interface implementation
+  @override
+  Future<void> setThemeMode(dynamic themeMode) async {
+    if (themeMode is ThemeMode) {
+      await _setThemeMode(themeMode);
+    }
+  }
+
+  @override
+  Future<void> setAnimatedBackgroundEnabled(bool enabled) async {
+    await setAnimatedBackground(enabled);
+  }
+
+  @override
+  Future<void> setPulsingButtonsEnabled(bool enabled) async {
+    await setPulsingButtons(enabled);
   }
   
   // Get current substance colors safely

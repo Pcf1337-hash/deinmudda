@@ -1,10 +1,11 @@
 /// Service Interfaces for Dependency Inversion
 /// 
 /// Phase 3: Architecture Improvements - Interface Abstractions
+/// Phase 4B: Service Migration - Complete interface compliance
 /// Enables loose coupling and better testability
 /// 
 /// Author: Code Quality Improvement Agent
-/// Date: Phase 3 - Architecture Improvements
+/// Date: Phase 4B - Service Migration
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
@@ -96,4 +97,38 @@ abstract class IAuthService extends ChangeNotifier {
   bool get requiresAuthentication;
   Future<void> enableAuthentication();
   Future<void> disableAuthentication();
+}
+
+/// Interface for Quick Button Service operations
+abstract class IQuickButtonService extends ChangeNotifier {
+  Future<String> createQuickButton(dynamic config);
+  Future<List<dynamic>> getAllQuickButtons();
+  Future<dynamic> getQuickButtonById(String id);
+  Future<void> updateQuickButton(dynamic config);
+  Future<void> deleteQuickButton(String id);
+  Future<void> reorderQuickButtons(List<String> orderedIds);
+  Future<void> setQuickButtonActive(String id, bool isActive);
+  Future<dynamic> executeQuickButton(String id);
+}
+
+/// Interface for Psychedelic Theme Service operations  
+abstract class IPsychedelicThemeService extends ChangeNotifier {
+  Future<void> init();
+  dynamic get currentThemeMode;
+  bool get isPsychedelicMode;
+  bool get isDarkMode;
+  bool get isLightMode;
+  bool get isAnimatedBackgroundEnabled;
+  bool get isPulsingButtonsEnabled;
+  double get glowIntensity;
+  String get currentSubstance;
+  bool get isInitialized;
+  Future<void> setThemeMode(dynamic themeMode);
+  Future<void> setAnimatedBackgroundEnabled(bool enabled);
+  Future<void> setPulsingButtonsEnabled(bool enabled);
+  Future<void> setGlowIntensity(double intensity);
+  Future<void> setCurrentSubstance(String substance);
+  dynamic get lightTheme;
+  dynamic get darkTheme;
+  dynamic get trippyTheme;
 }
