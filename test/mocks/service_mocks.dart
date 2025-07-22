@@ -384,8 +384,42 @@ class MockNotificationService implements INotificationService {
   final List<Map<String, dynamic>> _sentNotifications = [];
 
   @override
-  Future<void> initialize() async {
+  Future<void> init() async {
     // Mock initialization
+  }
+
+  @override
+  Future<void> showTimerNotification(String entryId, String substanceName, Duration remainingTime) async {
+    _sentNotifications.add({
+      'type': 'timer',
+      'entryId': entryId,
+      'substanceName': substanceName,
+      'remainingTime': remainingTime,
+    });
+  }
+
+  @override
+  Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
+    _sentNotifications.add({
+      'type': 'timer_expired',
+      'entryId': entryId,
+      'substanceName': substanceName,
+    });
+  }
+
+  @override
+  Future<void> cancelNotification(String entryId) async {
+    _sentNotifications.removeWhere((notification) => notification['entryId'] == entryId);
+  }
+
+  @override
+  Future<void> cancelAllNotifications() async {
+    _sentNotifications.clear();
+  }
+
+  @override
+  Future<void> initialize() async {
+    // Mock initialization - keeping for backward compatibility
   }
 
   @override
@@ -562,12 +596,119 @@ class MockSettingsService extends ChangeNotifier implements ISettingsService {
   Map<String, dynamic> getAllSettings() {
     return Map.from(_settings);
   }
+
+  // Add missing interface methods
+  @override
+  Future<void> init() async {
+    await initialize();
+  }
+
+  @override
+  Future<T?> getSetting<T>(String key) async {
+    return _settings[key] as T?;
+  }
+
+  @override
+  Future<void> setSetting<T>(String key, T value) async {
+    _settings[key] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> deleteSetting(String key) async {
+    _settings.remove(key);
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> getBool(String key, {bool defaultValue = false}) async {
+    return _settings[key] as bool? ?? defaultValue;
+  }
+
+  @override
+  Future<void> setBool(String key, bool value) async {
+    _settings[key] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<String> getString(String key, {String defaultValue = ''}) async {
+    return _settings[key] as String? ?? defaultValue;
+  }
+
+  @override
+  Future<void> setString(String key, String value) async {
+    _settings[key] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<int> getInt(String key, {int defaultValue = 0}) async {
+    return _settings[key] as int? ?? defaultValue;
+  }
+
+  @override
+  Future<void> setInt(String key, int value) async {
+    _settings[key] = value;
+    notifyListeners();
+  }
+
+  // Settings-specific getters
+  @override
+  Future<bool> get isDarkMode async => _settings['dark_mode'] ?? false;
+
+  @override
+  Future<bool> get isFirstLaunch async => _settings['first_launch'] ?? true;
+
+  @override
+  Future<String> get language async => _settings['language'] ?? 'en';
+
+  @override
+  Future<bool> get notificationsEnabled async => _settings['notifications_enabled'] ?? true;
+
+  @override
+  Future<bool> get biometricAuthEnabled async => _settings['biometric_auth'] ?? false;
+
+  @override
+  Future<bool> get autoBackupEnabled async => _settings['auto_backup'] ?? false;
+
+  @override
+  Future<int> get dataRetentionDays async => _settings['data_retention_days'] ?? 365;
+
+  // Add other required methods with basic implementations
+  @override
+  Future<Map<String, dynamic>> exportSettings() async => Map.from(_settings);
+
+  @override
+  Future<void> importSettings(Map<String, dynamic> settings) async {
+    _settings.addAll(settings);
+    notifyListeners();
+  }
+
+  @override
+  Future<void> resetToDefaults() async {
+    _settings.clear();
+    await initialize();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getAppInfo() async => {
+    'version': '1.0.0+1',
+    'buildNumber': '1',
+    'appName': 'Konsum Tracker Pro Test',
+  };
+
+  @override
+  Future<void> completeOnboarding() async {
+    _settings['first_launch'] = false;
+    notifyListeners();
+  }
 }
 
 /// Mock Auth Service for testing
 class MockAuthService extends ChangeNotifier implements IAuthService {
-  bool _isAuthenticated = false;
-  bool _biometricEnabled = false;
+  bool _isAuthenticatedState = false;
+  bool _biometricEnabledState = false;
 
   @override
   Future<void> initialize() async {
@@ -575,30 +716,80 @@ class MockAuthService extends ChangeNotifier implements IAuthService {
   }
 
   @override
-  bool get isAuthenticated => _isAuthenticated;
+  Future<void> init() async {
+    await initialize();
+  }
 
   @override
-  bool get isBiometricEnabled => _biometricEnabled;
+  Future<bool> isAuthenticated() async => _isAuthenticatedState;
 
   @override
-  Future<bool> authenticate({String? reason}) async {
+  bool get requiresAuthentication => true;
+
+  @override
+  Future<bool> isBiometricEnabled() async => _biometricEnabledState;
+
+  @override
+  Future<bool> authenticate() async {
     // Mock authentication - always succeeds in tests
-    _isAuthenticated = true;
+    _isAuthenticatedState = true;
     notifyListeners();
     return true;
   }
 
   @override
   Future<bool> authenticateWithBiometrics({String? reason}) async {
-    if (!_biometricEnabled) return false;
+    if (!_biometricEnabledState) return false;
     
-    _isAuthenticated = true;
+    _isAuthenticatedState = true;
     notifyListeners();
     return true;
   }
 
   @override
   Future<void> logout() async {
+    _isAuthenticatedState = false;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> enableAuthentication() async {
+    _biometricEnabledState = true;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> disableAuthentication() async {
+    _biometricEnabledState = false;
+    _isAuthenticatedState = false;
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> isBiometricAvailable() async {
+    // Mock biometric availability
+    return true;
+  }
+
+  @override
+  Future<List<String>> getAvailableBiometrics() async {
+    // Mock available biometric types
+    return ['fingerprint', 'face'];
+  }
+
+  // Add PIN-related methods
+  @override
+  Future<bool> verifyPinCode(String pin) async {
+    // Mock PIN verification - accept any non-empty PIN
+    return pin.isNotEmpty;
+  }
+
+  @override
+  Future<void> setPinCode(String pin) async {
+    // Mock PIN setting
+    _isAuthenticatedState = true;
+    notifyListeners();
+  }
     _isAuthenticated = false;
     notifyListeners();
   }
