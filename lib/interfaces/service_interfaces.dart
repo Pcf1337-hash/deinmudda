@@ -8,8 +8,13 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
+import '../models/quick_button_config.dart';
+
+/// Custom ThemeMode with psychedelic support
+enum AppThemeMode { light, dark, trippy, system }
 
 /// Interface for Entry Service operations
 abstract class IEntryService extends ChangeNotifier {
@@ -85,6 +90,30 @@ abstract class ISettingsService extends ChangeNotifier {
   Future<void> setString(String key, String value);
   Future<int> getInt(String key, {int defaultValue = 0});
   Future<void> setInt(String key, int value);
+  
+  // Settings-specific getters and setters
+  Future<bool> get isDarkMode;
+  Future<bool> get isFirstLaunch;
+  Future<String> get language;
+  Future<bool> get notificationsEnabled;
+  Future<bool> get biometricAuthEnabled;
+  Future<bool> get autoBackupEnabled;
+  Future<int> get dataRetentionDays;
+  
+  Future<void> setDarkMode(bool value);
+  Future<void> toggleDarkMode();
+  Future<void> setFirstLaunch(bool value);
+  Future<void> setLanguage(String value);
+  Future<void> setNotificationsEnabled(bool value);
+  Future<void> setBiometricAuthEnabled(bool value);
+  Future<void> setAutoBackupEnabled(bool value);
+  Future<void> setDataRetentionDays(int value);
+  
+  Future<Map<String, dynamic>> exportSettings();
+  Future<void> importSettings(Map<String, dynamic> settings);
+  Future<Map<String, String>> getAppInfo();
+  Future<bool> isFreshInstall();
+  Future<void> completeOnboarding();
 }
 
 /// Interface for Authentication Service operations
@@ -96,4 +125,55 @@ abstract class IAuthService extends ChangeNotifier {
   bool get requiresAuthentication;
   Future<void> enableAuthentication();
   Future<void> disableAuthentication();
+  Future<bool> isBiometricAvailable();
+  Future<List<String>> getAvailableBiometrics();
+  Future<bool> authenticateWithBiometrics({String reason});
+  Future<bool> isBiometricEnabled();
+  Future<void> setBiometricEnabled(bool enabled);
+  Future<bool> isAppLockEnabled();
+  Future<void> setAppLockEnabled(bool enabled);
+  Future<bool> verifyPinCode(String pin);
+  Future<void> setPinCode(String pin);
+}
+
+/// Interface for Quick Button Service operations
+abstract class IQuickButtonService {
+  Future<String> createQuickButton(QuickButtonConfig config);
+  Future<List<QuickButtonConfig>> getAllQuickButtons();
+  Future<QuickButtonConfig?> getQuickButtonById(String id);
+  Future<void> updateQuickButton(QuickButtonConfig config);
+  Future<void> deleteQuickButton(String id);
+  Future<void> reorderQuickButtons(List<String> orderedIds);
+  Future<Entry> executeQuickButton(String quickButtonId);
+  Future<void> toggleQuickButtonActive(String id, bool isActive);
+  Future<List<QuickButtonConfig>> getActiveQuickButtons();
+  Future<void> updateQuickButtonPosition(String id, int newPosition);
+}
+
+/// Interface for Psychedelic Theme Service operations
+abstract class IPsychedelicThemeService extends ChangeNotifier {
+  Future<void> init();
+  AppThemeMode get currentThemeMode;
+  bool get isPsychedelicMode;
+  bool get isDarkMode;
+  bool get isLightMode;
+  bool get isTrippyMode;
+  bool get isAnimatedBackgroundEnabled;
+  bool get isPulsingButtonsEnabled;
+  double get glowIntensity;
+  String get currentSubstance;
+  bool get isInitialized;
+  AppThemeMode get effectiveThemeMode;
+  ThemeData get lightTheme;
+  ThemeData get darkTheme;
+  ThemeData get trippyTheme;
+  ThemeData get currentTheme;
+  Future<void> setThemeMode(AppThemeMode mode);
+  Future<void> togglePsychedelicMode();
+  Future<void> setAnimatedBackground(bool enabled);
+  Future<void> setPulsingButtons(bool enabled);
+  Future<void> setGlowIntensity(double intensity);
+  Future<void> setCurrentSubstance(String substance);
+  Color getPrimaryColorForSubstance(String substance);
+  LinearGradient getGradientForSubstance(String substance);
 }

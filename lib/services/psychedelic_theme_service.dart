@@ -4,17 +4,16 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../theme/design_tokens.dart';
 import '../utils/error_handler.dart';
+import '../interfaces/service_interfaces.dart';
 
-enum ThemeMode { light, dark, trippy, system }
-
-class PsychedelicThemeService extends ChangeNotifier {
+class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThemeService {
   static const String _themeModeKey = 'theme_mode';
   static const String _animatedBackgroundKey = 'animated_background';
   static const String _pulsingButtonsKey = 'pulsing_buttons';
   static const String _glowIntensityKey = 'glow_intensity';
   static const String _currentSubstanceKey = 'current_substance';
   
-  ThemeMode _currentThemeMode = ThemeMode.light;
+  AppThemeMode _currentThemeMode = AppThemeMode.light;
   bool _isAnimatedBackgroundEnabled = true;
   bool _isPulsingButtonsEnabled = true;
   double _glowIntensity = 1.0;
@@ -23,10 +22,10 @@ class PsychedelicThemeService extends ChangeNotifier {
   SharedPreferences? _prefs;
   bool _isInitialized = false;
   
-  ThemeMode get currentThemeMode => _currentThemeMode;
-  bool get isPsychedelicMode => _currentThemeMode == ThemeMode.trippy;
-  bool get isDarkMode => _currentThemeMode == ThemeMode.dark;
-  bool get isLightMode => _currentThemeMode == ThemeMode.light;
+  AppThemeMode get currentThemeMode => _currentThemeMode;
+  bool get isPsychedelicMode => _currentThemeMode == AppThemeMode.trippy;
+  bool get isDarkMode => _currentThemeMode == AppThemeMode.dark;
+  bool get isLightMode => _currentThemeMode == AppThemeMode.light;
   bool get isAnimatedBackgroundEnabled => _isAnimatedBackgroundEnabled;
   bool get isPulsingButtonsEnabled => _isPulsingButtonsEnabled;
   double get glowIntensity => _glowIntensity;
@@ -34,14 +33,14 @@ class PsychedelicThemeService extends ChangeNotifier {
   bool get isInitialized => _isInitialized;
   
   // Add getter for trippy mode state
-  bool get isTrippyMode => _currentThemeMode == ThemeMode.trippy;
+  bool get isTrippyMode => _currentThemeMode == AppThemeMode.trippy;
   
   // Get the effective theme mode, considering system preference
-  ThemeMode get effectiveThemeMode {
-    if (_currentThemeMode == ThemeMode.system) {
+  AppThemeMode get effectiveThemeMode {
+    if (_currentThemeMode == AppThemeMode.system) {
       // Get system brightness and return appropriate mode
       final systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
-      return systemBrightness == Brightness.dark ? ThemeMode.dark : ThemeMode.light;
+      return systemBrightness == Brightness.dark ? AppThemeMode.dark : AppThemeMode.light;
     }
     return _currentThemeMode;
   }
@@ -67,7 +66,7 @@ class PsychedelicThemeService extends ChangeNotifier {
       ErrorHandler.logError('THEME_SERVICE', 'Fehler bei PsychedelicThemeService init: $e');
       
       // Fallback to defaults
-      _currentThemeMode = ThemeMode.light;
+      _currentThemeMode = AppThemeMode.light;
       _isAnimatedBackgroundEnabled = true;
       _isPulsingButtonsEnabled = true;
       _glowIntensity = 1.0;
@@ -90,9 +89,9 @@ class PsychedelicThemeService extends ChangeNotifier {
       final themeModeIndex = _prefs!.getInt(_themeModeKey);
       if (themeModeIndex == null) {
         // No saved preference, use system default
-        _currentThemeMode = ThemeMode.system;
+        _currentThemeMode = AppThemeMode.system;
       } else {
-        _currentThemeMode = ThemeMode.values[themeModeIndex.clamp(0, ThemeMode.values.length - 1)];
+        _currentThemeMode = AppThemeMode.values[themeModeIndex.clamp(0, AppThemeMode.values.length - 1)];
       }
       
       // Load other settings
@@ -107,30 +106,30 @@ class PsychedelicThemeService extends ChangeNotifier {
     }
   }
   
-  Future<void> setThemeMode(ThemeMode mode) async {
+  Future<void> setThemeMode(AppThemeMode mode) async {
     _currentThemeMode = mode;
     await _prefs?.setInt(_themeModeKey, mode.index);
     notifyListeners();
   }
   
   Future<void> cycleThemeMode() async {
-    final nextIndex = (_currentThemeMode.index + 1) % ThemeMode.values.length;
-    await setThemeMode(ThemeMode.values[nextIndex]);
+    final nextIndex = (_currentThemeMode.index + 1) % AppThemeMode.values.length;
+    await setThemeMode(AppThemeMode.values[nextIndex]);
   }
   
   Future<void> togglePsychedelicMode() async {
-    if (_currentThemeMode == ThemeMode.trippy) {
-      await setThemeMode(ThemeMode.dark);
+    if (_currentThemeMode == AppThemeMode.trippy) {
+      await setThemeMode(AppThemeMode.dark);
     } else {
-      await setThemeMode(ThemeMode.trippy);
+      await setThemeMode(AppThemeMode.trippy);
     }
   }
   
   Future<void> toggleTrippyMode(bool value) async {
     if (value) {
-      await setThemeMode(ThemeMode.trippy);
+      await setThemeMode(AppThemeMode.trippy);
     } else {
-      await setThemeMode(ThemeMode.dark);
+      await setThemeMode(AppThemeMode.dark);
     }
   }
   
@@ -175,17 +174,20 @@ class PsychedelicThemeService extends ChangeNotifier {
   }
 
   // Get appropriate theme based on settings with error handling
+  @override
+  ThemeData get currentTheme => getTheme();
+
   ThemeData getTheme() {
     try {
       final effectiveMode = effectiveThemeMode;
       switch (effectiveMode) {
-        case ThemeMode.light:
+        case AppThemeMode.light:
           return _buildLightTheme();
-        case ThemeMode.dark:
+        case AppThemeMode.dark:
           return _buildDarkTheme();
-        case ThemeMode.trippy:
+        case AppThemeMode.trippy:
           return _buildTrippyTheme();
-        case ThemeMode.system:
+        case AppThemeMode.system:
           // This case should not happen as effectiveThemeMode resolves system
           final systemBrightness = WidgetsBinding.instance.platformDispatcher.platformBrightness;
           return systemBrightness == Brightness.dark ? _buildDarkTheme() : _buildLightTheme();
@@ -197,6 +199,13 @@ class PsychedelicThemeService extends ChangeNotifier {
       // Fallback to light theme
       return _buildLightTheme();
     }
+  }
+
+  // Initialize method for interface compliance
+  @override
+  Future<void> init() async {
+    if (_isInitialized) return;
+    await initialize();
   }
   
   ThemeData _buildLightTheme() {
