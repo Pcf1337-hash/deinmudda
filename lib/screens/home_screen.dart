@@ -6,10 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
-import '../services/entry_service.dart';
-import '../services/quick_button_service.dart';
-import '../services/timer_service.dart';
-import '../services/substance_service.dart';
+import '../utils/service_locator.dart';
+import '../use_cases/entry_use_cases.dart';
+import '../use_cases/substance_use_cases.dart';
+import '../interfaces/service_interfaces.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
@@ -47,11 +47,16 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   bool _isQuickEntryEditMode = false;
   bool _animationsInitialized = false; // Track if animations have been played
 
-  // Services (will be initialized from Provider)
-  late EntryService _entryService;
+  // Use Cases (injected via ServiceLocator)
+  late final GetEntriesUseCase _getEntriesUseCase;
+  late final CreateEntryUseCase _createEntryUseCase;
+  late final ITimerService _timerService;
+  late final IEntryService _entryService;
+  
+  // Services that don't have use cases yet (will be migrated in future phases)
+  late final ISubstanceService _substanceService;
+  // TODO: QuickButtonService to be migrated to ServiceLocator in Phase 4B
   late QuickButtonService _quickButtonService;
-  late TimerService _timerService;
-  late SubstanceService _substanceService;
 
   // Quick Entry State
   List<QuickButtonConfig> _quickButtons = [];
@@ -73,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     
     _scrollController.addListener(_onScroll);
     
-    // Initialize services from Provider in the next frame
+    // Initialize services and use cases from ServiceLocator in the next frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         _initializeServices();
@@ -84,18 +89,24 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   void _initializeServices() {
     try {
       if (kDebugMode) {
-        print('🔧 HomeScreen: Initialisiere Services von Provider...');
+        print('🔧 HomeScreen: Initialisiere Services von ServiceLocator...');
       }
       
-      // Get services from Provider
-      _entryService = Provider.of<EntryService>(context, listen: false);
+      // Get use cases and services from ServiceLocator
+      _getEntriesUseCase = ServiceLocator.get<GetEntriesUseCase>();
+      _createEntryUseCase = ServiceLocator.get<CreateEntryUseCase>();
+      _timerService = ServiceLocator.get<ITimerService>();
+      _entryService = ServiceLocator.get<IEntryService>();
+      _substanceService = ServiceLocator.get<ISubstanceService>();
+      
+      // TODO: QuickButtonService to be migrated to ServiceLocator in Phase 4B
       _quickButtonService = Provider.of<QuickButtonService>(context, listen: false);
-      _timerService = Provider.of<TimerService>(context, listen: false);
-      _substanceService = Provider.of<SubstanceService>(context, listen: false);
       
       if (kDebugMode) {
-        print('✅ HomeScreen: Services erfolgreich initialisiert');
-        print('📊 EntryService: ${_entryService.toString()}');
+        print('✅ HomeScreen: Services und Use Cases erfolgreich initialisiert');
+        print('📊 GetEntriesUseCase: ${_getEntriesUseCase.toString()}');
+        print('➕ CreateEntryUseCase: ${_createEntryUseCase.toString()}');
+        print('📝 EntryService: ${_entryService.toString()}');
         print('⚡ QuickButtonService: ${_quickButtonService.toString()}');
         print('⏰ TimerService: ${_timerService.toString()}');
         print('🧪 SubstanceService: ${_substanceService.toString()}');
@@ -109,13 +120,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         print('❌ HomeScreen: Fehler beim Initialisieren der Services: $e');
       }
       
-      // Fallback: Create new instances (should not happen in normal circumstances)
-      _entryService = EntryService();
-      _quickButtonService = QuickButtonService();
-      _timerService = TimerService(); // This uses the singleton anyway
-      _substanceService = SubstanceService();
-      
-      _loadInitialData();
+      // Fallback handling
+      throw StateError('Failed to initialize HomeScreen services: $e');
     }
   }
 
@@ -141,22 +147,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     _loadEntries();
     _loadQuickButtons();
     
-    // Also refresh timers to ensure they're up to date
-    _timerService.refreshActiveTimers();
+    // TODO: Add refreshActiveTimers to ITimerService interface in Phase 4B
+    // _timerService.refreshActiveTimers();
   }
 
   void _loadEntries() {
     if (!mounted) return;
     
     if (kDebugMode) {
-      print('📋 HomeScreen: Lade Einträge...');
+      print('📋 HomeScreen: Lade Einträge über GetEntriesUseCase...');
     }
     
     // Defer setState to prevent calling during build
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         safeSetState(() {
-          _entriesFuture = _entryService.getAllEntries();
+          _entriesFuture = _getEntriesUseCase.getAllEntries();
         });
       }
     });
@@ -1172,7 +1178,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
-          future: _entryService.getStatistics(),
+          // TODO: Add getStatistics to IEntryService interface in Phase 4B
+          future: (_entryService as dynamic).getStatistics(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildStatsLoading();
@@ -1293,7 +1300,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
-          future: _entryService.getStatistics(),
+          // TODO: Add getStatistics to IEntryService interface in Phase 4B  
+          future: (_entryService as dynamic).getStatistics(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildInsightsLoading();

@@ -6,9 +6,10 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart' hide SubstanceCategory;
 import '../models/substance.dart';
-import '../services/entry_service.dart';
-import '../services/substance_service.dart';
-import '../services/timer_service.dart';
+import '../utils/service_locator.dart';
+import '../use_cases/entry_use_cases.dart';
+import '../use_cases/substance_use_cases.dart';
+import '../interfaces/service_interfaces.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
 import '../widgets/unit_dropdown.dart';
@@ -46,10 +47,11 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   bool _autoCalculateCost = true;
   bool _startTimer = true; // Default to starting timer
 
-  // Services
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
-  late TimerService _timerService;
+  // Use Cases and Services (injected via ServiceLocator)
+  late final CreateEntryUseCase _createEntryUseCase;
+  late final CreateEntryWithTimerUseCase _createEntryWithTimerUseCase;
+  late final GetSubstancesUseCase _getSubstancesUseCase;
+  late final ITimerService _timerService;
 
   // Helper methods for color/icon inheritance
   IconData? _getIconFromName(String iconName) {
@@ -85,14 +87,33 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   void initState() {
     super.initState();
     
-    // Get TimerService from provider
-    _timerService = Provider.of<TimerService>(context, listen: false);
+    // Initialize use cases and services from ServiceLocator
+    _initializeServices();
     
     _loadSubstances();
     
     // Add listeners for auto-calculation
     _dosageController.addListener(_updateCalculatedCost);
     _unitController.addListener(_updateCalculatedCost);
+  }
+
+  /// Initialize use cases and services from ServiceLocator
+  void _initializeServices() {
+    try {
+      _createEntryUseCase = ServiceLocator.get<CreateEntryUseCase>();
+      _createEntryWithTimerUseCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
+      _getSubstancesUseCase = ServiceLocator.get<GetSubstancesUseCase>();
+      _timerService = ServiceLocator.get<ITimerService>();
+      
+      if (kDebugMode) {
+        print('✅ AddEntryScreen: Services und Use Cases erfolgreich initialisiert');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('❌ AddEntryScreen: Fehler beim Initialisieren der Services: $e');
+      }
+      throw StateError('Failed to initialize AddEntryScreen services: $e');
+    }
   }
 
   @override
@@ -129,7 +150,7 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     // Use performance helper to measure execution time in debug mode
     await PerformanceHelper.measureExecutionTime(() async {
       try {
-        final substances = await _substanceService.getAllSubstances();
+        final substances = await _getSubstancesUseCase.getAllSubstances();
         setState(() {
           _substances = substances;
           _isLoading = false;
@@ -169,11 +190,26 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
         color: _getColorForSubstance(_selectedSubstance),
       );
 
-      // Create entry with or without timer
+      // Create entry with or without timer using use cases
       if (_startTimer && _selectedSubstance?.duration != null) {
-        await _entryService.createEntryWithTimer(entry, customDuration: _selectedSubstance!.duration, timerService: _timerService);
+        // Use CreateEntryWithTimerUseCase for entries with timers
+        await _createEntryWithTimerUseCase.execute(
+          substanceId: _selectedSubstance?.id ?? '',
+          dosage: double.tryParse(_dosageController.text.replaceAll(',', '.')) ?? 0.0,
+          unit: _unitController.text,
+          dateTime: _selectedDateTime,
+          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+          customDuration: _selectedSubstance!.duration,
+        );
       } else {
-        await _entryService.addEntry(entry);
+        // Use CreateEntryUseCase for regular entries
+        await _createEntryUseCase.execute(
+          substanceId: _selectedSubstance?.id ?? '',
+          dosage: double.tryParse(_dosageController.text.replaceAll(',', '.')) ?? 0.0,
+          unit: _unitController.text,
+          dateTime: _selectedDateTime,
+          notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
+        );
       }
       
       if (mounted) {

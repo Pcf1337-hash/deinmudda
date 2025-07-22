@@ -60,19 +60,27 @@ class ServiceLocator {
       _services[AuthService] = AuthService();
       
       // Initialize business logic services with repository dependencies
-      _services[SubstanceService] = SubstanceService(substanceRepository);
-      _services[EntryService] = EntryService(entryRepository);
+      final substanceService = SubstanceService(substanceRepository);
+      final entryService = EntryService(entryRepository);
+      _services[SubstanceService] = substanceService;
+      _services[ISubstanceService] = substanceService;
+      _services[EntryService] = entryService;
+      _services[IEntryService] = entryService;
       _services[SettingsService] = SettingsService();
       _services[QuickButtonService] = QuickButtonService();
       
       // Initialize timer service (depends on other services)
       final timerService = TimerService(
-        _services[EntryService] as IEntryService,
-        _services[SubstanceService] as ISubstanceService,
+        entryService,
+        substanceService,
         notificationService,
       );
       await timerService.init();
       _services[TimerService] = timerService;
+      _services[ITimerService] = timerService;
+      
+      // Register notification service by interface
+      _services[INotificationService] = notificationService;
       
       // Initialize theme service
       _services[PsychedelicThemeService] = PsychedelicThemeService();
