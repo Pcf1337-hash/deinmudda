@@ -59,9 +59,9 @@ class ServiceLocator {
       // Initialize auth service
       _services[AuthService] = AuthService();
       
-      // Initialize business logic services
+      // Initialize business logic services with repository dependencies
       _services[SubstanceService] = SubstanceService();
-      _services[EntryService] = EntryService();
+      _services[EntryService] = EntryService(entryRepository);
       _services[SettingsService] = SettingsService();
       _services[QuickButtonService] = QuickButtonService();
       
