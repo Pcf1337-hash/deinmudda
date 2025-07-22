@@ -3,11 +3,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../interfaces/service_interfaces.dart';
 
-class NotificationService {
-  static final NotificationService _instance = NotificationService._internal();
-  factory NotificationService() => _instance;
-  NotificationService._internal();
+class NotificationService implements INotificationService {
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = 
       FlutterLocalNotificationsPlugin();
@@ -17,6 +15,7 @@ class NotificationService {
   static const String _reminderDaysKey = 'reminderDays';
 
   // Initialize notification service
+  @override
   Future<void> init() async {
     tz_data.initializeTimeZones();
     
@@ -298,5 +297,42 @@ class NotificationService {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  // Interface-compliant methods for timer notifications
+
+  /// Show timer notification (interface method)
+  @override
+  Future<void> showTimerNotification(String entryId, String substanceName, Duration remainingTime) async {
+    final notificationId = entryId.hashCode;
+    final remainingMinutes = remainingTime.inMinutes;
+    
+    await showNotification(
+      id: notificationId,
+      title: 'Timer aktiv: $substanceName',
+      body: 'Noch $remainingMinutes Minuten verbleibend',
+    );
+  }
+
+  /// Show timer expired notification (interface method)
+  @override
+  Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
+    await showTimerExpiredNotification(
+      entryId: entryId,
+      substanceName: substanceName,
+    );
+  }
+
+  /// Cancel notification for specific entry (interface method)
+  @override
+  Future<void> cancelNotification(String entryId) async {
+    final notificationId = entryId.hashCode;
+    await _flutterLocalNotificationsPlugin.cancel(notificationId);
+  }
+
+  /// Cancel all notifications (interface method)
+  @override
+  Future<void> cancelAllNotifications() async {
+    await _flutterLocalNotificationsPlugin.cancelAll();
   }
 }

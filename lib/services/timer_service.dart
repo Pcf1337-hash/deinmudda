@@ -4,18 +4,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
 import '../utils/error_handler.dart';
-import 'entry_service.dart';
-import 'substance_service.dart';
-import 'notification_service.dart';
+import '../interfaces/service_interfaces.dart';
 
-class TimerService extends ChangeNotifier {
-  static final TimerService _instance = TimerService._internal();
-  factory TimerService() => _instance;
-  TimerService._internal();
+class TimerService extends ChangeNotifier implements ITimerService {
+  final IEntryService _entryService;
+  final ISubstanceService _substanceService;
+  final INotificationService _notificationService;
 
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
-  final NotificationService _notificationService = NotificationService();
+  TimerService(
+    this._entryService,
+    this._substanceService,
+    this._notificationService,
+  );
 
   // PERFORMANCE OPTIMIZATION: Removed _timerCheckTimer - redundant with individual event-driven timers
   Timer? _notificationDebounceTimer;
@@ -34,6 +34,7 @@ class TimerService extends ChangeNotifier {
   static const String _activeTimerKeyPrefix = 'active_timer_';
 
   // Initialize timer service
+  @override
   Future<void> init() async {
     if (_isInitialized || _isDisposed) return;
     
@@ -194,6 +195,7 @@ class TimerService extends ChangeNotifier {
   }
 
   // Start timer for entry with improved management
+  @override
   Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
     if (_isDisposed) {
       ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu starten, aber Service ist disposed');
@@ -291,12 +293,12 @@ class TimerService extends ChangeNotifier {
   Future<void> _stopTimerById(String entryId) async {
     final entry = _activeTimers[entryId];
     if (entry != null) {
-      await stopTimer(entry);
+      await stopTimerForEntry(entry);
     }
   }
 
   // Stop timer for entry with improved efficiency
-  Future<Entry> stopTimer(Entry entry) async {
+  Future<Entry> stopTimerForEntry(Entry entry) async {
     if (_isDisposed) {
       ErrorHandler.logError('TIMER_SERVICE', 'Versuch Timer zu stoppen, aber Service ist disposed');
       return entry;
@@ -355,9 +357,11 @@ class TimerService extends ChangeNotifier {
   }
 
   // Get all active timers
+  @override
   List<Entry> get activeTimers => List.unmodifiable(_activeTimers.values);
 
   // Get current active timer (since only one is allowed)
+  @override
   Entry? get currentActiveTimer {
     try {
       return _activeTimers.isNotEmpty ? _activeTimers.values.first : null;
@@ -373,6 +377,7 @@ class TimerService extends ChangeNotifier {
   }
 
   // Check if there's any active timer
+  @override
   bool get hasAnyActiveTimer {
     if (_isDisposed) return false;
     
@@ -385,16 +390,19 @@ class TimerService extends ChangeNotifier {
   }
 
   // Check if timer service has any active timer (for HomeScreen usage)
+  @override
   bool isTimerActive() {
     return hasAnyActiveTimer;
   }
 
   // Check if entry has active timer
+  @override
   bool hasActiveTimer(String entryId) {
     return _activeTimers.containsKey(entryId);
   }
 
   // Get remaining time for entry
+  @override
   Duration? getRemainingTime(String entryId) {
     try {
       final entry = _activeTimers[entryId];
@@ -408,6 +416,7 @@ class TimerService extends ChangeNotifier {
   }
 
   // Get timer progress for entry
+  @override
   double getTimerProgress(String entryId) {
     try {
       final entry = _activeTimers[entryId];
@@ -748,6 +757,36 @@ class TimerService extends ChangeNotifier {
       if (kDebugMode) {
         print('Error clearing timer prefs: $e');
       }
+    }
+  }
+
+  // Interface-compliant wrapper methods for TimerService contract
+  
+  /// Stop timer by entry ID (interface method)
+  @override
+  Future<void> stopTimer(String entryId) async {
+    final entry = _activeTimers[entryId];
+    if (entry != null) {
+      await stopTimerForEntry(entry);
+    }
+  }
+
+  /// Pause timer by entry ID (interface method)
+  @override
+  Future<void> pauseTimer(String entryId) async {
+    // Implementation would go here if pause functionality is needed
+    // For now, delegate to stop for safety
+    await stopTimer(entryId);
+  }
+
+  /// Resume timer by entry ID (interface method)
+  @override
+  Future<void> resumeTimer(String entryId) async {
+    // Implementation would go here if resume functionality is needed
+    final entry = _activeTimers[entryId];
+    if (entry != null) {
+      // For now, restart the timer
+      await startTimer(entry);
     }
   }
 

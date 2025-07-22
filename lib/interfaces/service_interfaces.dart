@@ -28,15 +28,22 @@ abstract class IEntryService extends ChangeNotifier {
 
 /// Interface for Substance Service operations  
 abstract class ISubstanceService extends ChangeNotifier {
-  Future<void> createSubstance(Substance substance);
+  Future<String> createSubstance(Substance substance);
   Future<List<Substance>> getAllSubstances();
   Future<Substance?> getSubstanceById(String id);
   Future<Substance?> getSubstanceByName(String name);
   Future<void> updateSubstance(Substance substance);
   Future<void> deleteSubstance(String id);
   Future<List<Substance>> searchSubstances(String query);
-  Future<List<Substance>> getRecentSubstances(int limit);
-  Future<void> loadPredefinedSubstances();
+  Future<List<Substance>> getSubstancesByCategory(SubstanceCategory category);
+  Future<List<Substance>> getMostUsedSubstances({int limit = 10});
+  Future<void> initializeDefaultSubstances();
+  Future<List<String>> getAllUsedUnits();
+  Future<List<String>> getSuggestedUnits();
+  Future<bool> unitExists(String unit);
+  Future<List<Substance>> getSubstancesByUnit(String unit);
+  String? validateUnit(String? unit);
+  List<String> getRecommendedUnitsForCategory(SubstanceCategory category);
 }
 
 /// Interface for Timer Service operations
@@ -47,8 +54,13 @@ abstract class ITimerService extends ChangeNotifier {
   Future<void> pauseTimer(String entryId);
   Future<void> resumeTimer(String entryId);
   Duration? getRemainingTime(String entryId);
-  bool isTimerActive(String entryId);
+  bool isTimerActive();
+  bool hasActiveTimer(String entryId);
+  double getTimerProgress(String entryId);
   List<Entry> get activeTimers;
+  bool get hasAnyActiveTimer;
+  Entry? get currentActiveTimer;
+  @override
   void dispose();
 }
 

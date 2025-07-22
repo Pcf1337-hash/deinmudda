@@ -19,6 +19,9 @@ abstract class ISubstanceRepository {
   Future<void> deleteSubstance(String id);
   Future<List<Substance>> searchSubstances(String query);
   Future<List<Substance>> getRecentSubstances(int limit);
+  Future<List<Substance>> getSubstancesByCategory(SubstanceCategory category);
+  Future<List<Substance>> getMostUsedSubstances({int limit = 10});
+  Future<List<Substance>> getSubstancesByUnit(String unit);
 }
 
 /// Concrete implementation of substance repository
@@ -148,6 +151,57 @@ class SubstanceRepository implements ISubstanceRepository {
       return maps.map((map) => Substance.fromDatabase(map)).toList();
     } catch (e) {
       throw Exception('Failed to get recent substances: $e');
+    }
+  }
+
+  @override
+  Future<List<Substance>> getSubstancesByCategory(SubstanceCategory category) async {
+    try {
+      final db = await _databaseService.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'substances',
+        where: 'category = ?',
+        whereArgs: [category.index],
+        orderBy: 'name ASC',
+      );
+      return maps.map((map) => Substance.fromDatabase(map)).toList();
+    } catch (e) {
+      throw Exception('Failed to get substances by category: $e');
+    }
+  }
+
+  @override
+  Future<List<Substance>> getMostUsedSubstances({int limit = 10}) async {
+    try {
+      final db = await _databaseService.database;
+      final List<Map<String, dynamic>> maps = await db.rawQuery('''
+        SELECT s.*, COUNT(e.id) as usage_count
+        FROM substances s
+        LEFT JOIN entries e ON s.id = e.substanceId
+        GROUP BY s.id
+        ORDER BY usage_count DESC, s.name ASC
+        LIMIT ?
+      ''', [limit]);
+      
+      return maps.map((map) => Substance.fromDatabase(map)).toList();
+    } catch (e) {
+      throw Exception('Failed to get most used substances: $e');
+    }
+  }
+
+  @override
+  Future<List<Substance>> getSubstancesByUnit(String unit) async {
+    try {
+      final db = await _databaseService.database;
+      final List<Map<String, dynamic>> maps = await db.query(
+        'substances',
+        where: 'defaultUnit = ?',
+        whereArgs: [unit],
+        orderBy: 'name ASC',
+      );
+      return maps.map((map) => Substance.fromDatabase(map)).toList();
+    } catch (e) {
+      throw Exception('Failed to get substances by unit: $e');
     }
   }
 }
