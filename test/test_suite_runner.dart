@@ -13,6 +13,8 @@ import 'unit/entry_service_test.dart' as entry_service_tests;
 import 'unit/substance_service_test.dart' as substance_service_tests;
 import 'unit/timer_service_test.dart' as timer_service_tests;
 import 'integration/use_case_integration_test.dart' as use_case_integration_tests;
+import 'performance/performance_test.dart' as performance_tests;
+import 'load/load_test.dart' as load_tests;
 import 'helpers/test_helpers.dart';
 
 /// Main test runner that executes all test suites
@@ -69,6 +71,14 @@ void main() {
 
     group('⚡ Performance & Load Tests', () {
       print('🔍 Running Performance Tests...');
+      
+      group('Performance Tests', () {
+        performance_tests.main();
+      });
+      
+      group('Load Tests', () {
+        load_tests.main();
+      });
       
       test('Service Layer Performance Benchmark', () async {
         print('📊 Running service performance benchmarks...');
