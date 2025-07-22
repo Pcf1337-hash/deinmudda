@@ -115,6 +115,7 @@ class TimerService extends ChangeNotifier {
   }
 
   // Set up individual timer for entry-specific management
+  // RACE CONDITION FIX: Added async handling and disposal checks
   void _setupIndividualTimer(Entry entry) {
     if (_individualTimers.containsKey(entry.id)) {
       _individualTimers[entry.id]?.cancel();
@@ -126,9 +127,15 @@ class TimerService extends ChangeNotifier {
     final remaining = entry.timerEndTime!.difference(now);
     
     if (remaining.inMilliseconds > 0) {
-      _individualTimers[entry.id] = Timer(remaining, () {
-        _handleTimerExpired(entry);
-        _individualTimers.remove(entry.id);
+      _individualTimers[entry.id] = Timer(remaining, () async {
+        // CRITICAL FIX: Check if service is still active before processing
+        if (!_isDisposed && _activeTimers.containsKey(entry.id)) {
+          await _handleTimerExpired(entry);
+        }
+        // Safe cleanup - only remove if still exists
+        if (_individualTimers.containsKey(entry.id)) {
+          _individualTimers.remove(entry.id);
+        }
       });
     }
   }
@@ -152,6 +159,7 @@ class TimerService extends ChangeNotifier {
   }
 
   // Check for expired timers with improved efficiency
+  // RACE CONDITION FIX: Copy collection before iteration to prevent concurrent modification
   Future<void> _checkTimers() async {
     if (_isDisposed || _timerCheckTimer == null || !_timerCheckTimer!.isActive) {
       return; // Service was disposed or timer was cancelled, don't proceed
@@ -161,8 +169,12 @@ class TimerService extends ChangeNotifier {
       final now = DateTime.now();
       final expiredEntries = <Entry>[];
 
-      // Use Map values for efficient iteration
-      for (final entry in _activeTimers.values) {
+      // CRITICAL FIX: Create a copy of _activeTimers to avoid concurrent modification
+      // This prevents race conditions when _handleTimerExpired modifies _activeTimers
+      final activeTimersCopy = Map<String, Entry>.from(_activeTimers);
+      
+      // Use copied Map values for safe iteration
+      for (final entry in activeTimersCopy.values) {
         if (entry.timerEndTime != null && 
             now.isAfter(entry.timerEndTime!) && 
             !entry.timerCompleted &&
@@ -171,16 +183,20 @@ class TimerService extends ChangeNotifier {
         }
       }
 
+      // Process expired timers - now safe from concurrent modification
       for (final entry in expiredEntries) {
         if (!_isDisposed) {
           await _handleTimerExpired(entry);
         }
       }
 
-      // Remove expired timers from active map
+      // Remove expired timers from active map (only if they still exist)
       if (!_isDisposed && expiredEntries.isNotEmpty) {
         for (final entry in expiredEntries) {
-          _activeTimers.remove(entry.id);
+          // Double-check entry still exists before removing (defensive programming)
+          if (_activeTimers.containsKey(entry.id)) {
+            _activeTimers.remove(entry.id);
+          }
           _individualTimers[entry.id]?.cancel();
           _individualTimers.remove(entry.id);
         }

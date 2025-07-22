@@ -221,17 +221,80 @@ class DatabaseService {
   }
 
   /// Safely add a column if it doesn't exist
+  /// CRITICAL SAFETY FIX: Added backup and recovery mechanisms
   Future<void> _addColumnIfNotExists(Database db, String tableName, String columnName, String columnType) async {
     try {
+      // First check if column already exists
       final result = await db.rawQuery('PRAGMA table_info($tableName)');
       final columnExists = result.any((column) => column['name'] == columnName);
       
       if (!columnExists) {
-        await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
-        print('Added column $columnName to table $tableName');
+        // SAFETY ENHANCEMENT: Create backup table before schema modification
+        final backupTableName = '${tableName}_backup_${DateTime.now().millisecondsSinceEpoch}';
+        
+        try {
+          // Create backup table with existing data
+          await db.execute('CREATE TABLE $backupTableName AS SELECT * FROM $tableName');
+          print('Created backup table: $backupTableName');
+          
+          // Perform the schema change
+          await db.execute('ALTER TABLE $tableName ADD COLUMN $columnName $columnType');
+          print('✅ Successfully added column $columnName to table $tableName');
+          
+          // Verify the column was added correctly
+          final verifyResult = await db.rawQuery('PRAGMA table_info($tableName)');
+          final columnAdded = verifyResult.any((column) => column['name'] == columnName);
+          
+          if (columnAdded) {
+            // SUCCESS: Column added successfully, clean up backup
+            await db.execute('DROP TABLE $backupTableName');
+            print('✅ Migration completed successfully, backup cleaned up');
+          } else {
+            // FAILURE: Column not added, restore from backup
+            throw Exception('Column verification failed after ALTER TABLE');
+          }
+          
+        } catch (migrationError) {
+          print('🚨 MIGRATION ERROR: $migrationError');
+          
+          // RECOVERY: Attempt to restore from backup if it exists
+          try {
+            final backupExists = await _tableExists(db, backupTableName);
+            if (backupExists) {
+              // Drop the potentially corrupted table
+              await db.execute('DROP TABLE IF EXISTS $tableName');
+              // Restore from backup
+              await db.execute('ALTER TABLE $backupTableName RENAME TO $tableName');
+              print('🔄 Successfully restored table $tableName from backup');
+            }
+          } catch (recoveryError) {
+            print('💥 CRITICAL: Failed to recover from backup: $recoveryError');
+            // This is a critical error - the migration failed and recovery failed
+            rethrow;
+          }
+          
+          // Re-throw the original migration error
+          rethrow;
+        }
       }
     } catch (e) {
-      print('Error adding column $columnName to table $tableName: $e');
+      print('🚨 CRITICAL ERROR in _addColumnIfNotExists for $tableName.$columnName: $e');
+      // Log to error handler for proper tracking
+      print('Stack trace: ${StackTrace.current}');
+      rethrow; // Re-throw to let caller handle the critical error
+    }
+  }
+  
+  /// Helper method to check if a table exists
+  Future<bool> _tableExists(Database db, String tableName) async {
+    try {
+      final result = await db.rawQuery(
+        "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+        [tableName]
+      );
+      return result.isNotEmpty;
+    } catch (e) {
+      return false;
     }
   }
 
