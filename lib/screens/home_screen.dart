@@ -55,8 +55,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   
   // Services that don't have use cases yet (will be migrated in future phases)
   late final ISubstanceService _substanceService;
-  // TODO: QuickButtonService to be migrated to ServiceLocator in Phase 4B
-  late QuickButtonService _quickButtonService;
+  late final IQuickButtonService _quickButtonService;
 
   // Quick Entry State
   List<QuickButtonConfig> _quickButtons = [];
@@ -98,9 +97,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       _timerService = ServiceLocator.get<ITimerService>();
       _entryService = ServiceLocator.get<IEntryService>();
       _substanceService = ServiceLocator.get<ISubstanceService>();
-      
-      // TODO: QuickButtonService to be migrated to ServiceLocator in Phase 4B
-      _quickButtonService = Provider.of<QuickButtonService>(context, listen: false);
+      _quickButtonService = ServiceLocator.get<IQuickButtonService>();
       
       if (kDebugMode) {
         print('✅ HomeScreen: Services und Use Cases erfolgreich initialisiert');
@@ -147,8 +144,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     _loadEntries();
     _loadQuickButtons();
     
-    // TODO: Add refreshActiveTimers to ITimerService interface in Phase 4B
-    // _timerService.refreshActiveTimers();
+    // Refresh active timers after loading
+    _timerService.refreshActiveTimers();
   }
 
   void _loadEntries() {
@@ -1178,8 +1175,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
-          // TODO: Add getStatistics to IEntryService interface in Phase 4B
-          future: (_entryService as dynamic).getStatistics(),
+          future: _entryService.getStatistics(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildStatsLoading();
@@ -1300,8 +1296,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
-          // TODO: Add getStatistics to IEntryService interface in Phase 4B  
-          future: (_entryService as dynamic).getStatistics(),
+          future: _entryService.getStatistics(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return _buildInsightsLoading();
