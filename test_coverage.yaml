@@ -1,0 +1,63 @@
+# Code Coverage Configuration for Konsum Tracker Pro
+# Phase 7: Advanced Testing & CI/CD Implementation
+
+# Coverage targets
+targets:
+  # Overall project coverage target
+  overall: 70%
+  
+  # Service layer (critical business logic)
+  services: 85%
+  
+  # Repository layer (data access)
+  repositories: 80%
+  
+  # Use cases (business orchestration)
+  use_cases: 85%
+  
+  # Utilities (helper functions)
+  utils: 75%
+
+# Coverage exclusions
+exclude:
+  # Generated files
+  - "**/*.g.dart"
+  - "**/*.freezed.dart"
+  
+  # Test files themselves
+  - "test/**"
+  
+  # Demo and example files
+  - "lib/demo/**"
+  
+  # Legacy backup files
+  - "**/*.backup"
+  - "**/*_old.dart"
+  
+  # Configuration files
+  - "lib/config/**"
+
+# Coverage reporting
+reporting:
+  # Generate HTML report
+  html: true
+  
+  # Generate LCOV report for CI/CD
+  lcov: true
+  
+  # Console output
+  console: true
+  
+  # Fail build if below threshold
+  fail_below: 70%
+
+# Performance thresholds
+performance:
+  # Maximum test execution time
+  max_test_time: 300s
+  
+  # Memory usage threshold
+  max_memory_mb: 512
+  
+  # Service response time threshold
+  max_service_response_ms: 100
