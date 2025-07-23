@@ -28,6 +28,12 @@ jobs:
       - name: Analyze code
         run: flutter analyze
 
+      - name: Validate test file structure
+        run: flutter test test/test_file_validation.dart --no-sound-null-safety
+
+      - name: Validate CI/CD pipeline setup
+        run: flutter test test/ci_cd_validation_test.dart --no-sound-null-safety
+
       - name: Run basic tests first
         run: flutter test test/basic_test.dart --no-sound-null-safety
 
