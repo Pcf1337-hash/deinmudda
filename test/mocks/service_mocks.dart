@@ -269,6 +269,11 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
   }
 
   @override
+  Future<void> init() async {
+    await initialize();
+  }
+
+  @override
   Future<void> dispose() async {
     _isDisposed = true;
     _activeTimers.clear();
@@ -276,15 +281,29 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
   }
 
   @override
-  Future<void> createEntryWithTimer(Entry entry, Duration duration) async {
-    if (_isDisposed) return;
+  Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
+    if (_isDisposed) throw Exception('Timer service is disposed');
+    
+    final duration = customDuration ?? const Duration(hours: 2);
+    final entryWithTimer = entry.copyWith(
+      timerStartTime: DateTime.now(),
+      duration: duration,
+    );
     
     _activeTimers[entry.id] = {
-      'entry': entry,
+      'entry': entryWithTimer,
       'duration': duration,
       'startTime': DateTime.now(),
     };
     notifyListeners();
+    
+    return entryWithTimer;
+  }
+
+  @override
+  Future<void> createEntryWithTimer(Entry entry, Duration duration) async {
+    // This method is deprecated in favor of startTimer
+    await startTimer(entry, customDuration: duration);
   }
 
   @override
@@ -320,10 +339,30 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
   }
 
   @override
-  Map<String, Entry> getActiveTimers() {
-    return Map.fromEntries(
-      _activeTimers.entries.map((e) => MapEntry(e.key, e.value['entry'] as Entry))
-    );
+  bool isTimerActive() {
+    return _activeTimers.isNotEmpty;
+  }
+
+  @override
+  List<Entry> get activeTimers {
+    return _activeTimers.values.map((timer) => timer['entry'] as Entry).toList();
+  }
+
+  @override
+  bool get hasAnyActiveTimer {
+    return _activeTimers.isNotEmpty;
+  }
+
+  @override
+  Entry? get currentActiveTimer {
+    if (_activeTimers.isEmpty) return null;
+    return _activeTimers.values.first['entry'] as Entry;
+  }
+
+  @override
+  Future<void> refreshActiveTimers() async {
+    // Mock implementation - no-op
+    notifyListeners();
   }
 
   @override
