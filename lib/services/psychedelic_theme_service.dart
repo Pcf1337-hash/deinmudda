@@ -207,6 +207,204 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
     if (_isInitialized) return;
     await initialize();
   }
+
+  /// Initialize the theme service with saved preferences
+  /// This method loads stored theme settings and prepares the service for use
+  @override
+  Future<void> initialize() async {
+    try {
+      _prefs = await SharedPreferences.getInstance();
+      
+      // Load saved theme mode
+      final themeModeString = _prefs?.getString(_themeModeKey);
+      if (themeModeString != null) {
+        _currentThemeMode = AppThemeMode.values.firstWhere(
+          (mode) => mode.toString() == themeModeString,
+          orElse: () => AppThemeMode.light,
+        );
+      }
+      
+      // Load other settings
+      _isAnimatedBackgroundEnabled = _prefs?.getBool(_animatedBackgroundKey) ?? true;
+      _isPulsingButtonsEnabled = _prefs?.getBool(_pulsingButtonsKey) ?? true;
+      _glowIntensity = _prefs?.getDouble(_glowIntensityKey) ?? 1.0;
+      _currentSubstance = _prefs?.getString(_currentSubstanceKey) ?? 'default';
+      
+      _isInitialized = true;
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error initializing PsychedelicThemeService: $e');
+      }
+      // Continue with defaults if initialization fails
+      _isInitialized = true;
+      notifyListeners();
+    }
+  }
+
+  /// Toggle between light and dark mode
+  /// Switches between light mode and dark mode, excluding trippy mode
+  @override
+  Future<void> toggleDarkMode() async {
+    try {
+      if (_currentThemeMode == AppThemeMode.dark) {
+        await setThemeMode(AppThemeMode.light);
+      } else {
+        await setThemeMode(AppThemeMode.dark);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error toggling dark mode: $e');
+      }
+    }
+  }
+
+  /// Set the theme mode and persist the setting
+  /// @param mode The theme mode to set (light, dark, trippy, system)
+  @override
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    try {
+      _currentThemeMode = mode;
+      await _prefs?.setString(_themeModeKey, mode.toString());
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting theme mode: $e');
+      }
+    }
+  }
+
+  /// Toggle psychedelic/trippy mode on and off
+  /// Switches between trippy mode and the previous theme mode
+  @override
+  Future<void> togglePsychedelicMode() async {
+    try {
+      if (_currentThemeMode == AppThemeMode.trippy) {
+        // Switch back to dark mode when disabling trippy mode
+        await setThemeMode(AppThemeMode.dark);
+      } else {
+        await setThemeMode(AppThemeMode.trippy);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error toggling psychedelic mode: $e');
+      }
+    }
+  }
+
+  /// Enable or disable animated background effects
+  /// @param enabled Whether animated backgrounds should be enabled
+  @override
+  Future<void> setAnimatedBackground(bool enabled) async {
+    try {
+      _isAnimatedBackgroundEnabled = enabled;
+      await _prefs?.setBool(_animatedBackgroundKey, enabled);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting animated background: $e');
+      }
+    }
+  }
+
+  /// Enable or disable pulsing button effects
+  /// @param enabled Whether pulsing buttons should be enabled
+  @override
+  Future<void> setPulsingButtons(bool enabled) async {
+    try {
+      _isPulsingButtonsEnabled = enabled;
+      await _prefs?.setBool(_pulsingButtonsKey, enabled);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting pulsing buttons: $e');
+      }
+    }
+  }
+
+  /// Set the intensity of glow effects
+  /// @param intensity Glow intensity value between 0.0 and 2.0
+  @override
+  Future<void> setGlowIntensity(double intensity) async {
+    try {
+      _glowIntensity = intensity.clamp(0.0, 2.0);
+      await _prefs?.setDouble(_glowIntensityKey, _glowIntensity);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting glow intensity: $e');
+      }
+    }
+  }
+
+  /// Set the current substance for theme customization
+  /// @param substance The substance name to base colors on
+  @override
+  Future<void> setCurrentSubstance(String substance) async {
+    try {
+      _currentSubstance = substance;
+      await _prefs?.setString(_currentSubstanceKey, substance);
+      notifyListeners();
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error setting current substance: $e');
+      }
+    }
+  }
+
+  /// Get the primary color for a specific substance
+  /// Returns the main color associated with the substance category
+  /// @param substance The substance name to get color for
+  @override
+  Color getPrimaryColorForSubstance(String substance) {
+    try {
+      final colors = getCurrentSubstanceColors();
+      return colors['primary'] ?? DesignTokens.primaryIndigo;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting primary color for substance: $e');
+      }
+      return DesignTokens.primaryIndigo;
+    }
+  }
+
+  /// Get a gradient for a specific substance
+  /// Returns a linear gradient based on the substance's color scheme
+  /// @param substance The substance name to get gradient for
+  @override
+  LinearGradient getGradientForSubstance(String substance) {
+    try {
+      final colors = getCurrentSubstanceColors();
+      final primaryColor = colors['primary'] ?? DesignTokens.primaryIndigo;
+      final secondaryColor = colors['secondary'] ?? DesignTokens.accentColor;
+      
+      return LinearGradient(
+        colors: [primaryColor, secondaryColor],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error getting gradient for substance: $e');
+      }
+      // Return a default gradient
+      return LinearGradient(
+        colors: [DesignTokens.primaryIndigo, DesignTokens.accentColor],
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+      );
+    }
+  }
+
+  /// Get the trippy theme data
+  /// Returns the psychedelic theme with animated effects and bright colors
+  @override
+  ThemeData get trippyTheme => _buildTrippyTheme();
+
+  /// Get the current theme based on the selected mode
+  /// Returns the appropriate theme (light, dark, or trippy)
+  @override
+  ThemeData get currentTheme => getTheme();
   
   ThemeData _buildLightTheme() {
     return ThemeData(

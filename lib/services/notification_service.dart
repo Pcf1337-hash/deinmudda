@@ -135,8 +135,8 @@ class NotificationService implements INotificationService {
     await _flutterLocalNotificationsPlugin.cancelAll();
   }
 
-  // Show timer expired notification
-  Future<void> showTimerExpiredNotification({
+  // Show timer expired notification (internal method with named parameters)
+  Future<void> _showTimerExpiredNotificationInternal({
     required String substanceName,
     required String entryId,
   }) async {
@@ -317,7 +317,7 @@ class NotificationService implements INotificationService {
   /// Show timer expired notification (interface method)
   @override
   Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
-    await showTimerExpiredNotification(
+    await _showTimerExpiredNotificationInternal(
       entryId: entryId,
       substanceName: substanceName,
     );

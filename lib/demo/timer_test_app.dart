@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
-import '../services/timer_service.dart';
+import '../interfaces/service_interfaces.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/active_timer_bar.dart';
@@ -17,7 +17,7 @@ class TimerTestApp extends StatefulWidget {
 }
 
 class _TimerTestAppState extends State<TimerTestApp> {
-  final TimerService _timerService = MockTimerService();
+  final ITimerService _timerService = MockTimerService();
   late Entry _testEntry;
   bool _isTimerActive = false;
 

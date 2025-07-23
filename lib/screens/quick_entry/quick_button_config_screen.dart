@@ -5,8 +5,8 @@ import 'package:provider/provider.dart';
 import 'dart:math' as math;
 import '../../models/quick_button_config.dart';
 import '../../models/substance.dart';
-import '../../services/quick_button_service.dart';
-import '../../services/substance_service.dart';
+import '../../interfaces/service_interfaces.dart';
+import '../../utils/service_locator.dart';
 import '../../services/psychedelic_theme_service.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/modern_fab.dart';
@@ -131,12 +131,17 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   ];
 
   // Services
-  final QuickButtonService _quickButtonService = QuickButtonService();
-  final SubstanceService _substanceService = SubstanceService();
+  late final IQuickButtonService _quickButtonService;
+  late final ISubstanceService _substanceService;
 
   @override
   void initState() {
     super.initState();
+    
+    // Initialize services from service locator
+    _quickButtonService = ServiceLocator.get<IQuickButtonService>();
+    _substanceService = ServiceLocator.get<ISubstanceService>();
+    
     _loadSubstances();
     _initializeForm();
   }

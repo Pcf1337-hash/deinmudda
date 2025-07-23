@@ -9,6 +9,7 @@ import 'utils/platform_helper.dart';
 import 'utils/error_handler.dart';
 import 'utils/app_initialization_manager.dart';
 import 'utils/impeller_helper.dart';
+import 'interfaces/service_interfaces.dart'; // For AppThemeMode
 
 import 'screens/auth/auth_screen.dart';
 import 'screens/main_navigation.dart';
@@ -269,9 +270,9 @@ class KonsumTrackerApp extends StatelessWidget {
             // Use getTheme() method for proper theme handling
             theme: psychedelicService.getTheme(),
             darkTheme: psychedelicService.getTheme(),
-            themeMode: psychedelicService.currentThemeMode == service.ThemeMode.system 
+            themeMode: psychedelicService.currentThemeMode == AppThemeMode.system 
                 ? ThemeMode.system
-                : (psychedelicService.effectiveThemeMode == service.ThemeMode.light 
+                : (psychedelicService.effectiveThemeMode == AppThemeMode.light 
                     ? ThemeMode.light 
                     : ThemeMode.dark),
             // Platform-specific page transitions

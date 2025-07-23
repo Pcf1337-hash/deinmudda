@@ -3,7 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
-import '../services/entry_service.dart';
+import '../interfaces/service_interfaces.dart';
+import '../utils/service_locator.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/header_bar.dart';
@@ -26,7 +27,7 @@ class CalendarScreen extends StatefulWidget {
 
 class _CalendarScreenState extends State<CalendarScreen> {
   final _scrollController = ScrollController();
-  final EntryService _entryService = EntryService();
+  late final IEntryService _entryService;
   
   DateTime _selectedDate = DateTime.now();
   DateTime _focusedDate = DateTime.now();
@@ -39,6 +40,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   void initState() {
     super.initState();
+    // Initialize entry service from service locator
+    _entryService = ServiceLocator.get<IEntryService>();
     _loadEntries();
   }
 

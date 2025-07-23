@@ -338,10 +338,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   Future<void> _stopActiveTimer() async {
     try {
-      final activeTimer = _timerService.getActiveTimer();
+      final activeTimer = _timerService.currentActiveTimer;
       if (activeTimer == null || !mounted) return;
       
-      await _timerService.stopTimer(activeTimer);
+      await _timerService.stopTimer(activeTimer.id);
       
       if (mounted) {
         _safeShowSnackBar(
@@ -393,7 +393,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   Future<void> _reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
     try {
-      await _quickButtonService.reorderQuickButtons(reorderedButtons);
+      // Extract IDs from the reordered button configs
+      final orderedIds = reorderedButtons.map((config) => config.id).toList();
+      await _quickButtonService.reorderQuickButtons(orderedIds);
       safeSetState(() {
         _quickButtons = reorderedButtons;
         _isQuickEntryEditMode = false;
@@ -561,9 +563,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       // Active Timer Bar (only shown when timer is active)
                       LayoutErrorBoundary(
                         debugLabel: 'Active Timer Bar',
-                        child: Consumer<TimerService>(
+                        child: Consumer<ITimerService>(
                           builder: (context, timerService, child) {
-                            final activeTimer = timerService.getActiveTimer();
+                            final activeTimer = timerService.currentActiveTimer;
                             if (activeTimer != null && mounted) {
                               return LayoutBuilder(
                                 builder: (context, constraints) {
@@ -756,7 +758,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ), // Close LayoutErrorBoundary
           floatingActionButton: Consumer<PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
-              return Consumer<TimerService>(
+              return Consumer<ITimerService>(
                 builder: (context, timerService, child) {
                   final theme = Theme.of(context);
                   final isDark = theme.brightness == Brightness.dark;

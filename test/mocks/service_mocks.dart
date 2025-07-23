@@ -825,3 +825,101 @@ class MockAuthService extends ChangeNotifier implements IAuthService {
     notifyListeners();
   }
 }
+
+/// Mock Quick Button Service for testing
+class MockQuickButtonService implements IQuickButtonService {
+  final List<QuickButtonConfig> _quickButtons = [];
+  int _nextPosition = 0;
+
+  @override
+  Future<String> createQuickButton(QuickButtonConfig config) async {
+    final configWithPosition = config.copyWith(position: _nextPosition++);
+    _quickButtons.add(configWithPosition);
+    return configWithPosition.id;
+  }
+
+  @override
+  Future<List<QuickButtonConfig>> getAllQuickButtons() async {
+    return List.from(_quickButtons);
+  }
+
+  @override
+  Future<QuickButtonConfig?> getQuickButtonById(String id) async {
+    try {
+      return _quickButtons.firstWhere((config) => config.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> updateQuickButton(QuickButtonConfig config) async {
+    final index = _quickButtons.indexWhere((c) => c.id == config.id);
+    if (index != -1) {
+      _quickButtons[index] = config;
+    }
+  }
+
+  @override
+  Future<void> deleteQuickButton(String id) async {
+    _quickButtons.removeWhere((config) => config.id == id);
+  }
+
+  @override
+  Future<void> reorderQuickButtons(List<String> orderedIds) async {
+    final reorderedButtons = <QuickButtonConfig>[];
+    for (int i = 0; i < orderedIds.length; i++) {
+      final config = _quickButtons.firstWhere((c) => c.id == orderedIds[i]);
+      reorderedButtons.add(config.copyWith(position: i));
+    }
+    _quickButtons.clear();
+    _quickButtons.addAll(reorderedButtons);
+  }
+
+  @override
+  Future<Entry> executeQuickButton(String quickButtonId) async {
+    final config = await getQuickButtonById(quickButtonId);
+    if (config == null) {
+      throw Exception('Quick button not found: $quickButtonId');
+    }
+    
+    // Create a mock entry based on the quick button configuration
+    return Entry.create(
+      substanceId: config.substanceId,
+      dosage: config.dosage,
+      unit: config.unit,
+      notes: 'Quick entry from button: ${config.label}',
+    );
+  }
+
+  @override
+  Future<void> toggleQuickButtonActive(String id, bool isActive) async {
+    final index = _quickButtons.indexWhere((c) => c.id == id);
+    if (index != -1) {
+      _quickButtons[index] = _quickButtons[index].copyWith(isActive: isActive);
+    }
+  }
+
+  @override
+  Future<List<QuickButtonConfig>> getActiveQuickButtons() async {
+    return _quickButtons.where((config) => config.isActive).toList();
+  }
+
+  @override
+  Future<void> updateQuickButtonPosition(String id, int newPosition) async {
+    final index = _quickButtons.indexWhere((c) => c.id == id);
+    if (index != -1) {
+      _quickButtons[index] = _quickButtons[index].copyWith(position: newPosition);
+    }
+  }
+
+  // Test helper methods
+  void clearAllQuickButtons() {
+    _quickButtons.clear();
+    _nextPosition = 0;
+  }
+
+  void addMockQuickButton(QuickButtonConfig config) {
+    _quickButtons.add(config.copyWith(position: _nextPosition++));
+  }
+}

@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'lib/screens/home_screen.dart';
-import 'lib/services/entry_service.dart';
-import 'lib/services/quick_button_service.dart';
-import 'lib/services/timer_service.dart';
-import 'lib/services/substance_service.dart';
+import 'lib/interfaces/service_interfaces.dart';
 import 'lib/services/psychedelic_theme_service.dart';
 import 'test/mocks/service_mocks.dart';
 
@@ -31,10 +28,10 @@ class AnimatedSwitcherTestApp extends StatelessWidget {
       ),
       home: MultiProvider(
         providers: [
-          Provider<EntryService>(create: (_) => MockEntryService()),
-          Provider<QuickButtonService>(create: (_) => MockQuickButtonService()),
-          Provider<TimerService>(create: (_) => MockTimerService()),
-          Provider<SubstanceService>(create: (_) => MockSubstanceService()),
+          Provider<IEntryService>(create: (_) => MockEntryService()),
+          Provider<IQuickButtonService>(create: (_) => MockQuickButtonService()),
+          Provider<ITimerService>(create: (_) => MockTimerService()),
+          Provider<ISubstanceService>(create: (_) => MockSubstanceService()),
           ChangeNotifierProvider<PsychedelicThemeService>(
             create: (_) => PsychedelicThemeService(),
           ),
