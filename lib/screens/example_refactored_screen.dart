@@ -196,11 +196,9 @@ class _ExampleRefactoredScreenState extends State<ExampleRefactoredScreen> {
                           children: _substances.take(3).map((substance) {
                             return ListTile(
                               title: Text(substance.name),
-                              subtitle: Text(substance.category),
+                              subtitle: Text(substance.category.name),
                               leading: CircleAvatar(
-                                backgroundColor: Color(
-                                  int.parse(substance.color.substring(1), radix: 16) + 0xFF000000,
-                                ),
+                                backgroundColor: _getCategoryColor(substance.category),
                                 child: Text(
                                   substance.name.substring(0, 1).toUpperCase(),
                                   style: const TextStyle(color: Colors.white),
@@ -257,5 +255,22 @@ class _ExampleRefactoredScreenState extends State<ExampleRefactoredScreen> {
   void dispose() {
     // Note: Use cases are managed by ServiceLocator, no need to dispose
     super.dispose();
+  }
+
+  Color _getCategoryColor(SubstanceCategory category) {
+    switch (category) {
+      case SubstanceCategory.medication:
+        return Colors.blue;
+      case SubstanceCategory.stimulant:
+        return Colors.red;
+      case SubstanceCategory.depressant:
+        return Colors.purple;
+      case SubstanceCategory.supplement:
+        return Colors.green;
+      case SubstanceCategory.recreational:
+        return Colors.orange;
+      case SubstanceCategory.other:
+        return Colors.grey;
+    }
   }
 }

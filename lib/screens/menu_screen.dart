@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/database_service.dart';
 import '../services/psychedelic_theme_service.dart' as service;
+import '../interfaces/service_interfaces.dart'; // For AppThemeMode
 import '../widgets/glass_card.dart';
 import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
@@ -318,16 +319,16 @@ class _MenuScreenState extends State<MenuScreen> {
               SwitchListTile(
                 title: const Text('🌗 Dark Mode'),
                 subtitle: const Text('Dunkles Design verwenden'),
-                value: psychedelicService.currentThemeMode == service.ThemeMode.dark || psychedelicService.currentThemeMode == service.ThemeMode.trippy,
+                value: psychedelicService.currentThemeMode == AppThemeMode.dark || psychedelicService.currentThemeMode == AppThemeMode.trippy,
                 onChanged: (value) {
                   if (value) {
-                    psychedelicService.setThemeMode(service.ThemeMode.dark);
+                    psychedelicService.setThemeMode(AppThemeMode.dark);
                   } else {
-                    psychedelicService.setThemeMode(service.ThemeMode.light);
+                    psychedelicService.setThemeMode(AppThemeMode.light);
                   }
                 },
                 secondary: Icon(
-                  psychedelicService.currentThemeMode == service.ThemeMode.light ? Icons.light_mode : Icons.dark_mode,
+                  psychedelicService.currentThemeMode == AppThemeMode.light ? Icons.light_mode : Icons.dark_mode,
                   color: DesignTokens.primaryIndigo,
                 ),
               ),

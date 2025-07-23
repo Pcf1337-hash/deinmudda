@@ -7,6 +7,8 @@ import '../../models/substance.dart';
 import '../../services/entry_service.dart';
 import '../../services/substance_service.dart';
 import '../../services/timer_service.dart';
+import '../../interfaces/service_interfaces.dart';
+import '../../utils/service_locator.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
@@ -44,9 +46,9 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
   bool _startTimer = true; // Default to starting timer
 
   // Services
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
-  late TimerService _timerService;
+  late final IEntryService _entryService;
+  late final ISubstanceService _substanceService;
+  late ITimerService _timerService;
 
   // Animation
   late AnimationController _animationController;
@@ -56,8 +58,10 @@ class _QuickEntryDialogState extends State<QuickEntryDialog>
   void initState() {
     super.initState();
     
-    // Get TimerService from provider
-    _timerService = Provider.of<TimerService>(context, listen: false);
+    // Initialize services
+    _entryService = ServiceLocator.get<IEntryService>();
+    _substanceService = ServiceLocator.get<ISubstanceService>();
+    _timerService = ServiceLocator.get<ITimerService>();
     
     _loadSubstances();
     _initializeForm();

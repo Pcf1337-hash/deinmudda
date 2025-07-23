@@ -11,7 +11,7 @@ import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'user_profile_screen.dart';
-import 'substance_search_screen_fixed.dart';
+import 'substance_search_screen.dart';
 
 class DosageCalculatorScreen extends StatefulWidget {
   const DosageCalculatorScreen({super.key});
