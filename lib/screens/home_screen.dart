@@ -393,7 +393,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   Future<void> _reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
     try {
-      await _quickButtonService.reorderQuickButtons(reorderedButtons);
+      final orderedIds = reorderedButtons.map((button) => button.id).toList();
+      await _quickButtonService.reorderQuickButtons(orderedIds);
       safeSetState(() {
         _quickButtons = reorderedButtons;
         _isQuickEntryEditMode = false;

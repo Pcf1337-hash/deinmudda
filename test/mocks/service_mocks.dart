@@ -120,6 +120,38 @@ class MockEntryService extends ChangeNotifier implements IEntryService {
     _entries.add(entry);
     notifyListeners();
   }
+
+  // Add missing interface implementations
+  @override
+  Future<Map<String, dynamic>> getStatistics() async {
+    return {
+      'totalEntries': _entries.length,
+      'uniqueSubstances': _entries.map((e) => e.substanceId).toSet().length,
+      'todayEntries': _entries.where((e) => 
+        e.timestamp.day == DateTime.now().day
+      ).length,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> getCostStatistics() async {
+    final totalCost = _entries.fold<double>(0, (sum, entry) => sum + (entry.cost ?? 0));
+    return {
+      'totalCost': totalCost,
+      'avgCost': _entries.isNotEmpty ? totalCost / _entries.length : 0,
+    };
+  }
+
+  @override
+  Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams) async {
+    final query = searchParams['query'] as String?;
+    if (query == null || query.isEmpty) {
+      return _entries;
+    }
+    return _entries.where((entry) => 
+      entry.notes?.toLowerCase().contains(query.toLowerCase()) == true
+    ).toList();
+  }
 }
 
 /// Mock Substance Service for testing
@@ -246,6 +278,18 @@ class MockSubstanceService extends ChangeNotifier implements ISubstanceService {
     return null;
   }
 
+  @override
+  List<String> getRecommendedUnitsForCategory(SubstanceCategory category) {
+    switch (category) {
+      case SubstanceCategory.medication:
+        return ['mg', 'g', 'ml', 'pills'];
+      case SubstanceCategory.supplement:
+        return ['mg', 'g', 'capsules'];
+      default:
+        return ['mg', 'ml', 'g'];
+    }
+  }
+
   // Test helper methods
   void clearAllSubstances() {
     _substances.clear();
@@ -361,6 +405,13 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
     
     final progress = elapsed.inMilliseconds / duration.inMilliseconds;
     return progress.clamp(0.0, 1.0);
+  }
+
+  @override
+  Entry? getActiveTimer() {
+    if (_activeTimers.isEmpty) return null;
+    final firstTimer = _activeTimers.values.first;
+    return firstTimer['entry'] as Entry;
   }
 
   // Test helper methods
@@ -703,6 +754,74 @@ class MockSettingsService extends ChangeNotifier implements ISettingsService {
     _settings['first_launch'] = false;
     notifyListeners();
   }
+
+  // Add missing interface methods
+  @override
+  Future<void> setDarkMode(bool value) async {
+    _settings['dark_mode'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> toggleDarkMode() async {
+    final current = _settings['dark_mode'] as bool? ?? false;
+    _settings['dark_mode'] = !current;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setFirstLaunch(bool value) async {
+    _settings['first_launch'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setLanguage(String value) async {
+    _settings['language'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setNotificationsEnabled(bool value) async {
+    _settings['notifications_enabled'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setBiometricAuthEnabled(bool value) async {
+    _settings['biometric_auth'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setAutoBackupEnabled(bool value) async {
+    _settings['auto_backup'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setDataRetentionDays(int value) async {
+    _settings['data_retention_days'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> isFreshInstall() async {
+    return _settings['first_launch'] as bool? ?? true;
+  }
+
+  @override
+  Future<void> resetToDefaults() async {
+    _settings.clear();
+    await initialize();
+  }
+
+  @override
+  Future<Map<String, String>> getAppInfo() async => {
+    'version': '1.0.0+1',
+    'buildNumber': '1',
+    'appName': 'Konsum Tracker Pro Test',
+  };
 }
 
 /// Mock Auth Service for testing
@@ -790,38 +909,119 @@ class MockAuthService extends ChangeNotifier implements IAuthService {
     _isAuthenticatedState = true;
     notifyListeners();
   }
-    _isAuthenticated = false;
+
+  @override
+  Future<void> setBiometricEnabled(bool enabled) async {
+    _biometricEnabledState = enabled;
     notifyListeners();
   }
 
   @override
-  Future<bool> isBiometricAvailable() async {
-    return true; // Mock: always available in tests
+  Future<bool> isAppLockEnabled() async {
+    return _biometricEnabledState;
   }
 
   @override
-  Future<void> enableBiometric() async {
-    _biometricEnabled = true;
+  Future<void> setAppLockEnabled(bool enabled) async {
+    _biometricEnabledState = enabled;
     notifyListeners();
   }
-
-  @override
-  Future<void> disableBiometric() async {
-    _biometricEnabled = false;
-    notifyListeners();
-  }
-
-  @override
-  Stream<bool> get authStateStream => Stream.value(_isAuthenticated);
 
   // Test helper methods
   void setMockAuthenticated(bool authenticated) {
-    _isAuthenticated = authenticated;
+    _isAuthenticatedState = authenticated;
     notifyListeners();
   }
 
   void setMockBiometricEnabled(bool enabled) {
-    _biometricEnabled = enabled;
+    _biometricEnabledState = enabled;
     notifyListeners();
+  }
+}
+
+/// Mock Quick Button Service for testing
+class MockQuickButtonService implements IQuickButtonService {
+  final List<QuickButtonConfig> _quickButtons = [];
+
+  @override
+  Future<String> createQuickButton(QuickButtonConfig config) async {
+    _quickButtons.add(config);
+    return config.id;
+  }
+
+  @override
+  Future<List<QuickButtonConfig>> getAllQuickButtons() async {
+    return List.from(_quickButtons);
+  }
+
+  @override
+  Future<QuickButtonConfig?> getQuickButtonById(String id) async {
+    try {
+      return _quickButtons.firstWhere((button) => button.id == id);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> updateQuickButton(QuickButtonConfig config) async {
+    final index = _quickButtons.indexWhere((button) => button.id == config.id);
+    if (index != -1) {
+      _quickButtons[index] = config;
+    }
+  }
+
+  @override
+  Future<void> deleteQuickButton(String id) async {
+    _quickButtons.removeWhere((button) => button.id == id);
+  }
+
+  @override
+  Future<void> reorderQuickButtons(List<String> orderedIds) async {
+    // Mock reordering - no-op in tests
+  }
+
+  @override
+  Future<Entry> executeQuickButton(String quickButtonId) async {
+    final button = await getQuickButtonById(quickButtonId);
+    if (button == null) {
+      throw Exception('Quick button not found');
+    }
+    
+    // Mock execution - return a test entry
+    return Entry.create(
+      substanceId: button.substanceId,
+      amount: button.amount,
+      unit: button.unit,
+      timestamp: DateTime.now(),
+    );
+  }
+
+  @override
+  Future<void> toggleQuickButtonActive(String id, bool isActive) async {
+    final button = await getQuickButtonById(id);
+    if (button != null) {
+      final updatedButton = button.copyWith(isActive: isActive);
+      await updateQuickButton(updatedButton);
+    }
+  }
+
+  @override
+  Future<List<QuickButtonConfig>> getActiveQuickButtons() async {
+    return _quickButtons.where((button) => button.isActive).toList();
+  }
+
+  @override
+  Future<void> updateQuickButtonPosition(String id, int newPosition) async {
+    // Mock position update - no-op in tests
+  }
+
+  // Test helper methods
+  void clearAllQuickButtons() {
+    _quickButtons.clear();
+  }
+
+  void addMockQuickButton(QuickButtonConfig button) {
+    _quickButtons.add(button);
   }
 }

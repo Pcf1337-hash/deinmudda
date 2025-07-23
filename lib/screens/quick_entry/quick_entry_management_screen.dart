@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../models/quick_button_config.dart';
 import '../../services/quick_button_service.dart';
+import '../../interfaces/service_interfaces.dart';
+import '../../utils/service_locator.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/modern_fab.dart';
 import '../../widgets/quick_entry/quick_button_list.dart';
@@ -19,7 +21,7 @@ class QuickEntryManagementScreen extends StatefulWidget {
 
 class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen> {
   final _scrollController = ScrollController();
-  final QuickButtonService _quickButtonService = QuickButtonService();
+  late final IQuickButtonService _quickButtonService;
 
   List<QuickButtonConfig> _quickButtons = [];
   bool _isLoading = true;
@@ -30,6 +32,7 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
   @override
   void initState() {
     super.initState();
+    _quickButtonService = ServiceLocator.get<IQuickButtonService>();
     _loadQuickButtons();
   }
 

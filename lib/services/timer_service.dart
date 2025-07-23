@@ -161,8 +161,8 @@ class TimerService extends ChangeNotifier implements ITimerService {
       
       // Send notification
       await _notificationService.showTimerExpiredNotification(
-        substanceName: entry.substanceName,
-        entryId: entry.id,
+        entry.id,
+        entry.substanceName,
       );
 
       // Update entry to mark notification as sent

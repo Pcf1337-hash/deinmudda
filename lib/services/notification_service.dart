@@ -317,9 +317,12 @@ class NotificationService implements INotificationService {
   /// Show timer expired notification (interface method)
   @override
   Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
-    await showTimerExpiredNotification(
-      entryId: entryId,
-      substanceName: substanceName,
+    final notificationId = entryId.hashCode;
+    
+    await showNotification(
+      id: notificationId,
+      title: 'Timer abgelaufen',
+      body: 'Die Wirkdauer von $substanceName ist vorüber.',
     );
   }
 

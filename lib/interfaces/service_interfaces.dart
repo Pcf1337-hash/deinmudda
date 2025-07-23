@@ -68,6 +68,7 @@ abstract class ITimerService extends ChangeNotifier {
   List<Entry> get activeTimers;
   bool get hasAnyActiveTimer;
   Entry? get currentActiveTimer;
+  Entry? getActiveTimer(); // Add missing method
   Future<void> refreshActiveTimers();
   @override
   void dispose();
@@ -174,10 +175,12 @@ abstract class IPsychedelicThemeService extends ChangeNotifier {
   ThemeData get currentTheme;
   Future<void> setThemeMode(AppThemeMode mode);
   Future<void> togglePsychedelicMode();
+  Future<void> toggleDarkMode(); // Add missing method
   Future<void> setAnimatedBackground(bool enabled);
   Future<void> setPulsingButtons(bool enabled);
   Future<void> setGlowIntensity(double intensity);
   Future<void> setCurrentSubstance(String substance);
   Color getPrimaryColorForSubstance(String substance);
   LinearGradient getGradientForSubstance(String substance);
+  Future<void> initialize(); // Add missing method
 }
