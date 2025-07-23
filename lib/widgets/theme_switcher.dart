@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
+import '../interfaces/service_interfaces.dart';
 
 class ThemeSwitcher extends StatelessWidget {
   final bool showLabels;
@@ -44,27 +45,27 @@ class ThemeSwitcher extends StatelessWidget {
   List<Widget> _buildThemeButtons(BuildContext context, service.PsychedelicThemeService themeService) {
     return [
       _ThemeButton(
-        themeMode: service.ThemeMode.light,
+        themeMode: AppThemeMode.light,
         currentMode: themeService.currentThemeMode,
-        onTap: () => themeService.setThemeMode(service.ThemeMode.light),
+        onTap: () => themeService.setThemeMode(AppThemeMode.light),
         icon: Icons.light_mode_rounded,
         label: showLabels ? 'Light' : null,
         color: Colors.orange,
       ),
       if (direction == Axis.horizontal) const SizedBox(width: 4) else const SizedBox(height: 4),
       _ThemeButton(
-        themeMode: service.ThemeMode.dark,
+        themeMode: AppThemeMode.dark,
         currentMode: themeService.currentThemeMode,
-        onTap: () => themeService.setThemeMode(service.ThemeMode.dark),
+        onTap: () => themeService.setThemeMode(AppThemeMode.dark),
         icon: Icons.dark_mode_rounded,
         label: showLabels ? 'Dark' : null,
         color: Colors.indigo,
       ),
       if (direction == Axis.horizontal) const SizedBox(width: 4) else const SizedBox(height: 4),
       _ThemeButton(
-        themeMode: service.ThemeMode.trippy,
+        themeMode: AppThemeMode.trippy,
         currentMode: themeService.currentThemeMode,
-        onTap: () => themeService.setThemeMode(service.ThemeMode.trippy),
+        onTap: () => themeService.setThemeMode(AppThemeMode.trippy),
         icon: Icons.auto_awesome_rounded,
         label: showLabels ? 'Trippy' : null,
         color: const Color(0xFFff00ff), // Neon magenta
@@ -74,8 +75,8 @@ class ThemeSwitcher extends StatelessWidget {
 }
 
 class _ThemeButton extends StatefulWidget {
-  final service.ThemeMode themeMode;
-  final service.ThemeMode currentMode;
+  final AppThemeMode themeMode;
+  final AppThemeMode currentMode;
   final VoidCallback onTap;
   final IconData icon;
   final String? label;
@@ -125,7 +126,7 @@ class _ThemeButtonState extends State<_ThemeButton>
     ));
 
     // If this is the trippy mode and it's active, start a pulsing animation
-    if (widget.themeMode == service.ThemeMode.trippy && widget.themeMode == widget.currentMode) {
+    if (widget.themeMode == AppThemeMode.trippy && widget.themeMode == widget.currentMode) {
       _startPulsingAnimation();
     }
   }
@@ -142,7 +143,7 @@ class _ThemeButtonState extends State<_ThemeButton>
   @override
   void didUpdateWidget(_ThemeButton oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.themeMode == service.ThemeMode.trippy && widget.themeMode == widget.currentMode) {
+    if (widget.themeMode == AppThemeMode.trippy && widget.themeMode == widget.currentMode) {
       _startPulsingAnimation();
     } else {
       _stopPulsingAnimation();
@@ -164,7 +165,7 @@ class _ThemeButtonState extends State<_ThemeButton>
       animation: _animationController,
       builder: (context, child) {
         return Transform.scale(
-          scale: widget.themeMode == service.ThemeMode.trippy && isSelected
+          scale: widget.themeMode == AppThemeMode.trippy && isSelected
               ? 1.0 + (_glowAnimation.value * 0.1)
               : _scaleAnimation.value,
           child: GestureDetector(
@@ -185,7 +186,7 @@ class _ThemeButtonState extends State<_ThemeButton>
                 border: isSelected
                     ? Border.all(color: widget.color, width: 2)
                     : null,
-                boxShadow: widget.themeMode == service.ThemeMode.trippy && isSelected
+                boxShadow: widget.themeMode == AppThemeMode.trippy && isSelected
                     ? [
                         BoxShadow(
                           color: widget.color.withOpacity(0.5 * _glowAnimation.value),
@@ -247,15 +248,15 @@ class ThemeCycleButton extends StatelessWidget {
         Color currentColor;
         
         switch (themeService.currentThemeMode) {
-          case service.ThemeMode.light:
+          case AppThemeMode.light:
             currentIcon = Icons.light_mode_rounded;
             currentColor = Colors.orange;
             break;
-          case service.ThemeMode.dark:
+          case AppThemeMode.dark:
             currentIcon = Icons.dark_mode_rounded;
             currentColor = Colors.indigo;
             break;
-          case service.ThemeMode.trippy:
+          case AppThemeMode.trippy:
             currentIcon = Icons.auto_awesome_rounded;
             currentColor = const Color(0xFFff00ff);
             break;

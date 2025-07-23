@@ -84,9 +84,10 @@ class DataExportHelper {
         final date = dateFormat.format(entry.dateTime);
         final time = timeFormat.format(entry.dateTime);
         
-        // Escape notes to handle commas and quotes
+        // Escape notes to handle commas and quotes  
+        const quote = '\u0022'; // Double quote character
         final notes = entry.notes != null 
-            ? '"${entry.notes!.replaceAll('"', '""')}"' 
+            ? '$quote${entry.notes!.replaceAll(quote, quote + quote)}$quote'
             : '';
         
         csvData.writeln(

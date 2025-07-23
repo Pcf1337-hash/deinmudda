@@ -10,7 +10,7 @@ import '../utils/service_locator.dart';
 import '../use_cases/entry_use_cases.dart';
 import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../services/psychedelic_theme_service.dart' as service;
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
@@ -512,7 +512,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     final now = DateTime.now();
     final dateFormat = DateFormat('d. MMMM yyyy', 'de_DE');
 
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         
@@ -755,7 +755,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ), // Close CustomScrollView
           ), // Close Container
           ), // Close LayoutErrorBoundary
-          floatingActionButton: Consumer<PsychedelicThemeService>(
+          floatingActionButton: Consumer<service.PsychedelicThemeService>(
             builder: (context, psychedelicService, child) {
               return Consumer<TimerService>(
                 builder: (context, timerService, child) {

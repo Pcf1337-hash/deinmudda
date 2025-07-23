@@ -82,11 +82,23 @@ class ProviderManager {
   /// Validate that all required services are available in ServiceLocator
   static bool validateServices() {
     try {
-      for (final type in providedTypes) {
-        if (!ServiceLocator.isRegistered<dynamic>()) {
-          throw StateError('Service $type not registered in ServiceLocator');
-        }
+      // Check core services that are required for providers
+      final coreChecks = [
+        () => ServiceLocator.get<DatabaseService>(),
+        () => ServiceLocator.get<EntryService>(),
+        () => ServiceLocator.get<SubstanceService>(),
+        () => ServiceLocator.get<QuickButtonService>(),
+        () => ServiceLocator.get<AuthService>(),
+        () => ServiceLocator.get<NotificationService>(),
+        () => ServiceLocator.get<SettingsService>(),
+        () => ServiceLocator.get<service.PsychedelicThemeService>(),
+        () => ServiceLocator.get<TimerService>(),
+      ];
+      
+      for (final check in coreChecks) {
+        check(); // This will throw if service is not registered
       }
+      
       return true;
     } catch (e) {
       print('❌ Provider validation failed: $e');

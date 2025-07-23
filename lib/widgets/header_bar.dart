@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/platform_helper.dart';
@@ -33,7 +33,7 @@ class HeaderBar extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         final substanceColors = psychedelicService.getCurrentSubstanceColors();

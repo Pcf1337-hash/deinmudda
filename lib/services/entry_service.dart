@@ -32,7 +32,7 @@ class EntryService extends ChangeNotifier implements IEntryService {
 
   // Create entry with timer
   @override
-  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration, required dynamic timerService}) async {
+  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration, required ITimerService timerService}) async {
     try {
       // First create the entry
       await createEntry(entry);

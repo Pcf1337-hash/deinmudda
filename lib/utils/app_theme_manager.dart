@@ -15,6 +15,7 @@ import '../screens/main_navigation.dart';
 import '../widgets/psychedelic_background.dart';
 import '../utils/error_handler.dart';
 import '../utils/service_locator.dart';
+import '../interfaces/service_interfaces.dart';
 
 /// Manages theme configuration and main app structure
 class AppThemeManager {
@@ -55,13 +56,13 @@ class AppThemeManager {
   /// Convert service theme mode to Flutter theme mode
   static ThemeMode _getThemeMode(service.PsychedelicThemeService themeService) {
     switch (themeService.currentThemeMode) {
-      case service.ThemeMode.system:
+      case AppThemeMode.system:
         return ThemeMode.system;
-      case service.ThemeMode.light:
+      case AppThemeMode.light:
         return ThemeMode.light;
-      case service.ThemeMode.dark:
+      case AppThemeMode.dark:
         return ThemeMode.dark;
-      case service.ThemeMode.trippy:
+      case AppThemeMode.trippy:
         return ThemeMode.dark; // Use dark mode as base for trippy mode
     }
   }

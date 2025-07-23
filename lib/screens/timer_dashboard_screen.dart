@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../services/entry_service.dart';
 import '../services/timer_service.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../services/psychedelic_theme_service.dart' as service;
 import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/trippy_fab.dart';
@@ -93,7 +93,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         

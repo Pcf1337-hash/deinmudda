@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../utils/platform_helper.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
 
 /// Platform-adaptive FloatingActionButton with consistent styling
@@ -89,7 +89,7 @@ class _PlatformAdaptiveFABState extends State<PlatformAdaptiveFAB>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final theme = Theme.of(context);
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
@@ -253,7 +253,7 @@ class PlatformAdaptiveExtendedFAB extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final theme = Theme.of(context);
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
