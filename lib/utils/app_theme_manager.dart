@@ -55,13 +55,13 @@ class AppThemeManager {
   /// Convert service theme mode to Flutter theme mode
   static ThemeMode _getThemeMode(service.PsychedelicThemeService themeService) {
     switch (themeService.currentThemeMode) {
-      case service.ThemeMode.system:
+      case service.AppThemeMode.system:
         return ThemeMode.system;
-      case service.ThemeMode.light:
+      case service.AppThemeMode.light:
         return ThemeMode.light;
-      case service.ThemeMode.dark:
+      case service.AppThemeMode.dark:
         return ThemeMode.dark;
-      case service.ThemeMode.trippy:
+      case service.AppThemeMode.trippy:
         return ThemeMode.dark; // Use dark mode as base for trippy mode
     }
   }
