@@ -136,6 +136,8 @@ class NotificationService implements INotificationService {
   }
 
   // Show timer expired notification (internal method with named parameters)
+  // FIXED: Renamed from showTimerExpiredNotification to avoid recursive call issue
+  // This internal method uses named parameters for clarity and better organization
   Future<void> _showTimerExpiredNotificationInternal({
     required String substanceName,
     required String entryId,
@@ -315,6 +317,10 @@ class NotificationService implements INotificationService {
   }
 
   /// Show timer expired notification (interface method)
+  /// FIXED: This method was causing recursive calls before the fix
+  /// Now properly calls the internal method to avoid infinite recursion
+  /// For beginners: Interface methods should have positional parameters as defined
+  /// in the interface, while internal methods can use named parameters for clarity
   @override
   Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
     await _showTimerExpiredNotificationInternal(

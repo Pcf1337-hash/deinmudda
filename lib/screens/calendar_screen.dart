@@ -3,14 +3,27 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
-import '../interfaces/service_interfaces.dart';
-import '../utils/service_locator.dart';
+import '../interfaces/service_interfaces.dart'; // FIXED: Use interfaces instead of concrete classes
+import '../utils/service_locator.dart'; // FIXED: Use ServiceLocator for dependency injection
 import '../widgets/glass_card.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import 'edit_entry_screen.dart';
+
+/// Calendar Screen - MAJOR CONSTRUCTOR ERROR FIXES APPLIED
+/// 
+/// CRITICAL FIXES:
+/// 1. Fixed EntryService constructor issue - was called with EntryService() but requires IEntryRepository parameter
+/// 2. Now uses ServiceLocator.get<IEntryService>() for proper dependency injection
+/// 3. Uses interface types (IEntryService) instead of concrete classes for better testability
+/// 4. Added proper service initialization in initState() method
+/// 
+/// For beginners: The ServiceLocator pattern helps manage dependencies between
+/// different parts of the app. Instead of creating services directly with constructors
+/// that might fail, we ask the ServiceLocator to provide properly configured services.
+/// This makes the code more maintainable and testable.
 
 enum CalendarViewType {
   month,

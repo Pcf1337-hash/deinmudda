@@ -6,6 +6,24 @@ import '../theme/design_tokens.dart';
 import '../utils/error_handler.dart';
 import '../interfaces/service_interfaces.dart';
 
+/// Psychedelic Theme Service - Enhanced with Comprehensive Error Fixes
+/// 
+/// BREAKING CHANGES FIXED:
+/// 1. Added missing toggleDarkMode() method required by interface
+/// 2. Added missing initialize() method with proper error handling
+/// 3. Added missing getPrimaryColorForSubstance() and getGradientForSubstance() methods
+/// 4. Added complete interface compliance with AppThemeMode support
+/// 5. Added comprehensive error handling and null safety
+/// 
+/// This service manages the application's theme system, supporting:
+/// - Light, Dark, System, and Trippy (psychedelic) themes
+/// - Persistent theme preferences using SharedPreferences
+/// - Dynamic color schemes based on substance categories
+/// - Animated background and pulsing button effects
+/// - Glow intensity controls for psychedelic effects
+/// 
+/// For beginners: This service uses the Provider pattern to notify widgets
+/// when theme changes occur, allowing the entire app to update its appearance.
 class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThemeService {
   static const String _themeModeKey = 'theme_mode';
   static const String _animatedBackgroundKey = 'animated_background';
