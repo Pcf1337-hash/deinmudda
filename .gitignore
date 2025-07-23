@@ -55,10 +55,20 @@ node_modules/
 # Downloaded SDK for testing
 sdk-*/
 
-# Test and validation files
+# Test and validation files - CONTROLLED MINIMAL TESTING
 test_database_fix.dart
 validate_changes.dart
 *_test_*.dart
+*_spec.dart
+*integration_test*
+*acceptance_test*
+test_*.*
+*_test_file.*
+temp_test.*
+experimental_test.*
+
+# Only allow basic tests in /test/ directory
+# Prevent test file proliferation
 
 # Temporary tools and downloads
 gh_*/

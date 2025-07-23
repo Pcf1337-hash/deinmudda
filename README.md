@@ -590,6 +590,14 @@ lib/
 - **⚡ Enhanced TimerBar Animation** - Progress-basierte Farbübergänge implementiert  
 - **🛡️ Crash Protection** - Umfassende Error-Boundaries und Safe State Management
 - **📱 Responsive Design** - Vollständige Overflow-Prevention für alle Bildschirmgrößen
+- **🏗️ Architecture Cleanup** - Main.dart von 367 auf ~50 Zeilen reduziert, ServiceLocator implementiert
+- **🧪 Test Structure Stabilization** - Minimale Test-Suite etabliert, Test-Proliferation verhindert
+
+### Neueste Anpassungen (Juli 2025)
+- **📁 Hauptdatei-Adaptation** - Main.dart mit neuen Cross-Platform-Features aktualisiert
+- **🔒 Test-Kontrolle** - .gitignore erweitert zur Verhinderung von Test-Datei-Proliferation
+- **📚 Dokumentations-Update** - README mit aktuellen Änderungen und nächsten Schritten erweitert
+- **🎯 Projekt-Stabilisierung** - Clean Architecture mit klarer Trennung von Verantwortlichkeiten
 
 > **Hinweis**: Vollständige Commit-Historie verfügbar in [CHANGELOG.md](CHANGELOG.md)
 
@@ -617,6 +625,46 @@ Dieses Projekt wird von mehreren Entwickler:innen und KI-Agenten bearbeitet. Fü
 
 ---
 
+## 🚀 Nächste Entwicklungsschritte
+
+### Kurzfristige Prioritäten (Q3 2025)
+- [ ] **Performance Monitoring** - Implementierung von Performance-Metriken für Real-Device Testing
+- [ ] **User Experience Testing** - Durchführung von Usability-Tests mit echten Nutzern
+- [ ] **Platform-spezifische Optimierungen** - Fine-tuning für iOS/Android-spezifische Unterschiede
+- [ ] **Accessibility Enhancements** - Screen Reader Support und Voice-over Funktionalität
+- [ ] **Data Export/Import** - Erweiterte Backup- und Restore-Funktionen
+
+### Mittelfristige Ziele (Q4 2025)
+- [ ] **Advanced Analytics** - Erweiterte Statistiken und Trend-Analysen
+- [ ] **Multi-Language Support** - Vollständige Internationalisierung (EN, FR, ES)
+- [ ] **Offline Synchronization** - Robuste Offline-Funktionalität mit Cloud-Sync
+- [ ] **Advanced Security** - Erweiterte Verschlüsselung und Sicherheitsfeatures
+- [ ] **Widget Support** - Home-Screen Widgets für Quick-Actions
+
+### Langfristige Vision (2026)
+- [ ] **AI-Integration** - Intelligente Muster-Erkennung und Empfehlungen
+- [ ] **Wearable Support** - Integration mit Smartwatches und Fitness-Trackern
+- [ ] **Medical Integration** - API-Anbindung für medizinische Systeme (FHIR-kompatibel)
+- [ ] **Research Platform** - Anonymisierte Daten für wissenschaftliche Studien
+- [ ] **Community Features** - Sichere, anonyme Community-Funktionen für Support
+
+### Technische Schulden & Wartung
+- [ ] **Dependency Updates** - Regelmäßige Updates aller Flutter/Dart Dependencies
+- [ ] **Code Documentation** - Vollständige Dart-Doc Kommentierung aller APIs
+- [ ] **Automated Testing** - Erweiterte CI/CD Pipeline mit umfassenden Tests
+- [ ] **Security Audits** - Regelmäßige Sicherheitsaudits und Penetration-Tests
+- [ ] **Performance Profiling** - Kontinuierliches Performance-Monitoring
+
+### Qualitätssicherung
+- [ ] **Test Coverage** - Minimale aber effektive Test-Strategie (aktuell stabilisiert)
+- [ ] **Code Reviews** - Peer-Review-Prozess für alle Changes
+- [ ] **Documentation** - Benutzer- und Entwickler-Dokumentation aktuell halten
+- [ ] **Bug Tracking** - Systematisches Issue-Management und Priorisierung
+
+> **💡 Hinweis**: Diese Roadmap wird regelmäßig basierend auf Nutzer-Feedback und technischen Entwicklungen angepasst.
+
+---
+
 ## ⚠️ Hinweis zur Kollaboration
 
 Dieses Projekt wird von mehreren Entwickler:innen und KI-Agenten bearbeitet. Für maximale Transparenz werden alle relevanten Änderungen, Bugfixes und Feature-Implementierungen im Abschnitt „🔍 Änderungen & KI-Agenten-Protokoll“ dokumentiert.  
@@ -624,6 +672,9 @@ Bitte trage bei neuen Commits und Features immer eine aussagekräftige Beschreib
 
 ---
 
-**🎯 PROJEKT ERFOLGREICH ABGESCHLOSSEN + STABILISIERT**
+**🎯 PROJEKT ERFOLGREICH STABILISIERT & READY FOR NEXT PHASE**
+
+*Aktueller Status: Stabile Basis mit klarer Architektur und kontrollierten Test-Strukturen*  
+*Nächste Phase: Performance-Optimierung und User Experience Enhancement*
 
 *Entwickelt mit ❤️ für verantwortungsvolles Substanz-Monitoring*
