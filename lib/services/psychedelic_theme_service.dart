@@ -49,34 +49,6 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
   ThemeData get lightTheme => _buildLightTheme();
   ThemeData get darkTheme => _buildDarkTheme();
   ThemeData get trippyTheme => _buildTrippyTheme();
-  
-  Future<void> init() async {
-    try {
-      ErrorHandler.logTheme('INIT', 'PsychedelicThemeService Initialisierung gestartet');
-      
-      _prefs = await SharedPreferences.getInstance();
-      await _loadSettings();
-      
-      _isInitialized = true;
-      ErrorHandler.logSuccess('THEME_SERVICE', 'PsychedelicThemeService erfolgreich initialisiert');
-      
-      // Notify listeners that initialization is complete
-      notifyListeners();
-    } catch (e) {
-      ErrorHandler.logError('THEME_SERVICE', 'Fehler bei PsychedelicThemeService init: $e');
-      
-      // Fallback to defaults
-      _currentThemeMode = AppThemeMode.light;
-      _isAnimatedBackgroundEnabled = true;
-      _isPulsingButtonsEnabled = true;
-      _glowIntensity = 1.0;
-      _currentSubstance = 'default';
-      _isInitialized = true;
-      
-      ErrorHandler.logWarning('THEME_SERVICE', 'Fallback-Werte für PsychedelicThemeService gesetzt');
-      notifyListeners();
-    }
-  }
 
   Future<void> _loadSettings() async {
     if (_prefs == null) {
@@ -205,7 +177,32 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
   @override
   Future<void> init() async {
     if (_isInitialized) return;
-    await initialize();
+    
+    try {
+      ErrorHandler.logTheme('INIT', 'PsychedelicThemeService Initialisierung gestartet');
+      
+      _prefs = await SharedPreferences.getInstance();
+      await _loadSettings();
+      
+      _isInitialized = true;
+      ErrorHandler.logSuccess('THEME_SERVICE', 'PsychedelicThemeService erfolgreich initialisiert');
+      
+      // Notify listeners that initialization is complete
+      notifyListeners();
+    } catch (e) {
+      ErrorHandler.logError('THEME_SERVICE', 'Fehler bei PsychedelicThemeService init: $e');
+      
+      // Fallback to defaults
+      _currentThemeMode = AppThemeMode.light;
+      _isAnimatedBackgroundEnabled = true;
+      _isPulsingButtonsEnabled = true;
+      _glowIntensity = 1.0;
+      _currentSubstance = 'default';
+      _isInitialized = true;
+      
+      ErrorHandler.logWarning('THEME_SERVICE', 'Fallback-Werte für PsychedelicThemeService gesetzt');
+      notifyListeners();
+    }
   }
   
   ThemeData _buildLightTheme() {
@@ -563,20 +560,6 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
         ? AppThemeMode.light 
         : AppThemeMode.dark;
     await setThemeMode(newMode);
-  }
-
-  @override
-  Future<void> initialize() async {
-    if (_isInitialized) return;
-    
-    try {
-      _prefs = await SharedPreferences.getInstance();
-      await _loadSettings();
-      _isInitialized = true;
-      notifyListeners();
-    } catch (e) {
-      ErrorHandler.handleError(e, 'Failed to initialize theme service');
-    }
   }
 
   @override

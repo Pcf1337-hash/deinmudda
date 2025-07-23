@@ -18,10 +18,36 @@ class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'konsum_tracker.db';
   static const int _databaseVersion = 4;
+  
+  // CRITICAL FIX: Add mutex to prevent race condition during database initialization
+  static bool _isInitializing = false;
 
   Future<Database> get database async {
-    _database ??= await _initDatabase();
-    return _database!;
+    // If database is already initialized, return it
+    if (_database != null) {
+      return _database!;
+    }
+    
+    // RACE CONDITION FIX: Prevent multiple simultaneous initialization attempts
+    if (_isInitializing) {
+      // Wait for the current initialization to complete
+      while (_isInitializing) {
+        await Future.delayed(const Duration(milliseconds: 10));
+      }
+      // After waiting, return the database (should be initialized now)
+      if (_database != null) {
+        return _database!;
+      }
+    }
+    
+    // Mark as initializing and proceed
+    _isInitializing = true;
+    try {
+      _database ??= await _initDatabase();
+      return _database!;
+    } finally {
+      _isInitializing = false;
+    }
   }
 
   Future<Database> _initDatabase() async {

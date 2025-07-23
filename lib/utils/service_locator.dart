@@ -52,21 +52,51 @@ class ServiceLocator {
       _services[IEntryRepository] = entryRepository;
       _services[ISubstanceRepository] = substanceRepository;
       
-      // Initialize notification service
+      // Initialize notification service with error recovery
       final notificationService = NotificationService();
-      await notificationService.init();
+      try {
+        await notificationService.init();
+        if (kDebugMode) {
+          print('✅ NotificationService initialized successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ NotificationService init failed: $e, continuing with fallback');
+        }
+        // Continue with service even if init fails - notifications are not critical for core functionality
+      }
       _services[NotificationService] = notificationService;
       _services[INotificationService] = notificationService;
       
-      // Initialize settings service
+      // Initialize settings service with error recovery
       final settingsService = SettingsService();
-      await settingsService.init();
+      try {
+        await settingsService.init();
+        if (kDebugMode) {
+          print('✅ SettingsService initialized successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ SettingsService init failed: $e, continuing with defaults');
+        }
+        // Continue with service even if init fails - will use default settings
+      }
       _services[SettingsService] = settingsService;
       _services[ISettingsService] = settingsService;
       
-      // Initialize auth service
+      // Initialize auth service with error recovery
       final authService = AuthService();
-      await authService.init();
+      try {
+        await authService.init();
+        if (kDebugMode) {
+          print('✅ AuthService initialized successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ AuthService init failed: $e, continuing without auth');
+        }
+        // Continue with service even if init fails - auth is optional
+      }
       _services[AuthService] = authService;
       _services[IAuthService] = authService;
       
@@ -83,19 +113,39 @@ class ServiceLocator {
       _services[QuickButtonService] = quickButtonService;
       _services[IQuickButtonService] = quickButtonService;
       
-      // Initialize timer service (depends on other services)
+      // Initialize timer service (depends on other services) with error recovery
       final timerService = TimerService(
         entryService,
         substanceService,
         notificationService,
       );
-      await timerService.init();
+      try {
+        await timerService.init();
+        if (kDebugMode) {
+          print('✅ TimerService initialized successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ TimerService init failed: $e, continuing with basic functionality');
+        }
+        // Continue with service even if init fails - timer functionality may be limited but core app will work
+      }
       _services[TimerService] = timerService;
       _services[ITimerService] = timerService;
       
-      // Initialize theme service
+      // Initialize theme service with error recovery
       final themeService = PsychedelicThemeService();
-      await themeService.init();
+      try {
+        await themeService.init();
+        if (kDebugMode) {
+          print('✅ PsychedelicThemeService initialized successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('⚠️ PsychedelicThemeService init failed: $e, continuing with default theme');
+        }
+        // Continue with service even if init fails - will use default theme
+      }
       _services[PsychedelicThemeService] = themeService;
       _services[IPsychedelicThemeService] = themeService;
 
