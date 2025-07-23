@@ -120,6 +120,38 @@ class MockEntryService extends ChangeNotifier implements IEntryService {
     _entries.add(entry);
     notifyListeners();
   }
+
+  // Add missing interface implementations
+  @override
+  Future<Map<String, dynamic>> getStatistics() async {
+    return {
+      'totalEntries': _entries.length,
+      'uniqueSubstances': _entries.map((e) => e.substanceId).toSet().length,
+      'todayEntries': _entries.where((e) => 
+        e.timestamp.day == DateTime.now().day
+      ).length,
+    };
+  }
+
+  @override
+  Future<Map<String, dynamic>> getCostStatistics() async {
+    final totalCost = _entries.fold<double>(0, (sum, entry) => sum + (entry.cost ?? 0));
+    return {
+      'totalCost': totalCost,
+      'avgCost': _entries.isNotEmpty ? totalCost / _entries.length : 0,
+    };
+  }
+
+  @override
+  Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams) async {
+    final query = searchParams['query'] as String?;
+    if (query == null || query.isEmpty) {
+      return _entries;
+    }
+    return _entries.where((entry) => 
+      entry.notes?.toLowerCase().contains(query.toLowerCase()) == true
+    ).toList();
+  }
 }
 
 /// Mock Substance Service for testing
@@ -722,6 +754,74 @@ class MockSettingsService extends ChangeNotifier implements ISettingsService {
     _settings['first_launch'] = false;
     notifyListeners();
   }
+
+  // Add missing interface methods
+  @override
+  Future<void> setDarkMode(bool value) async {
+    _settings['dark_mode'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> toggleDarkMode() async {
+    final current = _settings['dark_mode'] as bool? ?? false;
+    _settings['dark_mode'] = !current;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setFirstLaunch(bool value) async {
+    _settings['first_launch'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setLanguage(String value) async {
+    _settings['language'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setNotificationsEnabled(bool value) async {
+    _settings['notifications_enabled'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setBiometricAuthEnabled(bool value) async {
+    _settings['biometric_auth'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setAutoBackupEnabled(bool value) async {
+    _settings['auto_backup'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<void> setDataRetentionDays(int value) async {
+    _settings['data_retention_days'] = value;
+    notifyListeners();
+  }
+
+  @override
+  Future<bool> isFreshInstall() async {
+    return _settings['first_launch'] as bool? ?? true;
+  }
+
+  @override
+  Future<void> resetToDefaults() async {
+    _settings.clear();
+    await initialize();
+  }
+
+  @override
+  Future<Map<String, String>> getAppInfo() async => {
+    'version': '1.0.0+1',
+    'buildNumber': '1',
+    'appName': 'Konsum Tracker Pro Test',
+  };
 }
 
 /// Mock Auth Service for testing

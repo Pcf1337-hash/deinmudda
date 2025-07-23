@@ -255,7 +255,7 @@ class _CrossPlatformValidationScreenState extends State<CrossPlatformValidationS
             // Haptic Feedback Test
             PlatformAdaptiveButton(
               onPressed: () {
-                PlatformHelper.performHapticFeedback(PlatformHelper.HapticFeedbackType.lightImpact);
+                PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('Light haptic feedback triggered!')),
                 );

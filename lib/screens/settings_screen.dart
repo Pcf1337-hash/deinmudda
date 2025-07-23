@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../services/settings_service.dart';
 import '../services/psychedelic_theme_service.dart' as service;
 import '../services/database_service.dart';
+import '../interfaces/service_interfaces.dart'; // For AppThemeMode
 import '../widgets/glass_card.dart';
 import '../widgets/header_bar.dart';
 import '../theme/design_tokens.dart';
@@ -150,17 +151,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   SwitchListTile(
                     title: const Text('Dark Mode'),
-                    value: themeService.currentThemeMode == service.ThemeMode.dark || 
-                           themeService.currentThemeMode == service.ThemeMode.trippy,
+                    value: themeService.currentThemeMode == AppThemeMode.dark || 
+                           themeService.currentThemeMode == AppThemeMode.trippy,
                     onChanged: (value) {
                       if (value) {
-                        themeService.setThemeMode(service.ThemeMode.dark);
+                        themeService.setThemeMode(AppThemeMode.dark);
                       } else {
-                        themeService.setThemeMode(service.ThemeMode.light);
+                        themeService.setThemeMode(AppThemeMode.light);
                       }
                     },
                     secondary: Icon(
-                      themeService.currentThemeMode == service.ThemeMode.light 
+                      themeService.currentThemeMode == AppThemeMode.light 
                           ? Icons.light_mode_rounded 
                           : Icons.dark_mode_rounded,
                       color: themeService.isPsychedelicMode 
@@ -596,15 +597,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  String _getThemeDescription(service.ThemeMode themeMode) {
+  String _getThemeDescription(AppThemeMode themeMode) {
     switch (themeMode) {
-      case service.ThemeMode.light:
+      case AppThemeMode.light:
         return 'Helles Design für die tägliche Nutzung';
-      case service.ThemeMode.dark:
+      case AppThemeMode.dark:
         return 'Dunkles Design für bessere Augenentspannung';
-      case service.ThemeMode.system:
+      case AppThemeMode.system:
         return 'Folgt den Systemeinstellungen automatisch';
-      case service.ThemeMode.trippy:
+      case AppThemeMode.trippy:
         return 'Psychedelisches Design mit Neon-Effekten';
     }
   }
@@ -624,36 +625,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildThemeButton(
-            service.ThemeMode.light,
+            AppThemeMode.light,
             psychedelicService.currentThemeMode,
-            () => psychedelicService.setThemeMode(service.ThemeMode.light),
+            () => psychedelicService.setThemeMode(AppThemeMode.light),
             Icons.light_mode_rounded,
             'Light',
             Colors.orange,
           ),
           const SizedBox(width: 4),
           _buildThemeButton(
-            service.ThemeMode.dark,
+            AppThemeMode.dark,
             psychedelicService.currentThemeMode,
-            () => psychedelicService.setThemeMode(service.ThemeMode.dark),
+            () => psychedelicService.setThemeMode(AppThemeMode.dark),
             Icons.dark_mode_rounded,
             'Dark',
             Colors.indigo,
           ),
           const SizedBox(width: 4),
           _buildThemeButton(
-            service.ThemeMode.system,
+            AppThemeMode.system,
             psychedelicService.currentThemeMode,
-            () => psychedelicService.setThemeMode(service.ThemeMode.system),
+            () => psychedelicService.setThemeMode(AppThemeMode.system),
             Icons.settings_system_daydream_rounded,
             'System',
             Colors.green,
           ),
           const SizedBox(width: 4),
           _buildThemeButton(
-            service.ThemeMode.trippy,
+            AppThemeMode.trippy,
             psychedelicService.currentThemeMode,
-            () => psychedelicService.setThemeMode(service.ThemeMode.trippy),
+            () => psychedelicService.setThemeMode(AppThemeMode.trippy),
             Icons.auto_awesome_rounded,
             'Trippy',
             const Color(0xFFff00ff),
@@ -664,8 +665,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildThemeButton(
-    service.ThemeMode themeMode,
-    service.ThemeMode currentMode,
+    AppThemeMode themeMode,
+    AppThemeMode currentMode,
     VoidCallback onTap,
     IconData icon,
     String label,
