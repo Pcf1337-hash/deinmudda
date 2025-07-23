@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../models/entry.dart';
 import '../services/timer_service.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/safe_navigation.dart';
@@ -211,7 +211,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         return const SizedBox.shrink();
       }
       
-      return Consumer<PsychedelicThemeService>(
+      return Consumer<service.PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
           // Early return if widget is not mounted or disposed
           if (!mounted || _isDisposed) {

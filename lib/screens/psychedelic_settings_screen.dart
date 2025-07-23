@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
@@ -25,7 +25,7 @@ class PsychedelicSettingsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: Consumer<PsychedelicThemeService>(
+      body: Consumer<service.PsychedelicThemeService>(
         builder: (context, psychedelicService, child) {
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16.0),

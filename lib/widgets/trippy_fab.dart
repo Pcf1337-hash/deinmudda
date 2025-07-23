@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 
@@ -79,7 +79,7 @@ class _TrippyFABState extends State<TrippyFAB>
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, themeService, child) {
         final isPsychedelicMode = themeService.isPsychedelicMode;
         

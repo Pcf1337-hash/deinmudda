@@ -7,7 +7,7 @@ import '../../models/quick_button_config.dart';
 import '../../models/substance.dart';
 import '../../services/quick_button_service.dart';
 import '../../services/substance_service.dart';
-import '../../services/psychedelic_theme_service.dart';
+import '../../services/psychedelic_theme_service.dart' as service;
 import '../../interfaces/service_interfaces.dart';
 import '../../utils/service_locator.dart';
 import '../../widgets/glass_card.dart';
@@ -400,7 +400,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     final isDark = theme.brightness == Brightness.dark;
     final isEdit = widget.existingConfig != null; 
 
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         

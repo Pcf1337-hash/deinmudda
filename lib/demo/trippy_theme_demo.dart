@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/psychedelic_theme_service.dart';
+import '../services/psychedelic_theme_service.dart' as service;
 import '../widgets/trippy_fab.dart';
 import '../theme/design_tokens.dart';
 
@@ -15,7 +15,7 @@ class TrippyThemeDemo extends StatefulWidget {
 class _TrippyThemeDemoState extends State<TrippyThemeDemo> {
   @override
   Widget build(BuildContext context) {
-    return Consumer<PsychedelicThemeService>(
+    return Consumer<service.PsychedelicThemeService>(
       builder: (context, psychedelicService, child) {
         final isPsychedelicMode = psychedelicService.isPsychedelicMode;
         final substanceColors = psychedelicService.getCurrentSubstanceColors();
