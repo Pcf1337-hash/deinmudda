@@ -20,7 +20,7 @@ enum AppThemeMode { light, dark, trippy, system }
 abstract class IEntryService extends ChangeNotifier {
   Future<String> createEntry(Entry entry);
   Future<String> addEntry(Entry entry);
-  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration, required dynamic timerService});
+  Future<Entry> createEntryWithTimer(Entry entry, {Duration? customDuration, required ITimerService timerService});
   Future<List<Entry>> getAllEntries();
   Future<List<Entry>> getEntriesByDateRange(DateTime start, DateTime end);
   Future<List<Entry>> getEntriesBySubstance(String substanceId);
@@ -132,7 +132,7 @@ abstract class IAuthService extends ChangeNotifier {
   Future<void> disableAuthentication();
   Future<bool> isBiometricAvailable();
   Future<List<String>> getAvailableBiometrics();
-  Future<bool> authenticateWithBiometrics({String reason});
+  Future<bool> authenticateWithBiometrics({String? reason});
   Future<bool> isBiometricEnabled();
   Future<void> setBiometricEnabled(bool enabled);
   Future<bool> isAppLockEnabled();
