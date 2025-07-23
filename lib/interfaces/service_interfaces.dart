@@ -132,7 +132,7 @@ abstract class IAuthService extends ChangeNotifier {
   Future<void> disableAuthentication();
   Future<bool> isBiometricAvailable();
   Future<List<String>> getAvailableBiometrics();
-  Future<bool> authenticateWithBiometrics({String reason});
+  Future<bool> authenticateWithBiometrics({String? reason});
   Future<bool> isBiometricEnabled();
   Future<void> setBiometricEnabled(bool enabled);
   Future<bool> isAppLockEnabled();

@@ -308,8 +308,13 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
   bool _isDisposed = false;
 
   @override
-  Future<void> initialize() async {
+  Future<void> init() async {
     // Mock initialization
+  }
+
+  @override
+  Future<void> initialize() async {
+    await init(); // Delegate to init for compatibility
   }
 
   @override
@@ -364,7 +369,12 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
   }
 
   @override
-  Map<String, Entry> getActiveTimers() {
+  List<Entry> get activeTimers {
+    return _activeTimers.values.map((timer) => timer['entry'] as Entry).toList();
+  }
+
+  // Legacy method for backward compatibility
+  Map<String, Entry> getActiveTimersMap() {
     return Map.fromEntries(
       _activeTimers.entries.map((e) => MapEntry(e.key, e.value['entry'] as Entry))
     );
@@ -412,6 +422,30 @@ class MockTimerService extends ChangeNotifier implements ITimerService {
     if (_activeTimers.isEmpty) return null;
     final firstTimer = _activeTimers.values.first;
     return firstTimer['entry'] as Entry;
+  }
+
+  @override
+  bool get hasAnyActiveTimer => _activeTimers.isNotEmpty;
+
+  @override
+  Entry? get currentActiveTimer => getActiveTimer();
+
+  @override
+  bool isTimerActive() => hasAnyActiveTimer;
+
+  @override
+  Future<Entry> startTimer(Entry entry, {Duration? customDuration}) async {
+    final duration = customDuration ?? const Duration(hours: 2);
+    await createEntryWithTimer(entry, duration);
+    return entry.copyWith(
+      timerStartTime: DateTime.now(),
+      timerEndTime: DateTime.now().add(duration),
+    );
+  }
+
+  @override
+  Future<void> refreshActiveTimers() async {
+    // Mock refresh - no-op in tests
   }
 
   // Test helper methods
@@ -469,11 +503,6 @@ class MockNotificationService implements INotificationService {
   }
 
   @override
-  Future<void> initialize() async {
-    // Mock initialization - keeping for backward compatibility
-  }
-
-  @override
   Future<void> scheduleTimerNotification(String entryId, String substanceName, Duration delay) async {
     _sentNotifications.add({
       'type': 'timer',
@@ -499,11 +528,6 @@ class MockNotificationService implements INotificationService {
       'body': body,
       'sentAt': DateTime.now(),
     });
-  }
-
-  @override
-  Future<void> cancelAllNotifications() async {
-    _sentNotifications.clear();
   }
 
   @override
@@ -648,62 +672,6 @@ class MockSettingsService extends ChangeNotifier implements ISettingsService {
     return Map.from(_settings);
   }
 
-  // Add missing interface methods
-  @override
-  Future<void> init() async {
-    await initialize();
-  }
-
-  @override
-  Future<T?> getSetting<T>(String key) async {
-    return _settings[key] as T?;
-  }
-
-  @override
-  Future<void> setSetting<T>(String key, T value) async {
-    _settings[key] = value;
-    notifyListeners();
-  }
-
-  @override
-  Future<void> deleteSetting(String key) async {
-    _settings.remove(key);
-    notifyListeners();
-  }
-
-  @override
-  Future<bool> getBool(String key, {bool defaultValue = false}) async {
-    return _settings[key] as bool? ?? defaultValue;
-  }
-
-  @override
-  Future<void> setBool(String key, bool value) async {
-    _settings[key] = value;
-    notifyListeners();
-  }
-
-  @override
-  Future<String> getString(String key, {String defaultValue = ''}) async {
-    return _settings[key] as String? ?? defaultValue;
-  }
-
-  @override
-  Future<void> setString(String key, String value) async {
-    _settings[key] = value;
-    notifyListeners();
-  }
-
-  @override
-  Future<int> getInt(String key, {int defaultValue = 0}) async {
-    return _settings[key] as int? ?? defaultValue;
-  }
-
-  @override
-  Future<void> setInt(String key, int value) async {
-    _settings[key] = value;
-    notifyListeners();
-  }
-
   // Settings-specific getters
   @override
   Future<bool> get isDarkMode async => _settings['dark_mode'] ?? false;
@@ -808,12 +776,6 @@ class MockSettingsService extends ChangeNotifier implements ISettingsService {
   @override
   Future<bool> isFreshInstall() async {
     return _settings['first_launch'] as bool? ?? true;
-  }
-
-  @override
-  Future<void> resetToDefaults() async {
-    _settings.clear();
-    await initialize();
   }
 
   @override
@@ -991,9 +953,10 @@ class MockQuickButtonService implements IQuickButtonService {
     // Mock execution - return a test entry
     return Entry.create(
       substanceId: button.substanceId,
-      amount: button.amount,
+      substanceName: button.substanceName,
+      dosage: button.dosage,
       unit: button.unit,
-      timestamp: DateTime.now(),
+      dateTime: DateTime.now(),
     );
   }
 

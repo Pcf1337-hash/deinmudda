@@ -222,7 +222,7 @@ class QuickButtonService implements IQuickButtonService {
       }).toList();
       
       // Save updated order
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtons(updatedButtons.map((b) => b.id).toList());
     } catch (e) {
       throw Exception('Failed to move quick button to position: $e');
     }
@@ -240,7 +240,7 @@ class QuickButtonService implements IQuickButtonService {
         return button.copyWith(position: index);
       }).toList();
       
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtons(updatedButtons.map((b) => b.id).toList());
     } catch (e) {
       throw Exception('Failed to reorder after delete: $e');
     }
