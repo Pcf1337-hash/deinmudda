@@ -1751,54 +1751,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
   }
 
-  void _navigateToAdvancedSearch() {
-    if (!mounted) return;
-    
-    try {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const AdvancedSearchScreen(),
-        ),
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Navigation zu AdvancedSearch fehlgeschlagen: $e');
-      }
-    }
-  }
-
-  void _navigateToPatternAnalysis() {
-    if (!mounted) return;
-    
-    try {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const PatternAnalysisScreen(),
-        ),
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Navigation zu PatternAnalysis fehlgeschlagen: $e');
-      }
-    }
-  }
-
-  void _navigateToDataExport() {
-    if (!mounted) return;
-    
-    try {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => const DataExportScreen(),
-        ),
-      );
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Navigation zu DataExport fehlgeschlagen: $e');
-      }
-    }
-  }
-
   void _navigateToTimerDashboard() {
     if (!mounted) return;
     
@@ -1816,66 +1768,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   }
 }
 
-// Glass Empty State Widget
-class GlassEmptyState extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final String? actionText;
-  final VoidCallback? onAction;
-
-  const GlassEmptyState({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    this.actionText,
-    this.onAction,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GlassCard(
-      child: Column(
-        children: [
-          Icon(
-            icon,
-            size: Spacing.iconXl,
-            color: Theme.of(context).iconTheme.color?.withOpacity(0.5),
-          ),
-          Spacing.verticalSpaceMd,
-          Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          Spacing.verticalSpaceXs,
-          Text(
-            subtitle,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (actionText != null && onAction != null) ...[
-            Spacing.verticalSpaceMd,
-            ElevatedButton.icon(
-              onPressed: onAction,
-              icon: const Icon(Icons.add_rounded),
-              label: Text(actionText!),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: DesignTokens.primaryIndigo,
-                foregroundColor: Colors.white,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
+// hints reduziert durch HintOptimiererAgent
 
 // Animated rotation FAB widget for trippy mode
 class AnimatedRotationFAB extends StatefulWidget {
