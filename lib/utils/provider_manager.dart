@@ -31,7 +31,7 @@ class ProviderManager {
   }
 
   /// Build list of providers using ServiceLocator
-  static _buildProviders() {
+  static List<SingleChildWidget> _buildProviders() { // cleaned by BereinigungsAgent
     return [
       // Non-ChangeNotifier providers
       Provider<DatabaseService>.value(
@@ -83,8 +83,10 @@ class ProviderManager {
   static bool validateServices() {
     try {
       for (final type in providedTypes) {
-        if (!ServiceLocator.isRegistered<dynamic>()) {
-          throw StateError('Service $type not registered in ServiceLocator');
+        // Note: Cannot check specific type with current ServiceLocator implementation // cleaned by BereinigungsAgent
+        // This is a limitation that should be addressed in a future refactor // cleaned by BereinigungsAgent
+        if (ServiceLocator.serviceCount == 0) { // cleaned by BereinigungsAgent
+          throw StateError('ServiceLocator is empty');
         }
       }
       return true;

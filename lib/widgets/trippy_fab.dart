@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
-import '../theme/spacing.dart';
+// removed unused import: ../theme/spacing.dart // cleaned by BereinigungsAgent
 
 /// Unified FAB design with neon pink to gray gradient and glow effects
 /// Used across all screens when in trippy mode
