@@ -974,23 +974,42 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
   }
 
   Future<void> _selectDate(BuildContext context) async {
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _selectedDateTime,
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now().add(const Duration(days: 1)),
-    );
+    try {
+      final date = await showDatePicker(
+        context: context,
+        initialDate: _selectedDateTime,
+        firstDate: DateTime(2020),
+        lastDate: DateTime.now().add(const Duration(days: 1)),
+        // Ensure proper theming and navigation
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              // Ensure back button is visible and functional
+              appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                iconTheme: const IconThemeData(color: Colors.white),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
 
-    if (date != null) {
-      setState(() {
-        _selectedDateTime = DateTime(
-          date.year,
-          date.month,
-          date.day,
-          _selectedDateTime.hour,
-          _selectedDateTime.minute,
-        );
-      });
+      if (date != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            date.year,
+            date.month,
+            date.day,
+            _selectedDateTime.hour,
+            _selectedDateTime.minute,
+          );
+        });
+      }
+    } catch (e) {
+      // Handle any navigation errors gracefully
+      if (kDebugMode) {
+        print('Error in date picker: $e');
+      }
     }
   }
 

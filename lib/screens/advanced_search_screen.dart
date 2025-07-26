@@ -833,29 +833,48 @@ class _AdvancedSearchScreenState extends State<AdvancedSearchScreen> {
     final initialDate = isStartDate ? _startDate : _endDate;
     final now = DateTime.now();
     
-    final date = await showDatePicker(
-      context: context,
-      initialDate: initialDate ?? now,
-      firstDate: DateTime(2020),
-      lastDate: now.add(const Duration(days: 1)),
-    );
+    try {
+      final date = await showDatePicker(
+        context: context,
+        initialDate: initialDate ?? now,
+        firstDate: DateTime(2020),
+        lastDate: now.add(const Duration(days: 1)),
+        // Ensure proper theming and navigation
+        builder: (context, child) {
+          return Theme(
+            data: Theme.of(context).copyWith(
+              // Ensure back button is visible and functional
+              appBarTheme: Theme.of(context).appBarTheme.copyWith(
+                iconTheme: const IconThemeData(color: Colors.white),
+              ),
+            ),
+            child: child!,
+          );
+        },
+      );
 
-    if (date != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = date;
-          // If end date is before start date, update end date
-          if (_endDate != null && _endDate!.isBefore(_startDate!)) {
-            _endDate = _startDate;
+      if (date != null) {
+        setState(() {
+          if (isStartDate) {
+            _startDate = date;
+            // If end date is before start date, update end date
+            if (_endDate != null && _endDate!.isBefore(_startDate!)) {
+              _endDate = _startDate;
+            }
+          } else {
+            _endDate = date;
+            // If start date is after end date, update start date
+            if (_startDate != null && _startDate!.isAfter(_endDate!)) {
+              _startDate = _endDate;
+            }
           }
-        } else {
-          _endDate = date;
-          // If start date is after end date, update start date
-          if (_startDate != null && _startDate!.isAfter(_endDate!)) {
-            _startDate = _endDate;
-          }
-        }
-      });
+        });
+      }
+    } catch (e) {
+      // Handle any navigation errors gracefully
+      if (kDebugMode) {
+        print('Error in date picker: $e');
+      }
     }
   }
 
