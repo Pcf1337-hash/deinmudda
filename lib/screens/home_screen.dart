@@ -342,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       final activeTimer = _timerService.getActiveTimer();
       if (activeTimer == null || !mounted) return;
       
-      await _timerService.stopTimer(activeTimer);
+      await _timerService.stopTimer(activeTimer.id);
       
       if (mounted) {
         _safeShowSnackBar(

@@ -69,7 +69,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
 
   Future<void> _stopTimer(Entry entry) async {
     try {
-      await _timerService.stopTimer(entry);
+      await _timerService.stopTimer(entry.id);
       _loadActiveTimers();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

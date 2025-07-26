@@ -136,10 +136,8 @@ class NotificationService implements INotificationService {
   }
 
   // Show timer expired notification
-  Future<void> showTimerExpiredNotification({
-    required String substanceName,
-    required String entryId,
-  }) async {
+  @override
+  Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
     final notificationId = entryId.hashCode;
     
     await showNotification(
@@ -311,18 +309,6 @@ class NotificationService implements INotificationService {
       id: notificationId,
       title: 'Timer aktiv: $substanceName',
       body: 'Noch $remainingMinutes Minuten verbleibend',
-    );
-  }
-
-  /// Show timer expired notification (interface method)
-  @override
-  Future<void> showTimerExpiredNotification(String entryId, String substanceName) async {
-    final notificationId = entryId.hashCode;
-    
-    await showNotification(
-      id: notificationId,
-      title: 'Timer abgelaufen',
-      body: 'Die Wirkdauer von $substanceName ist vorüber.',
     );
   }
 

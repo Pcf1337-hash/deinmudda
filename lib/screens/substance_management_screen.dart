@@ -683,11 +683,12 @@ class _AddEditSubstanceScreenState extends State<AddEditSubstanceScreen> {
     {'name': 'moon', 'icon': Icons.nightlight_rounded},
   ];
 
-  final SubstanceService _substanceService = SubstanceService();
+  late final ISubstanceService _substanceService;
 
   @override
   void initState() {
     super.initState();
+    _substanceService = ServiceLocator.get<ISubstanceService>();
     if (widget.substance != null) {
       _initializeForm();
     } else {
