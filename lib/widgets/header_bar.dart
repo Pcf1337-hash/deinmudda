@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../theme/design_tokens.dart';
-import '../theme/spacing.dart';
+// removed unused import: ../theme/spacing.dart // cleaned by BereinigungsAgent
 import '../utils/platform_helper.dart';
 
 class HeaderBar extends StatelessWidget {

@@ -15,7 +15,7 @@ import '../widgets/modern_fab.dart';
 import '../widgets/unit_dropdown.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
-import '../utils/validation_helper.dart';
+// removed unused import: ../utils/validation_helper.dart // cleaned by BereinigungsAgent
 import '../utils/performance_helper.dart';
 
 class AddEntryScreen extends StatefulWidget {

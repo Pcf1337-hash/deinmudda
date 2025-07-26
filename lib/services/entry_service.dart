@@ -1,5 +1,5 @@
-import 'dart:convert';
-import 'package:sqflite/sqflite.dart';
+// removed unused import: dart:convert // cleaned by BereinigungsAgent
+// removed unused import: package:sqflite/sqflite.dart // cleaned by BereinigungsAgent
 import 'package:flutter/foundation.dart';
 import '../models/entry.dart';
 // Import with prefix to avoid conflicts

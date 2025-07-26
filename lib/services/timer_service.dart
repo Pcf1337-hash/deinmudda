@@ -95,7 +95,7 @@ class TimerService extends ChangeNotifier implements ITimerService {
       _activeTimers.clear();
       
       // Use efficient filtering and limit concurrent timers
-      var activeEntries = allEntries
+      final activeEntries = allEntries // cleaned by BereinigungsAgent
           .where((entry) => entry.hasTimer && entry.isTimerActive)
           .take(_maxConcurrentTimers)
           .toList();

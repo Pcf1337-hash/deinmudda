@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../models/entry.dart';
-import '../../services/timer_service.dart';
-import '../../theme/design_tokens.dart';
-import '../../theme/spacing.dart';
+import '../models/entry.dart'; // cleaned by BereinigungsAgent - fixed import path
+import '../services/timer_service.dart'; // cleaned by BereinigungsAgent - fixed import path
+import '../theme/design_tokens.dart'; // cleaned by BereinigungsAgent - fixed import path
+import '../theme/spacing.dart'; // cleaned by BereinigungsAgent - fixed import path
 
 class TimerIndicator extends StatefulWidget {
   final Entry entry;

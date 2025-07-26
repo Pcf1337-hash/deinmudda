@@ -11,7 +11,7 @@ import '../../interfaces/service_interfaces.dart';
 import '../../utils/service_locator.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
-import '../../utils/validation_helper.dart';
+// removed unused import: ../../utils/validation_helper.dart // cleaned by BereinigungsAgent
 
 class QuickEntryDialog extends StatefulWidget {
   final Substance? preselectedSubstance;
