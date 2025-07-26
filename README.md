@@ -425,7 +425,7 @@ flutter build ios --release  # iOS (nur auf macOS)
 - **Issues**: [GitHub Issues](https://github.com/Pcf1337-hash/deinmudda/issues) für Bugs und Feature-Requests
 - **Pull Requests**: Verbesserungen sind willkommen!
 - **Dokumentation**: Hilf bei der Verbesserung dieser README
-- **Testing**: Teste die App und melde Probleme
+- **Feedback**: Nutze die App und melde Probleme oder Verbesserungsvorschläge
 
 ### 🐛 Bug Reports
 Bitte verwende das [Issue Template](https://github.com/Pcf1337-hash/deinmudda/issues) und gib an:
