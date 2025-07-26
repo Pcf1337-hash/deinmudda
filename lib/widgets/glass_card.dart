@@ -5,6 +5,10 @@ import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
 
+/// A customizable glass-morphism card widget with blur effects.
+/// 
+/// Provides a modern glass-like appearance with customizable borders,
+/// shadows, and optional psychedelic effects for dark themes.
 class GlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -19,6 +23,10 @@ class GlassCard extends StatelessWidget {
   final bool usePsychedelicEffects;
   final Color? glowColor;
 
+  /// Creates a glass card with glassmorphism effects.
+  /// 
+  /// The [child] parameter is required and will be wrapped in the glass container.
+  /// Use [usePsychedelicEffects] to enable enhanced visual effects in dark theme.
   const GlassCard({
     super.key,
     required this.child,
@@ -40,7 +48,7 @@ class GlassCard extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    Widget card = Container(
+    final card = Container(
       width: width,
       height: height,
       margin: margin,
@@ -70,6 +78,7 @@ class GlassCard extends StatelessWidget {
     return card;
   }
 
+  /// Builds psychedelic content with enhanced blur effects.
   Widget _buildPsychedelicContent() {
     return ClipRRect(
       borderRadius: BorderRadius.circular(14),
@@ -90,6 +99,7 @@ class GlassCard extends StatelessWidget {
     );
   }
 
+  /// Gets appropriate gradient based on theme and effects.
   Gradient _getGradient(bool isDark) {
     if (usePsychedelicEffects && isDark) {
       return DesignTokens.psychedelicGlassGradient;
@@ -99,6 +109,7 @@ class GlassCard extends StatelessWidget {
         : DesignTokens.glassGradientLight;
   }
 
+  /// Gets appropriate border color based on theme and effects.
   Color _getBorderColor(bool isDark) {
     if (borderColor != null) return borderColor!;
     if (usePsychedelicEffects && isDark) {
@@ -109,6 +120,7 @@ class GlassCard extends StatelessWidget {
         : DesignTokens.glassBorderLight;
   }
 
+  /// Gets appropriate box shadow based on theme and performance settings.
   List<BoxShadow>? _getBoxShadow(bool isDark) {
     if (!showShadow || (kReleaseMode && PerformanceHelper.isLowEndDevice())) {
       return null;
@@ -143,7 +155,10 @@ class GlassCard extends StatelessWidget {
   }
 }
 
-// Psychedelic Glass Card with enhanced effects
+/// Enhanced glass card with psychedelic effects for dark themes.
+/// 
+/// Provides more intense visual effects and customizable glow intensity
+/// specifically designed for dark mode interfaces.
 class PsychedelicGlassCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
@@ -154,6 +169,10 @@ class PsychedelicGlassCard extends StatelessWidget {
   final Color? glowColor;
   final double intensity;
 
+  /// Creates a psychedelic glass card with enhanced effects.
+  /// 
+  /// The [intensity] parameter controls the strength of the glow effects.
+  /// Falls back to regular GlassCard in light themes.
   const PsychedelicGlassCard({
     super.key,
     required this.child,
@@ -183,7 +202,7 @@ class PsychedelicGlassCard extends StatelessWidget {
       );
     }
 
-    Widget card = Container(
+    final card = Container(
       width: width,
       height: height,
       margin: margin,
@@ -234,7 +253,10 @@ class PsychedelicGlassCard extends StatelessWidget {
   }
 }
 
-// Glass Empty State Widget
+/// Glass-styled empty state widget with customizable content.
+/// 
+/// Displays an icon, title, subtitle, and optional action button
+/// within a glass morphism container.
 class GlassEmptyState extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -243,6 +265,10 @@ class GlassEmptyState extends StatelessWidget {
   final VoidCallback? onAction;
   final bool usePsychedelicEffects;
 
+  /// Creates a glass empty state widget.
+  /// 
+  /// Displays [title], [subtitle], and [icon] in a structured layout.
+  /// Optionally includes an action button when [actionText] and [onAction] are provided.
   const GlassEmptyState({
     super.key,
     required this.title,
@@ -258,7 +284,7 @@ class GlassEmptyState extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     
-    Widget content = Column(
+    final content = Column(
       children: [
         Icon(
           icon,
@@ -312,3 +338,5 @@ class GlassEmptyState extends StatelessWidget {
     return GlassCard(child: content);
   }
 }
+
+// hints reduziert durch HintOptimiererAgent
