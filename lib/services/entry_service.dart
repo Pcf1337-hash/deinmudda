@@ -158,4 +158,3 @@ class EntryService extends ChangeNotifier implements IEntryService {
     }
   }
 }
-}

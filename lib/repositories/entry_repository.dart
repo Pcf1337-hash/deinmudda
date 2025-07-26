@@ -20,6 +20,9 @@ abstract class IEntryRepository {
   Future<void> deleteEntry(String id);
   Future<List<Entry>> getActiveTimerEntries();
   Future<void> updateEntryTimer(String id, DateTime? timerStartTime, Duration? duration);
+  Future<Map<String, dynamic>> getStatistics();
+  Future<Map<String, dynamic>> getCostStatistics();
+  Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams);
 }
 
 /// Concrete implementation of entry repository
@@ -166,6 +169,121 @@ class EntryRepository implements IEntryRepository {
       );
     } catch (e) {
       throw Exception('Failed to update entry timer: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getStatistics() async {
+    try {
+      final db = await _databaseService.database;
+      
+      // Get total entries count
+      final totalResult = await db.rawQuery('SELECT COUNT(*) as count FROM entries');
+      final totalEntries = totalResult.first['count'] as int;
+      
+      // Get entries this week
+      final weekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
+      final weekStartString = weekStart.toIso8601String();
+      final weekResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM entries WHERE timestamp >= ?',
+        [weekStartString]
+      );
+      final weekEntries = weekResult.first['count'] as int;
+      
+      // Get entries this month
+      final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
+      final monthStartString = monthStart.toIso8601String();
+      final monthResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM entries WHERE timestamp >= ?',
+        [monthStartString]
+      );
+      final monthEntries = monthResult.first['count'] as int;
+      
+      return {
+        'totalEntries': totalEntries,
+        'weekEntries': weekEntries,
+        'monthEntries': monthEntries,
+      };
+    } catch (e) {
+      throw Exception('Failed to get statistics: $e');
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getCostStatistics() async {
+    try {
+      final db = await _databaseService.database;
+      
+      // Calculate total cost
+      final totalResult = await db.rawQuery(
+        'SELECT SUM(cost) as total FROM entries WHERE cost IS NOT NULL'
+      );
+      final totalCost = (totalResult.first['total'] as num?)?.toDouble() ?? 0.0;
+      
+      // Calculate monthly cost
+      final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
+      final monthStartString = monthStart.toIso8601String();
+      final monthResult = await db.rawQuery(
+        'SELECT SUM(cost) as total FROM entries WHERE cost IS NOT NULL AND timestamp >= ?',
+        [monthStartString]
+      );
+      final monthlyCost = (monthResult.first['total'] as num?)?.toDouble() ?? 0.0;
+      
+      return {
+        'totalCost': totalCost,
+        'monthlyCost': monthlyCost,
+      };
+    } catch (e) {
+      throw Exception('Failed to get cost statistics: $e');
+    }
+  }
+
+  @override
+  Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams) async {
+    try {
+      final db = await _databaseService.database;
+      
+      // Build query based on search parameters
+      String whereClause = '1=1';
+      List<dynamic> whereArgs = [];
+      
+      if (searchParams['substanceId'] != null) {
+        whereClause += ' AND substance_id = ?';
+        whereArgs.add(searchParams['substanceId']);
+      }
+      
+      if (searchParams['startDate'] != null) {
+        whereClause += ' AND timestamp >= ?';
+        whereArgs.add((searchParams['startDate'] as DateTime).toIso8601String());
+      }
+      
+      if (searchParams['endDate'] != null) {
+        whereClause += ' AND timestamp <= ?';
+        whereArgs.add((searchParams['endDate'] as DateTime).toIso8601String());
+      }
+      
+      if (searchParams['minAmount'] != null) {
+        whereClause += ' AND amount >= ?';
+        whereArgs.add(searchParams['minAmount']);
+      }
+      
+      if (searchParams['maxAmount'] != null) {
+        whereClause += ' AND amount <= ?';
+        whereArgs.add(searchParams['maxAmount']);
+      }
+      
+      final List<Map<String, dynamic>> maps = await db.query(
+        'entries',
+        where: whereClause,
+        whereArgs: whereArgs,
+        orderBy: 'timestamp DESC',
+      );
+      
+      return List.generate(maps.length, (i) {
+        return Entry.fromDatabase(maps[i]);
+      });
+    } catch (e) {
+      throw Exception('Failed to perform advanced search: $e');
     }
   }
 }

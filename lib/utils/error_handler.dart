@@ -88,6 +88,10 @@ class ErrorHandler {
     }
   }
 
+  static void handleError(dynamic error, String message) {
+    logError(message, error);
+  }
+
   static void logWhiteScreenDebug(String context, String message) {
     if (kDebugMode) {
       print('⚪ WHITE SCREEN DEBUG [$context]: $message');

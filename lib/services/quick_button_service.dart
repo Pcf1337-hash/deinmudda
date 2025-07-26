@@ -436,4 +436,16 @@ class QuickButtonService implements IQuickButtonService {
       throw Exception('Failed to toggle quick button active state: $e');
     }
   }
+
+  @override
+  Future<int> getNextOrderIndex() async {
+    try {
+      final db = await _databaseService.database;
+      final result = await db.rawQuery('SELECT MAX(position) as maxPosition FROM quick_buttons');
+      final maxPosition = result.first['maxPosition'] as int?;
+      return (maxPosition ?? 0) + 1;
+    } catch (e) {
+      throw Exception('Failed to get next order index: $e');
+    }
+  }
 }
