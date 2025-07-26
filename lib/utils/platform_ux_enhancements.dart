@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/cupertino.dart'; // fixed by FehlerbehebungAgent
 import '../utils/platform_helper.dart';
 
 /// Platform-specific UX enhancements for better user experience
