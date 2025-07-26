@@ -171,26 +171,7 @@ class QuickButtonService implements IQuickButtonService {
     }
   }
 
-  // Method signature updated for interface compatibility
-  Future<void> reorderQuickButtonsOld(List<QuickButtonConfig> reorderedButtons) async {
-    try {
-      final db = await _databaseService.database;
-      
-      await _databaseService.transaction((txn) async {
-        for (int i = 0; i < reorderedButtons.length; i++) {
-          final button = reorderedButtons[i].copyWith(position: i);
-          await txn.update(
-            'quick_buttons',
-            button.toDatabase(),
-            where: 'id = ?',
-            whereArgs: [button.id],
-          );
-        }
-      });
-    } catch (e) {
-      throw Exception('Failed to reorder quick buttons: $e');
-    }
-  }
+
 
   // Get next order index
   Future<int> getNextOrderIndex() async {

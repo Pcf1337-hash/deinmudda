@@ -211,10 +211,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
     return Container(
-      constraints: const BoxConstraints(
-        minHeight: 80,
-        maxHeight: 120,
-      ),
+      height: 140, // Consistent with other screens
       decoration: BoxDecoration(
         gradient: isPsychedelicMode
             ? LinearGradient(

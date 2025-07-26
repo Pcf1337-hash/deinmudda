@@ -518,7 +518,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Expanded(
                   child: Center(
                     child: Text(
-                      _getWeekdayName(i + 1),
+                      _getWeekdayName(i + 1, short: true),
                       style: theme.textTheme.bodySmall?.copyWith(
                         fontWeight: FontWeight.w600,
                         color: i >= 5 // Saturday and Sunday
