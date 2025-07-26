@@ -302,6 +302,9 @@ class DatabaseService {
   Future<void> _ensureTimestampColumns(Database db) async {
     final now = DateTime.now().toIso8601String();
     
+    // CRITICAL FIX: Ensure dateTime column exists and fix potential timestamp column issue
+    await _ensureDateTimeColumn(db);
+    
     // Check and add created_at/updated_at to entries table
     await _addColumnIfNotExists(db, 'entries', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
     await _addColumnIfNotExists(db, 'entries', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
@@ -323,6 +326,63 @@ class DatabaseService {
     // Check and add created_at/updated_at to dosage_calculator_substances table
     await _addColumnIfNotExists(db, 'dosage_calculator_substances', 'created_at', 'TEXT NOT NULL DEFAULT \'$now\'');
     await _addColumnIfNotExists(db, 'dosage_calculator_substances', 'updated_at', 'TEXT NOT NULL DEFAULT \'$now\'');
+  }
+
+  /// CRITICAL FIX: Ensure dateTime column exists and fix potential timestamp column name issue
+  Future<void> _ensureDateTimeColumn(Database db) async {
+    try {
+      // Check if entries table has the correct dateTime column
+      final result = await db.rawQuery('PRAGMA table_info(entries)');
+      final columns = result.map((column) => column['name'] as String).toList();
+      
+      // Check if we have a legacy 'timestamp' column instead of 'dateTime'
+      final hasTimestamp = columns.contains('timestamp');
+      final hasDateTime = columns.contains('dateTime');
+      
+      if (hasTimestamp && !hasDateTime) {
+        print('🔄 MIGRATION: Found legacy "timestamp" column, renaming to "dateTime"');
+        
+        // Create backup before migration
+        final backupTableName = 'entries_backup_timestamp_migration_${DateTime.now().millisecondsSinceEpoch}';
+        await db.execute('CREATE TABLE $backupTableName AS SELECT * FROM entries');
+        
+        try {
+          // Add dateTime column
+          await db.execute('ALTER TABLE entries ADD COLUMN dateTime TEXT');
+          
+          // Copy data from timestamp to dateTime
+          await db.execute('UPDATE entries SET dateTime = timestamp WHERE timestamp IS NOT NULL');
+          
+          // Verify migration
+          final testResult = await db.rawQuery('SELECT COUNT(*) as count FROM entries WHERE dateTime IS NOT NULL');
+          final migratedCount = testResult.first['count'] as int;
+          
+          if (migratedCount > 0) {
+            print('✅ Successfully migrated $migratedCount records from timestamp to dateTime');
+            // Clean up backup table after successful migration
+            await db.execute('DROP TABLE $backupTableName');
+          } else {
+            throw Exception('Migration verification failed - no records with dateTime found');
+          }
+          
+        } catch (migrationError) {
+          print('🚨 MIGRATION ERROR: $migrationError');
+          // Restore from backup
+          await db.execute('DROP TABLE IF EXISTS entries');
+          await db.execute('ALTER TABLE $backupTableName RENAME TO entries');
+          print('🔄 Restored entries table from backup');
+          rethrow;
+        }
+      } else if (!hasDateTime) {
+        // Neither timestamp nor dateTime exists - this shouldn't happen with proper table creation
+        print('⚠️  WARNING: entries table missing dateTime column, adding it');
+        await _addColumnIfNotExists(db, 'entries', 'dateTime', 'TEXT NOT NULL DEFAULT \'${DateTime.now().toIso8601String()}\'');
+      }
+      
+    } catch (e) {
+      print('❌ Error in _ensureDateTimeColumn: $e');
+      // Don't rethrow - this is a preventive fix, not critical for app startup
+    }
   }
 
   Future<void> _insertDefaultData(Database db) async {
