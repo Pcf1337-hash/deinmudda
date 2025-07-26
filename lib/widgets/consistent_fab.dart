@@ -7,6 +7,11 @@ import '../widgets/platform_adaptive_fab.dart';
 import '../theme/design_tokens.dart';
 import '../utils/platform_helper.dart';
 
+/// A platform-adaptive floating action button with speed dial functionality.
+/// 
+/// Automatically switches between TrippyFAB for psychedelic mode and
+/// standard SpeedDial for normal mode, providing consistent behavior
+/// across different visual themes.
 class ConsistentFAB extends StatelessWidget {
   final List<SpeedDialChild> speedDialChildren;
   final VoidCallback? onMainAction;
@@ -15,6 +20,10 @@ class ConsistentFAB extends StatelessWidget {
   final Color? backgroundColor;
   final bool isExtended;
 
+  /// Creates a consistent FAB that adapts to psychedelic theme mode.
+  /// 
+  /// The [speedDialChildren] define the available actions in the speed dial.
+  /// [onMainAction] is called when the main FAB is tapped in psychedelic mode.
   const ConsistentFAB({
     super.key,
     required this.speedDialChildren,
@@ -68,9 +77,9 @@ class ConsistentFAB extends StatelessWidget {
             mainIcon,
             size: PlatformHelper.getPlatformIconSize(),
           ),
-          // Add platform-specific animation curves
+          // Platform-specific animation curves
           animationCurve: PlatformHelper.isIOS ? Curves.easeInOut : Curves.fastOutSlowIn,
-          // Add haptic feedback on tap
+          // Haptic feedback on interaction
           onOpen: () => PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact),
           onClose: () => PlatformHelper.performHapticFeedback(HapticFeedbackType.lightImpact),
         );
@@ -79,7 +88,18 @@ class ConsistentFAB extends StatelessWidget {
   }
 }
 
+/// Helper class for creating consistent SpeedDialChild widgets.
+/// 
+/// Provides factory methods for creating uniformly styled speed dial
+/// children with consistent appearance and behavior.
 class FABHelper {
+  /// Private constructor to prevent instantiation
+  const FABHelper._();
+  
+  /// Creates a standardized SpeedDialChild with consistent styling.
+  /// 
+  /// The [icon], [label], and [onTap] parameters are required.
+  /// [backgroundColor] determines the child's color scheme.
   static SpeedDialChild createSpeedDialChild({
     required IconData icon,
     required String label,
@@ -102,3 +122,5 @@ class FABHelper {
     );
   }
 }
+
+// hints reduziert durch HintOptimiererAgent
