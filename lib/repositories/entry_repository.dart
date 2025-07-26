@@ -185,7 +185,7 @@ class EntryRepository implements IEntryRepository {
       final weekStart = DateTime.now().subtract(Duration(days: DateTime.now().weekday - 1));
       final weekStartString = weekStart.toIso8601String();
       final weekResult = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM entries WHERE timestamp >= ?',
+        'SELECT COUNT(*) as count FROM entries WHERE dateTime >= ?',
         [weekStartString]
       );
       final weekEntries = weekResult.first['count'] as int;
@@ -194,7 +194,7 @@ class EntryRepository implements IEntryRepository {
       final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
       final monthStartString = monthStart.toIso8601String();
       final monthResult = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM entries WHERE timestamp >= ?',
+        'SELECT COUNT(*) as count FROM entries WHERE dateTime >= ?',
         [monthStartString]
       );
       final monthEntries = monthResult.first['count'] as int;
@@ -224,7 +224,7 @@ class EntryRepository implements IEntryRepository {
       final monthStart = DateTime(DateTime.now().year, DateTime.now().month, 1);
       final monthStartString = monthStart.toIso8601String();
       final monthResult = await db.rawQuery(
-        'SELECT SUM(cost) as total FROM entries WHERE cost IS NOT NULL AND timestamp >= ?',
+        'SELECT SUM(cost) as total FROM entries WHERE cost IS NOT NULL AND dateTime >= ?',
         [monthStartString]
       );
       final monthlyCost = (monthResult.first['total'] as num?)?.toDouble() ?? 0.0;
@@ -253,12 +253,12 @@ class EntryRepository implements IEntryRepository {
       }
       
       if (searchParams['startDate'] != null) {
-        whereClause += ' AND timestamp >= ?';
+        whereClause += ' AND dateTime >= ?';
         whereArgs.add((searchParams['startDate'] as DateTime).toIso8601String());
       }
       
       if (searchParams['endDate'] != null) {
-        whereClause += ' AND timestamp <= ?';
+        whereClause += ' AND dateTime <= ?';
         whereArgs.add((searchParams['endDate'] as DateTime).toIso8601String());
       }
       
@@ -276,7 +276,7 @@ class EntryRepository implements IEntryRepository {
         'entries',
         where: whereClause,
         whereArgs: whereArgs,
-        orderBy: 'timestamp DESC',
+        orderBy: 'dateTime DESC',
       );
       
       return List.generate(maps.length, (i) {
