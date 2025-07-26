@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:sqflite/sqflite.dart';
+// removed unused import: package:sqflite/sqflite.dart // cleaned by BereinigungsAgent
 import '../models/substance.dart';
 import '../utils/unit_manager.dart';
 import '../interfaces/service_interfaces.dart';

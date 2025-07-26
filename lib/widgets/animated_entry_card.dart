@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter/foundation.dart';
+// removed unused import: package:flutter/foundation.dart // cleaned by BereinigungsAgent
 import 'package:intl/intl.dart';
 import '../models/entry.dart';
 import '../widgets/glass_card.dart';
