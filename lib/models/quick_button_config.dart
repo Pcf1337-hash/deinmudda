@@ -1,6 +1,11 @@
 import 'package:uuid/uuid.dart';
 import 'package:flutter/material.dart';
 
+/// Configuration for quick action buttons on the home screen.
+/// 
+/// Represents a predefined substance consumption entry that users
+/// can quickly add with a single tap, including dosage, cost,
+/// and visual customization options.
 class QuickButtonConfig {
   final String id;
   final String substanceId;
@@ -15,6 +20,7 @@ class QuickButtonConfig {
   final int? iconCodePoint; // Store icon as codePoint for serialization
   final int? colorValue; // Store color as int value for serialization
 
+  /// Creates a quick button configuration with all required parameters.
   const QuickButtonConfig({
     required this.id,
     required this.substanceId,
@@ -30,11 +36,15 @@ class QuickButtonConfig {
     this.colorValue,
   });
 
-  // Helper getters for icon and color
+  // Helper getters for visual customization
+  
+  /// Gets the MaterialIcon representation of the stored icon code point.
   IconData? get icon => iconCodePoint != null ? IconData(iconCodePoint!, fontFamily: 'MaterialIcons') : null;
+  
+  /// Gets the Color representation of the stored color value.
   Color? get color => colorValue != null ? Color(colorValue!) : null;
 
-  // Factory constructor for creating new quick buttons
+  /// Factory constructor for creating new quick buttons with automatic ID generation.
   factory QuickButtonConfig.create({
     required String substanceId,
     required String substanceName,
@@ -63,16 +73,19 @@ class QuickButtonConfig {
     );
   }
 
-  // Getters
+  // Display helpers
+  
+  /// Returns formatted dosage string with unit.
   String get formattedDosage {
     return '${dosage.toString().replaceAll('.', ',')} $unit';
   }
 
+  /// Returns display text for the button showing substance name and dosage.
   String get displayText {
     return '$substanceName\n$formattedDosage';
   }
 
-  // JSON serialization
+  /// Converts quick button configuration to JSON map for serialization.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -90,6 +103,7 @@ class QuickButtonConfig {
     };
   }
 
+  /// Creates QuickButtonConfig from JSON map.
   factory QuickButtonConfig.fromJson(Map<String, dynamic> json) {
     return QuickButtonConfig(
       id: json['id'] as String,
@@ -107,7 +121,7 @@ class QuickButtonConfig {
     );
   }
 
-  // Database serialization
+  /// Converts quick button configuration to database map for storage.
   Map<String, dynamic> toDatabase() {
     return {
       'id': id,
@@ -125,6 +139,7 @@ class QuickButtonConfig {
     };
   }
 
+  /// Creates QuickButtonConfig from database map.
   factory QuickButtonConfig.fromDatabase(Map<String, dynamic> map) {
     return QuickButtonConfig(
       id: map['id'] as String,
@@ -142,7 +157,7 @@ class QuickButtonConfig {
     );
   }
 
-  // Copy with method
+  /// Creates a copy of this quick button configuration with updated fields.
   QuickButtonConfig copyWith({
     String? id,
     String? substanceId,
@@ -187,3 +202,5 @@ class QuickButtonConfig {
     return 'QuickButtonConfig(id: $id, substance: $substanceName, dosage: $formattedDosage, position: $position)';
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

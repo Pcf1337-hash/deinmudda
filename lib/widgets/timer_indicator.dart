@@ -5,10 +5,18 @@ import '../services/timer_service.dart'; // cleaned by BereinigungsAgent - fixed
 import '../theme/design_tokens.dart'; // cleaned by BereinigungsAgent - fixed import path
 import '../theme/spacing.dart'; // cleaned by BereinigungsAgent - fixed import path
 
+/// A visual indicator widget that displays timer status for consumption entries.
+/// 
+/// Shows different states (active, expired, completed) with appropriate colors,
+/// icons, and animations. Includes a pulsing animation for active timers.
 class TimerIndicator extends StatefulWidget {
   final Entry entry;
   final VoidCallback? onTimerComplete;
 
+  /// Creates a timer indicator for the given entry.
+  /// 
+  /// The [entry] must have timer data to display anything.
+  /// [onTimerComplete] is called when the timer expires.
   const TimerIndicator({
     super.key,
     required this.entry,
@@ -64,9 +72,9 @@ class _TimerIndicatorState extends State<TimerIndicator>
     final isExpired = widget.entry.isTimerExpired;
     final progress = widget.entry.timerProgress;
     
-    Color indicatorColor;
-    IconData icon;
-    String statusText;
+    final Color indicatorColor;
+    final IconData icon;
+    final String statusText;
     
     if (isActive) {
       indicatorColor = DesignTokens.accentCyan;
@@ -138,10 +146,17 @@ class _TimerIndicatorState extends State<TimerIndicator>
   }
 }
 
+/// A horizontal progress bar widget that shows timer completion progress.
+/// 
+/// Displays a colored progress bar indicating how much time has elapsed
+/// or completed for a timer-enabled consumption entry.
 class TimerProgressBar extends StatelessWidget {
   final Entry entry;
   final double height;
 
+  /// Creates a timer progress bar for the given entry.
+  /// 
+  /// The [height] parameter controls the thickness of the progress bar.
   const TimerProgressBar({
     super.key,
     required this.entry,
@@ -160,7 +175,7 @@ class TimerProgressBar extends StatelessWidget {
     final isActive = entry.isTimerActive;
     final isExpired = entry.isTimerExpired;
     
-    Color progressColor;
+    final Color progressColor;
     if (isActive) {
       progressColor = DesignTokens.accentCyan;
     } else if (isExpired) {
@@ -188,3 +203,5 @@ class TimerProgressBar extends StatelessWidget {
     );
   }
 }
+
+// hints reduziert durch HintOptimiererAgent
