@@ -11,6 +11,7 @@ import '../use_cases/entry_use_cases.dart';
 import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
 import '../services/psychedelic_theme_service.dart';
+import '../services/timer_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';

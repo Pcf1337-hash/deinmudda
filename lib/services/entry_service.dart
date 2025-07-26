@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart';
 import '../models/entry.dart';
@@ -155,6 +156,30 @@ class EntryService extends ChangeNotifier implements IEntryService {
       return await _entryRepository.advancedSearch(searchParams);
     } catch (e) {
       throw Exception('Failed to perform advanced search: $e');
+    }
+  }
+
+  @override
+  Future<int> importEntriesFromJson(String jsonString) async {
+    try {
+      final List<dynamic> jsonList = json.decode(jsonString);
+      int importedCount = 0;
+      
+      for (final item in jsonList) {
+        try {
+          final entry = Entry.fromJson(item);
+          await _entryRepository.createEntry(entry);
+          importedCount++;
+        } catch (e) {
+          // Skip invalid entries
+          print('Skipping invalid entry: $e');
+        }
+      }
+      
+      notifyListeners();
+      return importedCount;
+    } catch (e) {
+      throw Exception('Failed to import entries from JSON: $e');
     }
   }
 }

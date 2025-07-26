@@ -32,6 +32,7 @@ abstract class IEntryService extends ChangeNotifier {
   Future<Map<String, dynamic>> getStatistics();
   Future<Map<String, dynamic>> getCostStatistics();
   Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams);
+  Future<int> importEntriesFromJson(String jsonString);
 }
 
 /// Interface for Substance Service operations  
