@@ -1009,79 +1009,28 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 4), // Reduced from 6 to 4
-                        // Enhanced duration display with better styling
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.schedule_rounded,
-                              color: Colors.white,
-                              size: 14, // Increased for better visibility
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.5),
-                                  blurRadius: 2,
-                                  offset: const Offset(1, 1),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(width: 4),
-                            Flexible(
-                              child: Text(
-                                substance.durationWithIcon,
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: Colors.white,
-                                  fontSize: 13, // Increased to 13-14 range
-                                  fontWeight: FontWeight.w500,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.7),
-                                      blurRadius: 2,
-                                      offset: const Offset(1, 1),
-                                    ),
-                                  ],
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                softWrap: false,
-                              ),
-                            ),
-                          ],
-                        ),
                       ],
                     ),
                   ),
                   
                   const SizedBox(height: 12),
                   
-                  // Action button - REDUCED HEIGHT to prevent overflow
+                  // Time display - compact text replacing the calculate button  
                   Consumer<service.PsychedelicThemeService>(
                     builder: (context, themeService, child) {
-                      final button = SizedBox(
+                      final timeDisplay = Container(
                         width: double.infinity,
-                        height: 38, // Reduced from 44 to prevent overflow
-                        child: ElevatedButton(
-                          onPressed: () => _calculateDosage(substance),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: substanceColor.withOpacity(0.2),
-                            foregroundColor: substanceColor,
-                            side: BorderSide(
-                              color: substanceColor.withOpacity(0.5),
-                              width: 1,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        alignment: Alignment.center,
+                        child: Text(
+                          substance.durationWithIcon,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w500,
                           ),
-                          child: Text(
-                            'Berechnen',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 13, // Reduced from 14 to fit better
-                            ),
-                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       );
 
@@ -1090,11 +1039,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         return PulsatingWidget(
                           isEnabled: true,
                           glowColor: substanceColor,
-                          child: button,
+                          child: timeDisplay,
                         );
                       }
 
-                      return button;
+                      return timeDisplay;
                     },
                   ),
                 ],
@@ -1201,17 +1150,16 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       ),
                     ),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: substanceColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
                       child: Text(
-                        'Berechnen',
-                        style: theme.textTheme.bodySmall?.copyWith(
+                        substance.durationWithIcon,
+                        style: theme.textTheme.bodyMedium?.copyWith(
                           color: substanceColor,
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w500,
                         ),
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

@@ -16,6 +16,7 @@ import '../screens/main_navigation.dart';
 import '../widgets/psychedelic_background.dart';
 import '../utils/error_handler.dart';
 import '../utils/service_locator.dart';
+import '../utils/keyboard_handler.dart';
 
 /// Manages theme configuration and main app structure
 class AppThemeManager {
@@ -30,6 +31,9 @@ class AppThemeManager {
         return MaterialApp(
           title: 'Konsum Tracker Pro',
           debugShowCheckedModeBanner: false,
+          
+          // Navigation key for global access
+          navigatorKey: NavigationService.navigatorKey,
           
           // Theme configuration
           theme: themeService.getTheme(),

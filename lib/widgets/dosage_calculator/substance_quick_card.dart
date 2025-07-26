@@ -164,69 +164,26 @@ class SubstanceQuickCard extends StatelessWidget {
                 
                 const SizedBox(height: 8),
                 
-                // Administration route and duration
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                // Administration route
+                Row(
                   children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.route_rounded,
-                          color: Colors.white70,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            substance.administrationRouteDisplayName,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white70,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                    Icon(
+                      Icons.route_rounded,
+                      color: Colors.white70,
+                      size: 14,
                     ),
-                    const SizedBox(height: 2),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.schedule_rounded,
-                          color: Colors.white,
-                          size: 14,
-                          shadows: [
-                            Shadow(
-                              color: Colors.black.withOpacity(0.5),
-                              blurRadius: 2,
-                              offset: const Offset(1, 1),
-                            ),
-                          ],
+                    const SizedBox(width: 4),
+                    Flexible(
+                      child: Text(
+                        substance.administrationRouteDisplayName,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
                         ),
-                        const SizedBox(width: 4),
-                        Flexible(
-                          child: Text(
-                            substance.durationWithIcon,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: Colors.white,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              shadows: [
-                                Shadow(
-                                  color: Colors.black.withOpacity(0.7),
-                                  blurRadius: 2,
-                                  offset: const Offset(1, 1),
-                                ),
-                              ],
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            softWrap: false,
-                          ),
-                        ),
-                      ],
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),
@@ -246,31 +203,20 @@ class SubstanceQuickCard extends StatelessWidget {
                   const SizedBox(height: 12),
                 ],
                 
-                // Calculate button - always at bottom
-                SizedBox(
+                // Time display - compact text replacing the calculate button
+                Container(
                   width: double.infinity,
-                  height: 36,
-                  child: ElevatedButton(
-                    onPressed: onTap,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: substanceColor.withOpacity(0.1),
-                      foregroundColor: substanceColor,
-                      side: BorderSide(
-                        color: substanceColor.withOpacity(0.3),
-                        width: 1,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      elevation: 0,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  alignment: Alignment.center,
+                  child: Text(
+                    substance.durationWithIcon,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: substanceColor,
+                      fontWeight: FontWeight.w500,
                     ),
-                    child: Text(
-                      'Berechnen',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
               ],

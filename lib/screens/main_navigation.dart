@@ -265,7 +265,7 @@ class _MainNavigationState extends State<MainNavigation> with SafeStateMixin {
                         duration: DesignTokens.animationFast,
                         child: Icon(
                           isActive ? item.activeIcon : item.icon,
-                          key: ValueKey('nav_icon_${index}_${isActive ? 'active' : 'inactive'}_${item.label.hashCode}'),
+                          key: ValueKey('nav_icon_${index}_${isActive ? 'active' : 'inactive'}_${item.label}_${DateTime.now().millisecondsSinceEpoch}'),
                           color: isActive
                               ? DesignTokens.primaryIndigo
                               : (isDark
