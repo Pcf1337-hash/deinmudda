@@ -37,23 +37,23 @@ class ProviderManager {
       Provider<DatabaseService>.value(
         value: ServiceLocator.get<DatabaseService>()
       ),
-      Provider<EntryService>.value(
-        value: ServiceLocator.get<EntryService>()
-      ),
-      Provider<SubstanceService>.value(
-        value: ServiceLocator.get<SubstanceService>()
-      ),
       Provider<QuickButtonService>.value(
         value: ServiceLocator.get<QuickButtonService>()
-      ),
-      Provider<AuthService>.value(
-        value: ServiceLocator.get<AuthService>()
       ),
       Provider<NotificationService>.value(
         value: ServiceLocator.get<NotificationService>()
       ),
       
       // ChangeNotifier providers (for reactive UI updates)
+      ChangeNotifierProvider<EntryService>.value(
+        value: ServiceLocator.get<EntryService>()
+      ),
+      ChangeNotifierProvider<SubstanceService>.value(
+        value: ServiceLocator.get<SubstanceService>()
+      ),
+      ChangeNotifierProvider<AuthService>.value(
+        value: ServiceLocator.get<AuthService>()
+      ),
       ChangeNotifierProvider<SettingsService>.value(
         value: ServiceLocator.get<SettingsService>()
       ),
