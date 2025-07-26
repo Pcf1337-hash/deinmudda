@@ -13,6 +13,12 @@ class EntryService extends ChangeNotifier implements IEntryService {
 
   EntryService(this._entryRepository);
 
+  // Factory constructor for backward compatibility - delegates to ServiceLocator
+  factory EntryService.create() {
+    // This should never be called if ServiceLocator is properly initialized
+    throw UnimplementedError('Use ServiceLocator.get<IEntryService>() instead of creating services directly');
+  }
+
   // Create
   @override
   Future<String> createEntry(Entry entry) async {
