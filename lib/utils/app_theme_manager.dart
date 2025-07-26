@@ -9,6 +9,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/psychedelic_theme_service.dart' as service;
+import '../interfaces/service_interfaces.dart' show AppThemeMode;
 import '../services/auth_service.dart';
 import '../screens/auth/auth_screen.dart';
 import '../screens/main_navigation.dart';
@@ -55,13 +56,13 @@ class AppThemeManager {
   /// Convert service theme mode to Flutter theme mode
   static ThemeMode _getThemeMode(service.PsychedelicThemeService themeService) {
     switch (themeService.currentThemeMode) {
-      case service.ThemeMode.system:
+      case AppThemeMode.system:
         return ThemeMode.system;
-      case service.ThemeMode.light:
+      case AppThemeMode.light:
         return ThemeMode.light;
-      case service.ThemeMode.dark:
+      case AppThemeMode.dark:
         return ThemeMode.dark;
-      case service.ThemeMode.trippy:
+      case AppThemeMode.trippy:
         return ThemeMode.dark; // Use dark mode as base for trippy mode
     }
   }

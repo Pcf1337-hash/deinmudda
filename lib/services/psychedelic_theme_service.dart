@@ -200,13 +200,6 @@ class PsychedelicThemeService extends ChangeNotifier implements IPsychedelicThem
       return _buildLightTheme();
     }
   }
-
-  // Initialize method for interface compliance
-  @override
-  Future<void> init() async {
-    if (_isInitialized) return;
-    await initialize();
-  }
   
   ThemeData _buildLightTheme() {
     return ThemeData(

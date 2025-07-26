@@ -9,6 +9,8 @@ import '../services/substance_service.dart';
 import '../services/settings_service.dart';
 import '../services/quick_button_service.dart';
 import '../services/auth_service.dart';
+import '../interfaces/service_interfaces.dart';
+import 'service_locator.dart';
 import 'error_handler.dart';
 
 enum AppInitializationPhase {
@@ -117,11 +119,19 @@ class AppInitializationManager {
     _setPhase(AppInitializationPhase.services, 'Initialisiere Kern-Services...');
     
     try {
-      _entryService = EntryService();
-      _substanceService = SubstanceService();
-      _settingsService = SettingsService();
-      _quickButtonService = QuickButtonService();
-      _authService = AuthService();
+      // Use ServiceLocator to initialize all services with proper dependencies
+      await ServiceLocator.initialize();
+      
+      // Get service instances from ServiceLocator
+      _databaseService = ServiceLocator.get<DatabaseService>();
+      _entryService = ServiceLocator.get<EntryService>();
+      _substanceService = ServiceLocator.get<SubstanceService>();
+      _settingsService = ServiceLocator.get<SettingsService>();
+      _quickButtonService = ServiceLocator.get<QuickButtonService>();
+      _authService = ServiceLocator.get<AuthService>();
+      _notificationService = ServiceLocator.get<NotificationService>();
+      _timerService = ServiceLocator.get<TimerService>();
+      _psychedelicThemeService = ServiceLocator.get<PsychedelicThemeService>();
       
       // Initialize default quick buttons for common substances
       try {
@@ -138,12 +148,21 @@ class AppInitializationManager {
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Kern-Service-Initialisierung: $e');
       
-      // Create fallback services
-      _entryService = EntryService();
-      _substanceService = SubstanceService();
-      _settingsService = SettingsService();
-      _quickButtonService = QuickButtonService();
-      _authService = AuthService();
+      // In case of error, still try to get what services we can from ServiceLocator
+      try {
+        _databaseService = ServiceLocator.get<DatabaseService>();
+        _entryService = ServiceLocator.get<EntryService>();
+        _substanceService = ServiceLocator.get<SubstanceService>();
+        _settingsService = ServiceLocator.get<SettingsService>();
+        _quickButtonService = ServiceLocator.get<QuickButtonService>();
+        _authService = ServiceLocator.get<AuthService>();
+        _notificationService = ServiceLocator.get<NotificationService>();
+        _timerService = ServiceLocator.get<TimerService>();
+        _psychedelicThemeService = ServiceLocator.get<PsychedelicThemeService>();
+      } catch (serviceError) {
+        ErrorHandler.logError('INIT_MANAGER', 'Fallback-Services konnten nicht geladen werden: $serviceError');
+        // Services will remain null, which will be handled by the app
+      }
     }
   }
 
@@ -151,12 +170,13 @@ class AppInitializationManager {
     _setPhase(AppInitializationPhase.theme, 'Initialisiere Theme-Service...');
     
     try {
-      _psychedelicThemeService = PsychedelicThemeService();
-      await _psychedelicThemeService!.init();
+      // Theme service is already initialized by ServiceLocator
+      // Just verify it's available
+      _psychedelicThemeService ??= ServiceLocator.get<PsychedelicThemeService>();
       ErrorHandler.logSuccess('INIT_MANAGER', 'Theme-Service erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Theme-Service-Initialisierung: $e');
-      _psychedelicThemeService = PsychedelicThemeService(); // Fallback
+      // Theme service will remain null, which will be handled by the app
     }
   }
 
@@ -164,12 +184,13 @@ class AppInitializationManager {
     _setPhase(AppInitializationPhase.notifications, 'Initialisiere Benachrichtigungen...');
     
     try {
-      _notificationService = NotificationService();
-      await _notificationService!.init();
+      // Notification service is already initialized by ServiceLocator
+      // Just verify it's available
+      _notificationService ??= ServiceLocator.get<NotificationService>();
       ErrorHandler.logSuccess('INIT_MANAGER', 'Benachrichtigungen erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Benachrichtigungs-Initialisierung: $e');
-      _notificationService = NotificationService(); // Fallback
+      // Notification service will remain null, which will be handled by the app
     }
   }
 
@@ -177,12 +198,13 @@ class AppInitializationManager {
     _setPhase(AppInitializationPhase.timer, 'Initialisiere Timer-Service...');
     
     try {
-      _timerService = TimerService();
-      await _timerService!.init();
+      // Timer service is already initialized by ServiceLocator
+      // Just verify it's available
+      _timerService ??= ServiceLocator.get<TimerService>();
       ErrorHandler.logSuccess('INIT_MANAGER', 'Timer-Service erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Timer-Service-Initialisierung: $e');
-      _timerService = TimerService(); // Fallback
+      // Timer service will remain null, which will be handled by the app
     }
   }
 
@@ -190,15 +212,21 @@ class AppInitializationManager {
     try {
       ErrorHandler.logWarning('INIT_MANAGER', 'Erstelle Fallback-Services...');
       
-      _databaseService ??= DatabaseService();
-      _entryService ??= EntryService();
-      _substanceService ??= SubstanceService();
-      _settingsService ??= SettingsService();
-      _quickButtonService ??= QuickButtonService();
-      _authService ??= AuthService();
-      _notificationService ??= NotificationService();
-      _timerService ??= TimerService();
-      _psychedelicThemeService ??= PsychedelicThemeService();
+      // Try to get services from ServiceLocator as fallback
+      try {
+        _databaseService ??= ServiceLocator.get<DatabaseService>();
+        _entryService ??= ServiceLocator.get<EntryService>();
+        _substanceService ??= ServiceLocator.get<SubstanceService>();
+        _settingsService ??= ServiceLocator.get<SettingsService>();
+        _quickButtonService ??= ServiceLocator.get<QuickButtonService>();
+        _authService ??= ServiceLocator.get<AuthService>();
+        _notificationService ??= ServiceLocator.get<NotificationService>();
+        _timerService ??= ServiceLocator.get<TimerService>();
+        _psychedelicThemeService ??= ServiceLocator.get<PsychedelicThemeService>();
+      } catch (serviceError) {
+        ErrorHandler.logError('INIT_MANAGER', 'ServiceLocator-Fallback fehlgeschlagen: $serviceError');
+        // Services will remain null, which will be handled by the app
+      }
       
       _isInitialized = true;
       ErrorHandler.logSuccess('INIT_MANAGER', 'Fallback-Services erfolgreich erstellt');

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../models/substance.dart';
 import '../services/substance_service.dart';
+import '../interfaces/service_interfaces.dart';
+import '../utils/service_locator.dart';
 import '../utils/unit_manager.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/modern_fab.dart';
@@ -23,7 +25,7 @@ class SubstanceManagementScreen extends StatefulWidget {
 class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
   final _scrollController = ScrollController();
   final _searchController = TextEditingController();
-  final SubstanceService _substanceService = SubstanceService();
+  late final ISubstanceService _substanceService;
 
   List<Substance> _allSubstances = [];
   List<Substance> _filteredSubstances = [];
@@ -36,6 +38,7 @@ class _SubstanceManagementScreenState extends State<SubstanceManagementScreen> {
   @override
   void initState() {
     super.initState();
+    _substanceService = ServiceLocator.get<ISubstanceService>();
     _loadSubstances();
     _searchController.addListener(_onSearchChanged);
   }

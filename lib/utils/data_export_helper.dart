@@ -7,16 +7,25 @@ import '../services/entry_service.dart';
 import '../services/substance_service.dart';
 import '../services/quick_button_service.dart';
 import '../services/database_service.dart';
+import '../interfaces/service_interfaces.dart';
+import '../utils/service_locator.dart';
 // Import with prefix to avoid conflicts
 import '../models/substance.dart' as substance_model;
 import '../models/quick_button_config.dart';
 import '../models/entry.dart';
 
 class DataExportHelper {
-  final EntryService _entryService = EntryService();
-  final SubstanceService _substanceService = SubstanceService();
-  final QuickButtonService _quickButtonService = QuickButtonService();
-  final DatabaseService _databaseService = DatabaseService();
+  late final IEntryService _entryService;
+  late final ISubstanceService _substanceService;
+  late final IQuickButtonService _quickButtonService;
+  late final DatabaseService _databaseService;
+
+  DataExportHelper() {
+    _entryService = ServiceLocator.get<IEntryService>();
+    _substanceService = ServiceLocator.get<ISubstanceService>();
+    _quickButtonService = ServiceLocator.get<IQuickButtonService>();
+    _databaseService = ServiceLocator.get<DatabaseService>();
+  }
 
   // Export all data to JSON file
   Future<String> exportAllData() async {

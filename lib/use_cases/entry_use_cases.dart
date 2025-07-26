@@ -172,7 +172,7 @@ class DeleteEntryUseCase {
     }
 
     // Stop timer if active
-    if (_timerService.isTimerActive(entryId)) {
+    if (_timerService.hasActiveTimer(entryId)) {
       await _timerService.stopTimer(entryId);
     }
 

@@ -20,13 +20,13 @@ class CreateSubstanceUseCase {
   /// Create a new substance with validation
   Future<void> execute({
     required String name,
-    required String category,
-    required String color,
-    String? description,
-    List<String>? dosageOptions,
-    List<String>? unitOptions,
-    Duration? defaultDuration,
-    Map<String, dynamic>? metadata,
+    required SubstanceCategory category,
+    required RiskLevel defaultRiskLevel,
+    required double pricePerUnit,
+    required String defaultUnit,
+    String? notes,
+    String? iconName,
+    Duration? duration,
   }) async {
     // Validate name
     if (name.trim().isEmpty) {
@@ -39,35 +39,29 @@ class CreateSubstanceUseCase {
       throw ArgumentError('Substance with name "$name" already exists');
     }
 
-    // Validate category
-    if (category.trim().isEmpty) {
-      throw ArgumentError('Category cannot be empty');
+    // Validate default unit
+    if (defaultUnit.trim().isEmpty) {
+      throw ArgumentError('Default unit cannot be empty');
     }
 
-    // Validate color (should be a valid hex color)
-    if (!_isValidHexColor(color)) {
-      throw ArgumentError('Invalid color format. Use hex format like #FF0000');
+    // Validate price
+    if (pricePerUnit < 0) {
+      throw ArgumentError('Price per unit cannot be negative');
     }
 
     // Create substance
-    final substance = Substance(
-      id: const Uuid().v4(),
+    final substance = Substance.create(
       name: name.trim(),
-      category: category.trim(),
-      color: color,
-      description: description,
-      dosageOptions: dosageOptions ?? [],
-      unitOptions: unitOptions ?? ['mg', 'g', 'ml'],
-      defaultDuration: defaultDuration ?? const Duration(hours: 6),
-      metadata: metadata ?? {},
+      category: category,
+      defaultRiskLevel: defaultRiskLevel,
+      pricePerUnit: pricePerUnit,
+      defaultUnit: defaultUnit.trim(),
+      notes: notes,
+      iconName: iconName,
+      duration: duration,
     );
 
     await _substanceRepository.createSubstance(substance);
-  }
-
-  bool _isValidHexColor(String color) {
-    final hexColorRegex = RegExp(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$');
-    return hexColorRegex.hasMatch(color);
   }
 }
 
@@ -96,22 +90,10 @@ class UpdateSubstanceUseCase {
       throw ArgumentError('Another substance with name "${updatedSubstance.name}" already exists');
     }
 
-    // Validate category
-    if (updatedSubstance.category.trim().isEmpty) {
-      throw ArgumentError('Category cannot be empty');
-    }
-
-    // Validate color
-    if (!_isValidHexColor(updatedSubstance.color)) {
-      throw ArgumentError('Invalid color format. Use hex format like #FF0000');
-    }
+    // Validate category (assuming category is now an enum)
+    // No validation needed for enum types
 
     await _substanceRepository.updateSubstance(updatedSubstance);
-  }
-
-  bool _isValidHexColor(String color) {
-    final hexColorRegex = RegExp(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$');
-    return hexColorRegex.hasMatch(color);
   }
 }
 
@@ -171,17 +153,17 @@ class GetSubstancesUseCase {
   }
 
   /// Get substances by category
-  Future<List<Substance>> getSubstancesByCategory(String category) async {
+  Future<List<Substance>> getSubstancesByCategory(SubstanceCategory category) async {
     final allSubstances = await getAllSubstances();
     return allSubstances.where((substance) => 
-      substance.category.toLowerCase() == category.toLowerCase()
+      substance.category == category
     ).toList();
   }
 
   /// Get distinct categories
   Future<List<String>> getCategories() async {
     final allSubstances = await getAllSubstances();
-    final categories = allSubstances.map((s) => s.category).toSet().toList();
+    final categories = allSubstances.map((s) => s.categoryDisplayName).toSet().toList();
     categories.sort();
     return categories;
   }

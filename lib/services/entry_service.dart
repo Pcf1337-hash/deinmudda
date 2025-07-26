@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart';
 import '../models/entry.dart';
@@ -11,6 +12,12 @@ class EntryService extends ChangeNotifier implements IEntryService {
   final IEntryRepository _entryRepository;
 
   EntryService(this._entryRepository);
+
+  // Factory constructor for backward compatibility - delegates to ServiceLocator
+  factory EntryService.create() {
+    // This should never be called if ServiceLocator is properly initialized
+    throw UnimplementedError('Use ServiceLocator.get<IEntryService>() instead of creating services directly');
+  }
 
   // Create
   @override
@@ -157,5 +164,28 @@ class EntryService extends ChangeNotifier implements IEntryService {
       throw Exception('Failed to perform advanced search: $e');
     }
   }
-}
+
+  @override
+  Future<int> importEntriesFromJson(String jsonString) async {
+    try {
+      final List<dynamic> jsonList = json.decode(jsonString);
+      int importedCount = 0;
+      
+      for (final item in jsonList) {
+        try {
+          final entry = Entry.fromJson(item);
+          await _entryRepository.createEntry(entry);
+          importedCount++;
+        } catch (e) {
+          // Skip invalid entries
+          print('Skipping invalid entry: $e');
+        }
+      }
+      
+      notifyListeners();
+      return importedCount;
+    } catch (e) {
+      throw Exception('Failed to import entries from JSON: $e');
+    }
+  }
 }

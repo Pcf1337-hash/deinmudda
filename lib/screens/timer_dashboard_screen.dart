@@ -5,6 +5,8 @@ import '../models/entry.dart';
 import '../services/entry_service.dart';
 import '../services/timer_service.dart';
 import '../services/psychedelic_theme_service.dart';
+import '../interfaces/service_interfaces.dart';
+import '../utils/service_locator.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
 import '../widgets/trippy_fab.dart';
@@ -22,8 +24,8 @@ class TimerDashboardScreen extends StatefulWidget {
 }
 
 class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeStateMixin {
-  final EntryService _entryService = EntryService();
-  late TimerService _timerService;
+  late final IEntryService _entryService;
+  late final ITimerService _timerService;
   
   List<Entry> _activeEntries = [];
   List<Map<String, dynamic>> _customTimers = [];
@@ -34,8 +36,9 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
   void initState() {
     super.initState();
     
-    // Get TimerService from provider
-    _timerService = Provider.of<TimerService>(context, listen: false);
+    // Get services from ServiceLocator
+    _entryService = ServiceLocator.get<IEntryService>();
+    _timerService = ServiceLocator.get<ITimerService>();
     
     _loadActiveTimers();
   }

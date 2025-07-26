@@ -279,10 +279,4 @@ class SettingsService extends ChangeNotifier implements ISettingsService {
     await _prefs!.setInt(key, value);
     notifyListeners();
   }
-
-  // Initialize method for interface compliance
-  @override
-  Future<void> init() async {
-    await _ensureInitialized();
-  }
 }

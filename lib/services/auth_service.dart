@@ -13,8 +13,6 @@ class AuthService extends ChangeNotifier implements IAuthService {
   bool _isAuthenticated = false;
   bool _isInitialized = false;
 
-  bool get isAuthenticated => _isAuthenticated;
-
   @override
   Future<void> init() async {
     if (_isInitialized) return;

@@ -32,6 +32,7 @@ abstract class IEntryService extends ChangeNotifier {
   Future<Map<String, dynamic>> getStatistics();
   Future<Map<String, dynamic>> getCostStatistics();
   Future<List<Entry>> advancedSearch(Map<String, dynamic> searchParams);
+  Future<int> importEntriesFromJson(String jsonString);
 }
 
 /// Interface for Substance Service operations  
@@ -153,6 +154,7 @@ abstract class IQuickButtonService {
   Future<void> toggleQuickButtonActive(String id, bool isActive);
   Future<List<QuickButtonConfig>> getActiveQuickButtons();
   Future<void> updateQuickButtonPosition(String id, int newPosition);
+  Future<int> getNextOrderIndex();
 }
 
 /// Interface for Psychedelic Theme Service operations

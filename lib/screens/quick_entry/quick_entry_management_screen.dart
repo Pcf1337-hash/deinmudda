@@ -147,7 +147,9 @@ class _QuickEntryManagementScreenState extends State<QuickEntryManagementScreen>
 
   Future<void> _reorderQuickButtons(List<QuickButtonConfig> reorderedButtons) async {
     try {
-      await _quickButtonService.reorderQuickButtons(reorderedButtons);
+      // Extract IDs from the reordered buttons
+      final orderedIds = reorderedButtons.map((button) => button.id).toList();
+      await _quickButtonService.reorderQuickButtons(orderedIds);
       
       if (_isDisposed) return;
       
