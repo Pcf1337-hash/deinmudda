@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
 
+/// Design tokens and color palette for the Konsum Tracker Pro application.
+/// 
+/// Provides a comprehensive set of colors, gradients, animations, and other
+/// design constants used throughout the app, including special psychedelic
+/// theme colors and effects for the enhanced visual mode.
 class DesignTokens {
+  /// Private constructor to prevent instantiation
+  const DesignTokens._();
+  
   // Primary Colors
   static const Color primaryIndigo = Color(0xFF6366F1);
   static const Color primaryPurple = Color(0xFF8B5CF6);
@@ -231,7 +239,10 @@ class DesignTokens {
   static const Curve curveGlow = Curves.easeInOutQuad;
   static const Curve curveHypnotic = Curves.easeInOutCirc;
   
-  // Substance Color Mapping
+  /// Returns appropriate colors for a given substance name.
+  /// 
+  /// Maps substance names to specific color schemes including primary
+  /// color and glow effect for psychedelic mode.
   static Map<String, Color> getSubstanceColor(String substance) {
     final substanceLower = substance.toLowerCase();
     
@@ -250,3 +261,5 @@ class DesignTokens {
     }
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

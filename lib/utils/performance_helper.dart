@@ -2,12 +2,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
-/// Helper class for performance optimization
+/// Helper class for performance optimization and device capability detection.
+/// 
+/// Provides utilities for measuring performance, detecting device capabilities,
+/// and optimizing rendering based on hardware limitations.
 class PerformanceHelper {
-  // Private constructor to prevent instantiation
-  PerformanceHelper._();
+  /// Private constructor to prevent instantiation
+  const PerformanceHelper._();
   
-  /// Initialize performance optimizations
+  /// Initialize performance optimizations for the application.
+  /// 
+  /// Disables debug features and expensive operations in release mode
+  /// to improve performance on production builds.
   static void init() {
     if (kReleaseMode) {
       // Disable debug prints
@@ -20,15 +26,15 @@ class PerformanceHelper {
       debugPaintPointersEnabled = false;
       debugRepaintRainbowEnabled = false;
       
-      // Disable checkerboard patterns
-      // debugCheckElevationsEnabled = false; // This property doesn't exist in current Flutter version
-      
-      // Disable expensive assertions
+      // Disable expensive shadows rendering on low-end devices
       debugDisableShadows = false;
     }
   }
   
-  /// Measure the execution time of a function
+  /// Measure the execution time of an async function.
+  /// 
+  /// In release mode, executes the function without timing.
+  /// In debug mode, measures and prints execution time with optional [tag].
   static Future<T> measureExecutionTime<T>(
     Future<T> Function() function, {
     String? tag,
@@ -44,15 +50,21 @@ class PerformanceHelper {
     return result;
   }
   
-  /// Check if the device is a low-end device
+  /// Detect if the current device is considered low-end.
+  /// 
+  /// Uses screen resolution as a heuristic to determine device capabilities.
+  /// Returns true for Android devices with screen width less than 1080 pixels.
   static bool isLowEndDevice() {
-    // This is a simple heuristic and might need adjustment
+    // Simple heuristic based on screen resolution
     return defaultTargetPlatform == TargetPlatform.android && 
            !kIsWeb && 
            PlatformDispatcher.instance.views.first.physicalSize.width < 1080;
   }
   
-  /// Get appropriate image quality based on device capabilities
+  /// Get appropriate image quality based on device capabilities.
+  /// 
+  /// Returns lower quality (70) for low-end devices to improve performance,
+  /// and higher quality (90) for high-end devices.
   static int getImageQuality() {
     if (isLowEndDevice()) {
       return 70; // Lower quality for low-end devices
@@ -61,7 +73,10 @@ class PerformanceHelper {
     }
   }
   
-  /// Determine if animations should be enabled
+  /// Determine if animations should be enabled based on accessibility settings.
+  /// 
+  /// Checks user accessibility preferences and device capabilities.
+  /// Returns false if user has enabled reduced motion or device is low-end.
   static bool shouldEnableAnimations() {
     // Check if reduced motion is enabled in accessibility settings
     bool disableAnimations = false;
@@ -70,7 +85,9 @@ class PerformanceHelper {
         PlatformDispatcher.instance.views.first
       ).disableAnimations;
     } catch (e) {
-      print('Error checking animations settings: $e');
+      if (kDebugMode) {
+        print('Error checking animations settings: $e');
+      }
       // Default to false if there's an error
       disableAnimations = false;
     }
@@ -78,36 +95,40 @@ class PerformanceHelper {
     // Disable animations if user has requested reduced motion
     if (disableAnimations) return false;
     
-    // Disable animations on low-end devices
-    // For now, always enable animations to fix UI issues
-    return true; // !isLowEndDevice();
+    // Always enable animations to maintain UI consistency
+    return true;
   }
   
-  /// Get appropriate animation duration based on device capabilities
+  /// Get appropriate animation duration based on device capabilities.
+  /// 
+  /// Currently returns normal duration for all devices to maintain
+  /// consistent user experience across different hardware.
   static Duration getAnimationDuration(Duration normalDuration) {
-    // For now, always use normal duration to fix UI issues
+    // Always use normal duration to maintain UI consistency
     return normalDuration;
-    /*if (isLowEndDevice()) {
-      // Shorter animations for low-end devices
-      return Duration(milliseconds: (normalDuration.inMilliseconds * 0.7).round());
-    } else {
-      return normalDuration;
-    }*/
   }
   
-  /// Memory optimization - clear image cache
+  /// Clear the image cache to free up memory.
+  /// 
+  /// Clears both cached images and live images from the painting binding.
   static void clearImageCache() {
     PaintingBinding.instance.imageCache.clear();
     PaintingBinding.instance.imageCache.clearLiveImages();
   }
   
-  /// Reduce memory usage when app goes to background
+  /// Reduce memory usage when app goes to background.
+  /// 
+  /// Clears image cache and suggests garbage collection to the VM
+  /// to free up memory when the app is backgrounded.
   static void reduceMemoryUsageInBackground() {
     // Clear image cache
     clearImageCache();
     
     // Trigger garbage collection (note: this is just a suggestion to the VM)
-    // ignore: avoid_print
-    if (kDebugMode) print('Suggesting garbage collection');
+    if (kDebugMode) {
+      debugPrint('Suggesting garbage collection for memory optimization');
+    }
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

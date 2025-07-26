@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 import 'substance.dart';
 
+/// Risk level enumeration for consumption entries.
 enum RiskLevel {
+  /// Low risk consumption level
   low,
+  /// Medium risk consumption level  
   medium,
+  /// High risk consumption level
   high,
+  /// Critical risk consumption level
   critical
 }
 
+/// Represents a consumption entry in the tracking system.
+/// 
+/// Immutable data class that contains all information about
+/// a substance consumption event including dosage, timing,
+/// cost tracking, and timer functionality.
 class Entry {
   final String id;
   final String substanceId;
@@ -31,6 +41,7 @@ class Entry {
   final int? iconCodePoint; // Store icon as codePoint for serialization
   final int? colorValue; // Store color as int value for serialization
 
+  /// Creates a new Entry with all required and optional parameters.
   const Entry({
     required this.id,
     required this.substanceId,
@@ -51,10 +62,16 @@ class Entry {
   });
 
   // Helper getters for icon and color
+  
+  /// Gets the MaterialIcon representation of the stored icon code point.
   IconData? get icon => iconCodePoint != null ? IconData(iconCodePoint!, fontFamily: 'MaterialIcons') : null;
+  
+  /// Gets the Color representation of the stored color value.
   Color? get color => colorValue != null ? Color(colorValue!) : null;
 
-  // Factory constructor for creating new entries
+  /// Factory constructor for creating new entries with automatic ID generation.
+  /// 
+  /// Automatically generates a UUID for the entry and sets creation timestamps.
   factory Entry.create({
     required String substanceId,
     required String substanceName,
@@ -91,7 +108,9 @@ class Entry {
     );
   }
 
-  // Getters
+  // Date-based getters
+  
+  /// Returns true if this entry was created today.
   bool get isToday {
     final now = DateTime.now();
     return dateTime.year == now.year && 
@@ -99,40 +118,57 @@ class Entry {
            dateTime.day == now.day;
   }
 
+  /// Returns true if this entry was created within the current week.
   bool get isThisWeek {
     final now = DateTime.now();
     final weekStart = now.subtract(Duration(days: now.weekday - 1));
-    final weekEnd = weekStart.add(const Duration(days: 6));
-    return dateTime.isAfter(weekStart.subtract(const Duration(days: 1))) && 
-           dateTime.isBefore(weekEnd.add(const Duration(days: 1)));
+    const weekDuration = Duration(days: 6);
+    final weekEnd = weekStart.add(weekDuration);
+    const dayDuration = Duration(days: 1);
+    return dateTime.isAfter(weekStart.subtract(dayDuration)) && 
+           dateTime.isBefore(weekEnd.add(dayDuration));
   }
 
+  /// Returns true if this entry has cost data.
   bool get hasCostData => cost > 0;
 
+  /// Returns formatted cost string with Euro symbol.
   String get formattedCost {
     return '${cost.toStringAsFixed(2).replaceAll('.', ',')}€';
   }
 
+  /// Returns formatted dosage string with unit.
   String get formattedDosage {
     return '${dosage.toString().replaceAll('.', ',')} $unit';
   }
 
+  /// Returns date part only (without time).
   DateTime get date => DateTime(dateTime.year, dateTime.month, dateTime.day);
+  
+  /// Returns the complete timestamp.
   DateTime get time => dateTime;
 
   // Timer-related getters
+  
+  /// Returns true if this entry has timer data.
   bool get hasTimer => timerStartTime != null && timerEndTime != null;
   
+  /// Returns true if the timer is currently active (running and not expired).
   bool get isTimerActive => hasTimer && !timerCompleted && DateTime.now().isBefore(timerEndTime!);
   
+  /// Returns true if the timer has expired but not been marked as completed.
   bool get isTimerExpired => hasTimer && DateTime.now().isAfter(timerEndTime!) && !timerCompleted;
   
+  /// Returns the total duration of the timer if available.
   Duration? get timerDuration => hasTimer ? timerEndTime!.difference(timerStartTime!) : null;
   
+  /// Returns the remaining time on an active timer.
   Duration? get remainingTime => isTimerActive ? timerEndTime!.difference(DateTime.now()) : null;
   
+  /// Returns the elapsed time since timer start.
   Duration? get elapsedTime => hasTimer ? DateTime.now().difference(timerStartTime!) : null;
   
+  /// Returns timer progress as a value between 0.0 and 1.0.
   double get timerProgress {
     if (!hasTimer) return 0.0;
     final total = timerEndTime!.difference(timerStartTime!);
@@ -141,6 +177,7 @@ class Entry {
     return progress.clamp(0.0, 1.0);
   }
   
+  /// Returns human-readable remaining time string.
   String get formattedRemainingTime {
     final remaining = remainingTime;
     if (remaining == null) return 'Timer nicht aktiv';
@@ -160,7 +197,7 @@ class Entry {
     }
   }
 
-  // JSON serialization
+  /// Converts entry to JSON map for serialization.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -182,6 +219,7 @@ class Entry {
     };
   }
 
+  /// Creates Entry from JSON map.
   factory Entry.fromJson(Map<String, dynamic> json) {
     return Entry(
       id: json['id'] as String,
@@ -203,7 +241,7 @@ class Entry {
     );
   }
 
-  // Database serialization
+  /// Converts entry to database map for storage.
   Map<String, dynamic> toDatabase() {
     return {
       'id': id,
@@ -225,6 +263,7 @@ class Entry {
     };
   }
 
+  /// Creates Entry from database map.
   factory Entry.fromDatabase(Map<String, dynamic> map) {
     return Entry(
       id: map['id'] as String,
@@ -246,7 +285,9 @@ class Entry {
     );
   }
 
-  // Copy with method
+  /// Creates a copy of this entry with updated fields.
+  /// 
+  /// Automatically updates the updatedAt timestamp to current time.
   Entry copyWith({
     String? id,
     String? substanceId,
@@ -299,3 +340,5 @@ class Entry {
     return 'Entry(id: $id, substanceName: $substanceName, dosage: $dosage, dateTime: $dateTime)';
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

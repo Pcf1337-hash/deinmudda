@@ -1,7 +1,14 @@
 import '../utils/unit_manager.dart';
 
+/// Utility class for validating user input and data formatting.
+/// 
+/// Provides comprehensive validation methods for various types of input
+/// including personal data, substance information, and numeric values.
 class ValidationHelper {
-  // Email validation
+  /// Private constructor to prevent instantiation
+  const ValidationHelper._();
+  
+  /// Validates email addresses using standard email regex pattern.
   static bool isValidEmail(String email) {
     final emailRegex = RegExp(
       r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$',
@@ -9,7 +16,7 @@ class ValidationHelper {
     return emailRegex.hasMatch(email);
   }
 
-  // Password validation
+  /// Validates password strength requiring 8+ chars, uppercase, lowercase, and number.
   static bool isValidPassword(String password) {
     // At least 8 characters, one uppercase, one lowercase, one number
     final passwordRegex = RegExp(
@@ -18,7 +25,7 @@ class ValidationHelper {
     return passwordRegex.hasMatch(password);
   }
 
-  // Phone number validation (German format)
+  /// Validates German phone number format (+49 or 0 prefix).
   static bool isValidPhoneNumber(String phone) {
     final phoneRegex = RegExp(
       r'^(\+49|0)[1-9]\d{8,11}$',
@@ -26,7 +33,7 @@ class ValidationHelper {
     return phoneRegex.hasMatch(phone.replaceAll(' ', '').replaceAll('-', ''));
   }
 
-  // Substance name validation
+  /// Validates substance name length and character restrictions.
   static bool isValidSubstanceName(String name) {
     if (name.trim().isEmpty) return false;
     if (name.trim().length < 2) return false;
@@ -37,7 +44,7 @@ class ValidationHelper {
     return nameRegex.hasMatch(name.trim());
   }
 
-  // Dosage validation
+  /// Validates dosage input ensuring positive numeric value within reasonable limits.
   static bool isValidDosage(String dosage) {
     if (dosage.trim().isEmpty) return false;
     
@@ -51,16 +58,15 @@ class ValidationHelper {
     return true;
   }
 
-  // Unit validation
+  /// Validates measurement unit using UnitManager validation.
   static bool isValidUnit(String unit) {
     if (unit.trim().isEmpty) return false;
     if (unit.trim().length > 20) return false;
     
-    // Use UnitManager for more comprehensive validation
     return UnitManager.isValidUnit(unit.trim());
   }
 
-  // Cost validation
+  /// Validates cost input allowing empty values (optional) or positive numbers.
   static bool isValidCost(String cost) {
     if (cost.trim().isEmpty) return true; // Cost is optional
     
@@ -74,7 +80,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Notes validation
+  /// Validates notes field with optional content and character limit.
   static bool isValidNotes(String notes) {
     if (notes.trim().isEmpty) return true; // Notes are optional
     if (notes.trim().length > 1000) return false; // Reasonable limit
@@ -82,7 +88,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Weight validation (for dosage calculator)
+  /// Validates weight input for dosage calculator (20-300 kg range).
   static bool isValidWeight(String weight) {
     if (weight.trim().isEmpty) return false;
     
@@ -96,7 +102,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Height validation (for dosage calculator)
+  /// Validates height input for dosage calculator (100-250 cm range).
   static bool isValidHeight(String height) {
     if (height.trim().isEmpty) return false;
     
@@ -110,7 +116,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Age validation (for dosage calculator)
+  /// Validates age input for dosage calculator (18-120 years range).
   static bool isValidAge(String age) {
     if (age.trim().isEmpty) return false;
     
@@ -122,7 +128,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Date validation
+  /// Validates date input ensuring reasonable date range (2000 to tomorrow).
   static bool isValidDate(DateTime? date) {
     if (date == null) return false;
     
@@ -133,15 +139,14 @@ class ValidationHelper {
     return date.isAfter(earliestDate) && date.isBefore(latestDate);
   }
 
-  // Time validation
+  /// Validates time input (currently accepts all non-null times).
   static bool isValidTime(DateTime? time) {
     if (time == null) return false;
     
-    // Time is always valid if date is valid
     return true;
   }
 
-  // Generic number validation
+  /// Generic number validation with optional min/max constraints.
   static bool isValidNumber(String value, {double? min, double? max}) {
     if (value.trim().isEmpty) return false;
     
@@ -156,7 +161,7 @@ class ValidationHelper {
     return true;
   }
 
-  // Generic text validation
+  /// Generic text validation with optional length constraints.
   static bool isValidText(String text, {int? minLength, int? maxLength}) {
     if (minLength != null && text.trim().length < minLength) return false;
     if (maxLength != null && text.trim().length > maxLength) return false;
@@ -164,23 +169,23 @@ class ValidationHelper {
     return true;
   }
 
-  // Sanitize input text
+  /// Sanitizes input text by trimming and normalizing whitespace.
   static String sanitizeText(String text) {
     return text.trim().replaceAll(RegExp(r'\s+'), ' ');
   }
 
-  // Format number for display
+  /// Formats number for display using German decimal notation (comma separator).
   static String formatNumber(double number, {int decimals = 2}) {
     return number.toStringAsFixed(decimals).replaceAll('.', ',');
   }
 
-  // Parse number from German format
+  /// Parses number from German format (comma as decimal separator).
   static double? parseNumber(String value) {
     final cleanValue = value.replaceAll(',', '.');
     return double.tryParse(cleanValue);
   }
 
-  // Validate and format dosage input
+  /// Validates and formats dosage input returning formatted string or null.
   static String? validateAndFormatDosage(String input) {
     if (!isValidDosage(input)) return null;
     
@@ -190,7 +195,7 @@ class ValidationHelper {
     return formatNumber(value);
   }
 
-  // Validate and format cost input
+  /// Validates and formats cost input returning formatted string or null.
   static String? validateAndFormatCost(String input) {
     if (input.trim().isEmpty) return '0,00';
     if (!isValidCost(input)) return null;
@@ -201,7 +206,7 @@ class ValidationHelper {
     return formatNumber(value);
   }
 
-  // Get validation error message
+  /// Returns localized validation error message for given field and value.
   static String? getValidationError(String field, String value) {
     switch (field.toLowerCase()) {
       case 'substance':
@@ -273,3 +278,5 @@ class ValidationHelper {
     return null;
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

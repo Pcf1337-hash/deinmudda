@@ -22,13 +22,25 @@ import '../use_cases/entry_use_cases.dart';
 import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
 
-/// Simple Service Locator implementation
+/// Simple Service Locator implementation for dependency injection.
+/// 
+/// Provides a centralized registry for services and use cases,
+/// ensuring proper initialization order and dependency management.
+/// 
 /// TODO: Consider replacing with get_it package for production
 class ServiceLocator {
+  /// Registry of all registered services by type
   static final Map<Type, Object> _services = {};
+  
+  /// Flag to track initialization state
   static bool _isInitialized = false;
 
-  /// Initialize all services with proper dependency injection
+  /// Initialize all services with proper dependency injection.
+  /// 
+  /// Services are initialized in dependency order to ensure
+  /// all required dependencies are available when needed.
+  /// 
+  /// Throws [StateError] if initialization fails.
   static Future<void> initialize() async {
     if (_isInitialized) {
       if (kDebugMode) {
@@ -129,7 +141,12 @@ class ServiceLocator {
     }
   }
 
-  /// Get service instance by type
+  /// Get service instance by type.
+  /// 
+  /// Returns the registered service instance of type [T].
+  /// 
+  /// Throws [StateError] if ServiceLocator is not initialized
+  /// or if the requested service type is not registered.
   static T get<T>() {
     if (!_isInitialized) {
       throw StateError(
@@ -145,17 +162,27 @@ class ServiceLocator {
     return service as T;
   }
 
-  /// Register a service instance (for testing or manual registration)
+  /// Register a service instance manually.
+  /// 
+  /// Primarily used for testing or manual service registration.
+  /// The service will be registered under type [T].
   static void register<T>(T service) {
     _services[T] = service as Object;
   }
 
-  /// Check if a service is registered
+  /// Check if a service is registered.
+  /// 
+  /// Returns true if a service of type [T] is currently registered.
   static bool isRegistered<T>() {
     return _services.containsKey(T);
   }
 
-  /// Initialize ServiceLocator for testing with mock services
+  /// Initialize ServiceLocator for testing with mock services.
+  /// 
+  /// Replaces production services with mock implementations
+  /// for unit testing. All existing services are disposed first.
+  /// 
+  /// [mockServices] Map of service names to mock implementations.
   static Future<void> initializeForTesting(Map<String, dynamic> mockServices) async {
     if (_isInitialized) {
       await dispose();
@@ -199,8 +226,12 @@ class ServiceLocator {
     }
   }
 
-  /// Dispose all services and clear the locator
-  /// IMPORTANT: Call this before app shutdown to prevent memory leaks
+  /// Dispose all services and clear the locator.
+  /// 
+  /// Calls dispose() on services that implement the disposal pattern
+  /// and clears the service registry to prevent memory leaks.
+  /// 
+  /// IMPORTANT: Call this before app shutdown to prevent memory leaks.
   static Future<void> dispose() async {
     if (kDebugMode) {
       print('🧹 Disposing ServiceLocator...');
@@ -222,15 +253,17 @@ class ServiceLocator {
     }
   }
 
-  /// Get all registered service types (for debugging)
+  /// Get all registered service types for debugging purposes.
   static List<Type> get registeredTypes => _services.keys.toList();
   
-  /// Get service count (for debugging)
+  /// Get service count for debugging purposes.
   static int get serviceCount => _services.length;
 }
 
-/// Extension for easier access to services
+/// Extension for easier access to services from any object.
 extension ServiceLocatorExtension on Object {
-  /// Get service from locator
+  /// Get service from locator with convenient syntax.
   T getService<T>() => ServiceLocator.get<T>();
 }
+
+// hints reduziert durch HintOptimiererAgent

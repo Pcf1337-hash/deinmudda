@@ -1,22 +1,38 @@
 import 'package:uuid/uuid.dart';
 import '../utils/unit_manager.dart';
 
+/// Categories for classifying different types of substances.
 enum SubstanceCategory {
+  /// Medical medication
   medication,
+  /// Stimulating substances
   stimulant,
+  /// Depressing substances
   depressant,
+  /// Nutritional supplements
   supplement,
+  /// Recreational substances
   recreational,
+  /// Other uncategorized substances
   other,
 }
 
+/// Risk levels for substance consumption.
 enum RiskLevel {
+  /// Low risk level
   low,
+  /// Medium risk level
   medium,
+  /// High risk level
   high,
+  /// Critical risk level
   critical,
 }
 
+/// Represents a substance that can be tracked in the system.
+/// 
+/// Contains information about pricing, risk level, category,
+/// and timing information for consumption tracking.
 class Substance {
   final String id;
   final String name;
@@ -30,7 +46,8 @@ class Substance {
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Substance({
+  /// Creates a substance with all required parameters.
+  const Substance({
     required this.id,
     required this.name,
     required this.category,
@@ -45,7 +62,7 @@ class Substance {
   })  : createdAt = createdAt ?? DateTime.now(),
         updatedAt = updatedAt ?? DateTime.now();
 
-  // Factory constructor for creating new substances
+  /// Factory constructor for creating new substances with automatic ID generation.
   factory Substance.create({
     required String name,
     required SubstanceCategory category,
@@ -72,11 +89,14 @@ class Substance {
     );
   }
 
-  // Getters
+  // Display getters
+  
+  /// Returns formatted price string with currency and unit.
   String get formattedPrice {
     return '${pricePerUnit.toStringAsFixed(2).replaceAll('.', ',')}€/$defaultUnit';
   }
 
+  /// Returns human-readable duration string.
   String get formattedDuration {
     if (duration == null) return 'Nicht festgelegt';
     final hours = duration!.inHours;
@@ -87,6 +107,7 @@ class Substance {
     return '${minutes}min';
   }
 
+  /// Returns localized category display name.
   String get categoryDisplayName {
     switch (category) {
       case SubstanceCategory.medication:
@@ -104,6 +125,7 @@ class Substance {
     }
   }
 
+  /// Returns localized risk level display name.
   String get riskLevelDisplayName {
     switch (defaultRiskLevel) {
       case RiskLevel.low:
@@ -117,35 +139,37 @@ class Substance {
     }
   }
 
-  // Methods
+  // Calculation methods
+  
+  /// Calculates total price for a given amount.
   double calculatePrice(double amount) {
     return pricePerUnit * amount;
   }
 
+  /// Returns formatted price string for calculated amount.
   String formatCalculatedPrice(double amount) {
     final totalPrice = calculatePrice(amount);
     return '${totalPrice.toStringAsFixed(2).replaceAll('.', ',')}€';
   }
 
-  // Convert unit to standard unit for calculation
+  /// Converts amount from one unit to the standard unit for calculation.
   double convertToStandardUnit(double amount, String fromUnit) {
-    // Use UnitManager for conversion
     return UnitManager.convertAmount(amount, fromUnit, defaultUnit);
   }
 
-  // Calculate cost for a specific amount in any unit
+  /// Calculates cost for a specific amount in any unit.
   double calculateCostForAmount(double amount, String unit) {
     final standardAmount = convertToStandardUnit(amount, unit);
     return calculatePrice(standardAmount);
   }
 
-  // Format cost for a specific amount in any unit
+  /// Formats cost for a specific amount in any unit.
   String formatCostForAmount(double amount, String unit) {
     final cost = calculateCostForAmount(amount, unit);
     return '${cost.toStringAsFixed(2).replaceAll('.', ',')}€';
   }
 
-  // Database serialization
+  /// Converts substance to database map for storage.
   Map<String, dynamic> toDatabase() {
     return {
       'id': id,
@@ -162,6 +186,7 @@ class Substance {
     };
   }
 
+  /// Creates Substance from database map.
   factory Substance.fromDatabase(Map<String, dynamic> map) {
     return Substance(
       id: map['id'] as String,
@@ -178,7 +203,7 @@ class Substance {
     );
   }
 
-  // JSON serialization for export/import
+  /// Converts substance to JSON map for export/import.
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -195,6 +220,7 @@ class Substance {
     };
   }
 
+  /// Creates Substance from JSON map.
   factory Substance.fromJson(Map<String, dynamic> json) {
     return Substance(
       id: json['id'] as String,
@@ -211,7 +237,7 @@ class Substance {
     );
   }
 
-  // Copy with method
+  /// Creates a copy of this substance with updated fields.
   Substance copyWith({
     String? id,
     String? name,
@@ -254,7 +280,7 @@ class Substance {
     return 'Substance(id: $id, name: $name, category: $categoryDisplayName)';
   }
 
-  // Static method for default substances
+  /// Returns a list of pre-configured default substances.
   static List<Substance> getDefaultSubstances() {
     return [
       Substance.create(
@@ -349,3 +375,5 @@ class Substance {
     ];
   }
 }
+
+// hints reduziert durch HintOptimiererAgent

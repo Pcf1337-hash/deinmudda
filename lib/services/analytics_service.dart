@@ -6,20 +6,33 @@ import '../models/substance.dart';
 import 'database_service.dart';
 import '../utils/performance_helper.dart';
 
-// Time Period Enum - Top-level definition
+/// Time period enumeration for analytics queries.
 enum TimePeriod {
+  /// Current day only
   today,
+  /// Current week (Monday to Sunday)
   thisWeek,
+  /// Current month
   thisMonth,
+  /// Last 30 days
   last30Days,
+  /// Current year
   thisYear,
+  /// All available data
   allTime,
 }
 
+/// Service for generating comprehensive analytics and insights from consumption data.
+/// 
+/// Provides detailed statistics, trends, patterns, and correlations
+/// to help users understand their consumption behavior.
 class AnalyticsService {
   final DatabaseService _databaseService = DatabaseService();
 
-  // Get comprehensive statistics for a time period
+  /// Generates comprehensive statistics for the specified time period.
+  /// 
+  /// Returns a complete overview including total entries, costs, averages,
+  /// most used substances, risk distribution, and consumption patterns.
   Future<Map<String, dynamic>> getComprehensiveStats(TimePeriod period) async {
     try {
       // Use performance helper to measure execution time in debug mode
@@ -73,7 +86,10 @@ class AnalyticsService {
     }
   }
 
-  // Get consumption trends over time
+  /// Analyzes consumption trends over time with appropriate granularity.
+  /// 
+  /// Returns time-series data showing how consumption patterns change
+  /// over the specified period, grouped by hour, day, or month.
   Future<List<Map<String, dynamic>>> getConsumptionTrends(TimePeriod period) async {
     try {
       final db = await _databaseService.database;
@@ -966,9 +982,20 @@ class AnalyticsService {
   }
 }
 
-// Math utility class for analytics calculations
+/// Math utility class for analytics calculations.
+/// 
+/// Provides safe mathematical operations that handle edge cases
+/// commonly encountered in analytics computations.
 class Math {
+  /// Private constructor to prevent instantiation
+  const Math._();
+  
+  /// Safe square root calculation that handles negative and zero values.
+  /// 
+  /// Returns 0 for negative or zero input values to prevent runtime errors.
   static double sqrt(double value) {
     return value <= 0 ? 0 : math.sqrt(value);
   }
 }
+
+// hints reduziert durch HintOptimiererAgent
