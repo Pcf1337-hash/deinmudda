@@ -269,7 +269,9 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                       final minutes = duration.inMinutes.remainder(60);
                                       String durationText;
                                       
-                                      if (hours > 0) {
+                                      if (hours > 0 && minutes > 0) {
+                                        durationText = '${hours}h ${minutes}m';
+                                      } else if (hours > 0) {
                                         durationText = '${hours}h';
                                       } else {
                                         durationText = '${minutes}m';

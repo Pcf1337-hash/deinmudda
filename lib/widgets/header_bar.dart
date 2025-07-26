@@ -39,11 +39,7 @@ class HeaderBar extends StatelessWidget {
         final substanceColors = psychedelicService.getCurrentSubstanceColors();
 
         return Container(
-          // Use flexible constraints instead of fixed height
-          constraints: BoxConstraints(
-            minHeight: height ?? (PlatformHelper.isIOS ? 100 : 120),
-            maxHeight: height != null ? height! : (PlatformHelper.isIOS ? 180 : 200),
-          ),
+          height: height ?? 140, // Consistent header height across all screens
           decoration: BoxDecoration(
             gradient: isPsychedelicMode
                 ? LinearGradient(
