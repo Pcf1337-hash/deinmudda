@@ -222,7 +222,7 @@ class QuickButtonService implements IQuickButtonService {
       }).toList();
       
       // Save updated order
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtons(updatedButtons.map((button) => button.id).toList());
     } catch (e) {
       throw Exception('Failed to move quick button to position: $e');
     }
@@ -240,7 +240,7 @@ class QuickButtonService implements IQuickButtonService {
         return button.copyWith(position: index);
       }).toList();
       
-      await reorderQuickButtons(updatedButtons);
+      await reorderQuickButtons(updatedButtons.map((button) => button.id).toList());
     } catch (e) {
       throw Exception('Failed to reorder after delete: $e');
     }
@@ -437,15 +437,4 @@ class QuickButtonService implements IQuickButtonService {
     }
   }
 
-  @override
-  Future<int> getNextOrderIndex() async {
-    try {
-      final db = await _databaseService.database;
-      final result = await db.rawQuery('SELECT MAX(position) as maxPosition FROM quick_buttons');
-      final maxPosition = result.first['maxPosition'] as int?;
-      return (maxPosition ?? 0) + 1;
-    } catch (e) {
-      throw Exception('Failed to get next order index: $e');
-    }
-  }
 }

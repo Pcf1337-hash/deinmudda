@@ -162,7 +162,7 @@ class DataExportHelper {
       if (importData.containsKey('entries')) {
         final entriesJson = importData['entries'] as List<dynamic>;
         entriesCount = await _entryService.importEntriesFromJson(
-          entriesJson.cast<Map<String, dynamic>>()
+          jsonEncode(entriesJson)
         );
       }
       
