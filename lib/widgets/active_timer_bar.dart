@@ -302,7 +302,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                         constraints: BoxConstraints(
                           minHeight: 25, // Ensure minimum height
                           maxHeight: constraints.maxHeight.isFinite 
-                              ? constraints.maxHeight - 17 // Subtract overflow amount to prevent issues
+                              ? constraints.maxHeight - _overflowAdjustment // Subtract overflow amount to prevent issues
                               : defaultFallbackHeight, // Fallback height if infinite
                         ),
                         decoration: BoxDecoration(
