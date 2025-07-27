@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/dosage_card.dart';
+import 'enhanced_dosage_cards_screen.dart';
 
 /// Example screen demonstrating DosageCard usage
 /// 
@@ -47,27 +48,59 @@ class DosageCardExampleScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
+                // Header with enhanced cards button
                 Padding(
                   padding: const EdgeInsets.only(bottom: 24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        'Substanz-Übersicht',
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: isDarkMode ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Dosis-Informationen mit modernem Glassmorphism-Design',
-                        style: theme.textTheme.bodyLarge?.copyWith(
-                          color: isDarkMode 
-                              ? Colors.white.withOpacity(0.7)
-                              : Colors.black54,
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Substanz-Übersicht',
+                                  style: theme.textTheme.headlineMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                    color: isDarkMode ? Colors.white : Colors.black87,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Dosis-Informationen mit modernem Glassmorphism-Design',
+                                  style: theme.textTheme.bodyLarge?.copyWith(
+                                    color: isDarkMode 
+                                        ? Colors.white.withOpacity(0.7)
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          ElevatedButton.icon(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const EnhancedDosageCardsScreen(),
+                                ),
+                              );
+                            },
+                            icon: const Icon(Icons.upgrade, size: 18),
+                            label: const Text('Erweitert'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -128,6 +161,8 @@ class DosageCardExampleScreen extends StatelessWidget {
           Color(0xFFE91E63), // Deep Pink
         ],
         isOral: true,
+        safetyWarning: 'Max. 1x/Monat',
+        additionalInfo: 'Erhöht Empathie und Euphorie',
       ),
       
       // LSD Card (Oral)
@@ -141,6 +176,8 @@ class DosageCardExampleScreen extends StatelessWidget {
           Color(0xFF6A4C93), // Deep Purple
         ],
         isOral: true,
+        safetyWarning: 'Set & Setting beachten',
+        additionalInfo: 'Verändert Wahrnehmung drastisch',
       ),
       
       // Ketamin Card (Nasal)
@@ -154,6 +191,8 @@ class DosageCardExampleScreen extends StatelessWidget {
           Color(0xFF0056B3), // Deep Blue
         ],
         isOral: false,
+        safetyWarning: 'Nicht im Stehen konsumieren',
+        additionalInfo: 'Dissoziative Wirkung',
       ),
       
       // Kokain Card (Nasal)
@@ -167,6 +206,8 @@ class DosageCardExampleScreen extends StatelessWidget {
           Color(0xFFFF8C00), // Dark Orange
         ],
         isOral: false,
+        safetyWarning: 'Hoher Blutdruck, Herzinfarktrisiko',
+        additionalInfo: 'Hohes Suchtpotential',
       ),
     ];
   }

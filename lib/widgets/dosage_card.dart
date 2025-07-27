@@ -31,6 +31,12 @@ class DosageCard extends StatefulWidget {
   /// Whether the administration is oral (affects color scheme)
   final bool isOral;
 
+  /// Optional safety warning text
+  final String? safetyWarning;
+
+  /// Optional additional info to display
+  final String? additionalInfo;
+
   const DosageCard({
     super.key,
     required this.title,
@@ -39,6 +45,8 @@ class DosageCard extends StatefulWidget {
     required this.icon,
     required this.gradientColors,
     required this.isOral,
+    this.safetyWarning,
+    this.additionalInfo,
   });
 
   @override
@@ -245,6 +253,89 @@ class _DosageCardState extends State<DosageCard>
                                   ),
                                 ),
                               ),
+                              
+                              // Safety warning if provided
+                              if (widget.safetyWarning != null) ...[
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                    border: Border.all(
+                                      color: Colors.orange.withOpacity(0.5),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.warning_amber,
+                                        color: Colors.orange,
+                                        size: 10,
+                                      ),
+                                      const SizedBox(width: 3),
+                                      Expanded(
+                                        child: Text(
+                                          widget.safetyWarning!,
+                                          style: TextStyle(
+                                            color: Colors.orange.shade100,
+                                            fontSize: 9,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                              
+                              // Additional info if provided
+                              if (widget.additionalInfo != null) ...[
+                                const SizedBox(height: 4),
+                                Container(
+                                  padding: const EdgeInsets.all(6),
+                                  decoration: BoxDecoration(
+                                    color: isDarkMode
+                                        ? Colors.white.withOpacity(0.1)
+                                        : Colors.white.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Row(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        color: isDarkMode
+                                            ? Colors.white.withOpacity(0.7)
+                                            : Colors.white.withOpacity(0.8),
+                                        size: 10,
+                                      ),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          widget.additionalInfo!,
+                                          style: theme.textTheme.bodySmall?.copyWith(
+                                            color: isDarkMode
+                                                ? Colors.white.withOpacity(0.8)
+                                                : Colors.white.withOpacity(0.9),
+                                            fontSize: 9,
+                                            height: 1.2,
+                                          ),
+                                          maxLines: 2,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ],
