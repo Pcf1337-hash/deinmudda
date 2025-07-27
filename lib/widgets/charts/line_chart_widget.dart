@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // removed unused import: package:flutter/foundation.dart // cleaned by BereinigungsAgent
+import 'package:flutter/foundation.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/performance_helper.dart';
