@@ -198,7 +198,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               widget.config.substanceName,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 10,
+                                fontSize: 12, // Increased from 10 for better readability
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 1,
@@ -216,7 +216,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: substanceColor,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 9,
+                                fontSize: 11, // Increased from 9 for better readability
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 1,
@@ -245,7 +245,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: DesignTokens.accentEmerald,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 7,
+                                        fontSize: 9, // Increased from 7 for better readability
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
@@ -301,7 +301,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                                   style: theme.textTheme.bodySmall?.copyWith(
                                                     color: DesignTokens.accentPurple,
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 7,
+                                                    fontSize: 9, // Increased from 7 for better readability
                                                   ),
                                                   textAlign: TextAlign.center,
                                                   maxLines: 1,
@@ -319,42 +319,6 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               },
                             ),
                           ],
-                        ),
-                        
-                        // Timer status - show if active timer exists for this substance
-                        Consumer<TimerService>(
-                          builder: (context, timerService, child) {
-                            final activeTimer = timerService.getActiveTimer();
-                            final hasActiveTimer = activeTimer?.substanceName == widget.config.substanceName;
-                            
-                            if (!hasActiveTimer) {
-                              return const SizedBox.shrink();
-                            }
-                            
-                            return Flexible(
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: DesignTokens.successGreen.withOpacity(0.2),
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: FittedBox(
-                                  fit: BoxFit.scaleDown,
-                                  child: Text(
-                                    _formatTimerText(activeTimer?.formattedRemainingTime ?? ''),
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: DesignTokens.successGreen,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 8,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
                         ),
                       ],
                     ),
@@ -447,7 +411,7 @@ class AddQuickButtonWidget extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: DesignTokens.primaryIndigo,
                       fontWeight: FontWeight.w600,
-                      fontSize: 10, // Match regular button font size
+                      fontSize: 12, // Match regular button font size for consistency
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
