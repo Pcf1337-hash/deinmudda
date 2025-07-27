@@ -213,9 +213,9 @@ class _SubstanceCardState extends State<SubstanceCard>
         final availableHeight = constraints.maxHeight;
         final availableWidth = constraints.maxWidth;
         
-        // Use flexible constraints instead of fixed heights
-        final minHeight = math.max(220.0, availableHeight * 0.8);
-        final maxHeight = math.min(320.0, availableHeight * 1.2);
+        // Use flexible constraints with more compact dimensions
+        final minHeight = math.max(200.0, availableHeight * 0.7); // Reduced from 220 and 0.8
+        final maxHeight = math.min(260.0, availableHeight * 1.0); // Reduced from 320 and 1.2
         
         return Container(
           constraints: BoxConstraints(
@@ -223,7 +223,7 @@ class _SubstanceCardState extends State<SubstanceCard>
             maxHeight: maxHeight,
             maxWidth: availableWidth,
           ),
-          padding: EdgeInsets.all(math.max(12.0, availableWidth * 0.05)),
+          padding: EdgeInsets.all(math.max(10.0, availableWidth * 0.04)), // Reduced from 12.0 and 0.05
           child: SingleChildScrollView(
             physics: const ClampingScrollPhysics(),
             child: IntrinsicHeight(

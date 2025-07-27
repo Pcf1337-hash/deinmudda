@@ -102,10 +102,10 @@ class _DosageCardState extends State<DosageCard>
     // Determine gradient colors based on isOral and theme
     final List<Color> effectiveGradientColors = _getEffectiveGradientColors(isDarkMode);
     
-    // Calculate responsive dimensions
+    // Calculate responsive dimensions with more compact height
     final screenWidth = MediaQuery.of(context).size.width;
     final cardWidth = (screenWidth - 48) / 2; // 2 cards per row with padding
-    final cardHeight = cardWidth * 1.2; // Aspect ratio of 1:1.2
+    final cardHeight = cardWidth * 0.95; // Reduced aspect ratio from 1.2 to 0.95 for more compact look
 
     return AnimatedBuilder(
       animation: _scaleAnimation,
@@ -119,9 +119,9 @@ class _DosageCardState extends State<DosageCard>
             child: Container(
               width: cardWidth,
               height: cardHeight,
-              margin: const EdgeInsets.all(8.0),
+              margin: const EdgeInsets.all(6.0), // Reduced from 8.0 for tighter layout
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(18), // Reduced from 24 for better visual harmony
                 child: Stack(
                   children: [
                     // Background gradient
@@ -153,32 +153,32 @@ class _DosageCardState extends State<DosageCard>
                       ),
                     ),
                     
-                    // Content
+                    // Content with improved spacing
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: const EdgeInsets.all(14.0), // Reduced from 16.0 to 14.0
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Icon and title row
+                          // Icon and title row with improved spacing
                           Row(
                             children: [
                               Container(
-                                padding: const EdgeInsets.all(8),
+                                padding: const EdgeInsets.all(7), // Reduced from 8
                                 decoration: BoxDecoration(
                                   color: isDarkMode
                                       ? Colors.white.withOpacity(0.15)
                                       : Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(12),
+                                  borderRadius: BorderRadius.circular(10), // Reduced from 12
                                 ),
                                 child: Icon(
                                   widget.icon,
                                   color: isDarkMode
                                       ? Colors.white.withOpacity(0.9)
                                       : Colors.white,
-                                  size: 20,
+                                  size: 18, // Reduced from 20
                                 ),
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6), // Reduced from 8
                               Expanded(
                                 child: Text(
                                   widget.title,
@@ -187,7 +187,7 @@ class _DosageCardState extends State<DosageCard>
                                         ? Colors.white.withOpacity(0.95)
                                         : Colors.white,
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 16,
+                                    fontSize: 15, // Reduced from 16
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
@@ -197,7 +197,7 @@ class _DosageCardState extends State<DosageCard>
                           
                           const Spacer(),
                           
-                          // Dosage information
+                          // Dosage information with improved layout
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -208,31 +208,31 @@ class _DosageCardState extends State<DosageCard>
                                       ? Colors.white.withOpacity(0.95)
                                       : Colors.white,
                                   fontWeight: FontWeight.w700,
-                                  fontSize: 24,
+                                  fontSize: 22, // Reduced from 24
                                 ),
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 3), // Reduced from 4
                               Text(
                                 widget.durationText,
                                 style: theme.textTheme.bodyMedium?.copyWith(
                                   color: isDarkMode
                                       ? Colors.white.withOpacity(0.8)
                                       : Colors.white.withOpacity(0.9),
-                                  fontSize: 14,
+                                  fontSize: 13, // Reduced from 14
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              // Administration route indicator
+                              const SizedBox(height: 6), // Reduced from 8
+                              // Administration route indicator with refined styling
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 4,
+                                  horizontal: 7, // Reduced from 8
+                                  vertical: 3, // Reduced from 4
                                 ),
                                 decoration: BoxDecoration(
                                   color: isDarkMode
                                       ? Colors.white.withOpacity(0.15)
                                       : Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(8),
+                                  borderRadius: BorderRadius.circular(7), // Reduced from 8
                                 ),
                                 child: Text(
                                   widget.isOral ? 'Oral' : 'Nasal',
@@ -240,7 +240,7 @@ class _DosageCardState extends State<DosageCard>
                                     color: isDarkMode
                                         ? Colors.white.withOpacity(0.9)
                                         : Colors.white,
-                                    fontSize: 12,
+                                    fontSize: 11, // Reduced from 12
                                     fontWeight: FontWeight.w500,
                                   ),
                                 ),
