@@ -827,7 +827,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: 288, // Fixed height to prevent overflow
+      height: _kSubstanceCardHeight, // Fixed height to prevent overflow
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
