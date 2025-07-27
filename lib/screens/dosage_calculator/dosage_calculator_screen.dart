@@ -18,6 +18,7 @@ import '../../widgets/header_bar.dart';
 import '../../widgets/consistent_fab.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/dosage_calculator/substance_quick_card.dart';
+import '../../widgets/dosage_card.dart';
 import '../../widgets/layout_error_boundary.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
@@ -848,211 +849,50 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ? _currentUser!.getRecommendedDose(calculatedDose)
         : calculatedDose * 0.8; // Default 20% reduction
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: substanceColor.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _calculateDosage(substance),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            constraints: const BoxConstraints(
-              minHeight: 280,
-              maxHeight: 320,
-            ),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.black.withOpacity(0.4),
-                        Colors.black.withOpacity(0.2),
-                        substanceColor.withOpacity(0.1),
-                      ],
-                    )
-                  : LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.9),
-                        Colors.white.withOpacity(0.7),
-                        substanceColor.withOpacity(0.1),
-                      ],
-                    ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: substanceColor.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with icon and administration route
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(10),
-                        decoration: BoxDecoration(
-                          color: substanceColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          _getSubstanceIcon(substance.name),
-                          color: substanceColor,
-                          size: 24,
-                        ),
-                      ),
-                      const Spacer(),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: substanceColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(8),
-                            border: Border.all(
-                              color: substanceColor.withOpacity(0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            substance.administrationRoute,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: substanceColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 10,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Substance name - constrained to prevent overflow
-                  Container(
-                    constraints: const BoxConstraints(
-                      minHeight: 35,
-                      maxHeight: 50,
-                    ),
-                    child: Text(
-                      substance.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: substanceColor,
-                        fontSize: 16,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Recommended dose section with flexible height - FIXED OVERFLOW
-                  Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(
-                      minHeight: 70, // Reduced from 80 to fit better
-                      maxHeight: 90, // Reduced from 100 to fit better
-                    ),
-                    padding: const EdgeInsets.all(10), // Reduced from 12 to 10
-                    decoration: BoxDecoration(
-                      color: substanceColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: substanceColor.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Dosage label with percentage
-                        Text(
-                          _currentUser != null 
-                              ? _currentUser!.getDosageLabel() 
-                              : 'Optimale Dosis (-20%):',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 9, // Reduced from 10 to fit better
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2), // Reduced from 4 to 2
-                        // Dosage amount
-                        Text(
-                          '${recommendedDose.toStringAsFixed(1)} mg',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 13, // Reduced from 14 to fit better
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Time display - compact text replacing the calculate button  
-                  Consumer<service.PsychedelicThemeService>(
-                    builder: (context, themeService, child) {
-                      final timeDisplay = Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        alignment: Alignment.center,
-                        child: Text(
-                          substance.durationWithIcon,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
+    // Create DosageCard based on substance type
+    DosageCard dosageCard;
+    final name = substance.name.toLowerCase();
+    
+    if (name.contains('mdma') || name.contains('ecstasy')) {
+      dosageCard = DosageCard.mdma(
+        doseText: '${recommendedDose.toStringAsFixed(1)} mg',
+        durationText: substance.durationWithIcon,
+        onTap: () => _calculateDosage(substance),
+      );
+    } else if (name.contains('lsd') || name.contains('acid')) {
+      dosageCard = DosageCard.lsd(
+        doseText: '${recommendedDose.toStringAsFixed(1)} μg',
+        durationText: substance.durationWithIcon,
+        onTap: () => _calculateDosage(substance),
+      );
+    } else if (name.contains('ketamin') || name.contains('ketamine')) {
+      dosageCard = DosageCard.ketamine(
+        doseText: '${recommendedDose.toStringAsFixed(1)} mg',
+        durationText: substance.durationWithIcon,
+        onTap: () => _calculateDosage(substance),
+      );
+    } else if (name.contains('kokain') || name.contains('cocaine')) {
+      dosageCard = DosageCard.cocaine(
+        doseText: '${recommendedDose.toStringAsFixed(1)} mg',
+        durationText: substance.durationWithIcon,
+        onTap: () => _calculateDosage(substance),
+      );
+    } else {
+      // Generic DosageCard for other substances
+      dosageCard = DosageCard(
+        title: substance.name,
+        doseText: '${recommendedDose.toStringAsFixed(1)} mg',
+        durationText: substance.durationWithIcon,
+        icon: _getSubstanceIcon(substance.name),
+        gradientColors: [substanceColor, substanceColor.withOpacity(0.8)],
+        isOral: substance.administrationRoute.toLowerCase().contains('oral'),
+        onTap: () => _calculateDosage(substance),
+      );
+    }
 
-                      // Add pulsating effect in trippy mode
-                      if (themeService.isPsychedelicMode) {
-                        return PulsatingWidget(
-                          isEnabled: true,
-                          glowColor: substanceColor,
-                          child: timeDisplay,
-                        );
-                      }
-
-                      return timeDisplay;
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    return RepaintBoundary(
+      key: Key('enhanced_dosage_card_${substance.name}_${substance.hashCode}_${DateTime.now().millisecondsSinceEpoch % 10000}'),
+      child: dosageCard,
     );
   }
 
