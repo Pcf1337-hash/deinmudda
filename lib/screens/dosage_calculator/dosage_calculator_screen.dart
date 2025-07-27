@@ -774,59 +774,22 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         ),
         const SizedBox(height: Spacing.md),
         if (_popularSubstances.isNotEmpty)
-          SafeLayoutBuilder(
-            debugLabel: 'Popular Substances Grid',
-            builder: (context, constraints) {
-              final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - 32) / 2).clamp(150.0, 200.0);
-              
-              // Calculate required height for 4 items in 2x2 grid
-              final crossAxisCount = 2;
-              final itemCount = _popularSubstances.take(4).length;
-              final rowCount = (itemCount / crossAxisCount).ceil();
-              final childAspectRatio = 0.9; // Adjusted for smaller card height
-              final crossAxisSpacing = 12.0;
-              final mainAxisSpacing = 12.0;
-              
-              // Calculate item height based on width and aspect ratio
-              final itemWidth = (availableWidth - crossAxisSpacing * (crossAxisCount - 1)) / crossAxisCount;
-              final itemHeight = itemWidth / childAspectRatio;
-              
-              // Calculate total required height
-              final totalHeight = (itemHeight * rowCount) + (mainAxisSpacing * (rowCount - 1)) + 32; // 32 for padding
-              
-              return ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxHeight: totalHeight.clamp(200.0, 600.0), // Constrain between reasonable bounds
-                  maxWidth: availableWidth,
-                ),
-                child: LayoutErrorBoundary(
-                  debugLabel: 'Substances Grid Content',
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    padding: const EdgeInsets.all(16),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: childAspectRatio,
-                      crossAxisSpacing: crossAxisSpacing,
-                      mainAxisSpacing: mainAxisSpacing,
-                    ),
-                    itemCount: itemCount,
-                    itemBuilder: (context, index) {
-                      final substance = _popularSubstances[index];
-                      return LayoutErrorBoundary(
-                        debugLabel: 'Substance Card ${substance.name}',
-                        child: RepaintBoundary(
-                          key: Key('substance_card_${substance.name}_${substance.hashCode}_${index}'),
-                          child: _buildEnhancedSubstanceCard(context, substance, isDark),
-                        ),
-                      );
-                    },
+          LayoutErrorBoundary(
+            debugLabel: 'Popular Substances Wrap',
+            child: Wrap(
+              spacing: 12.0,
+              runSpacing: 12.0,
+              children: _popularSubstances.take(4).map((substance) {
+                return SizedBox(
+                  width: (MediaQuery.of(context).size.width - (16 * 3)) / 2, // Account for padding
+                  height: 240, // Fixed height to prevent overflow
+                  child: RepaintBoundary(
+                    key: Key('substance_card_${substance.name}_${substance.hashCode}_${DateTime.now().millisecondsSinceEpoch % 10000}'),
+                    child: _buildEnhancedSubstanceCard(context, substance, isDark),
                   ),
-                ),
-              );
-            },
+                );
+              }).toList(),
+            ),
           )
         else
           SizedBox(
@@ -861,6 +824,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
+      height: 240, // Fixed height to prevent overflow
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -884,10 +848,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               children: [
                 // Background gradient
                 Container(
-                  constraints: const BoxConstraints(
-                    minHeight: 200,
-                    maxHeight: 240,
-                  ),
+                  height: 240, // Match outer container height
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -901,10 +862,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    constraints: const BoxConstraints(
-                      minHeight: 200,
-                      maxHeight: 240,
-                    ),
+                    height: 240, // Match outer container height
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withOpacity(0.1)
