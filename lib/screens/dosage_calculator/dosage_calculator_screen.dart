@@ -865,7 +865,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    height: 288, // Match outer container height
+                    height: _kSubstanceCardHeight, // Match outer container height
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withOpacity(0.1)
