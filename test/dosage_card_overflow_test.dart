@@ -266,7 +266,7 @@ class _TestSubstanceCardWrapper extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      '${(substance.normalDosePerKg * 70).toStringAsFixed(1)} mg',
+                      '${(substance.normalDosePerKg * defaultWeightKg).toStringAsFixed(1)} mg',
                       style: theme.textTheme.headlineSmall?.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w700,
