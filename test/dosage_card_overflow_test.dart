@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 
-import '../lib/models/dosage_calculator_substance.dart';
-import '../lib/models/dosage_calculator_user.dart';
-import '../lib/services/psychedelic_theme_service.dart';
-import '../lib/screens/dosage_calculator/dosage_calculator_screen.dart';
+import 'package:my_app/models/dosage_calculator_substance.dart';
+import 'package:my_app/models/dosage_calculator_user.dart';
+import 'package:my_app/services/psychedelic_theme_service.dart';
+import 'package:my_app/screens/dosage_calculator/dosage_calculator_screen.dart';
 
 void main() {
   group('Dosage Card Overflow Fix Tests', () {
