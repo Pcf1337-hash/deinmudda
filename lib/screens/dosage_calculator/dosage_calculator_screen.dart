@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
+import '../../models/enhanced_substance.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../services/psychedelic_theme_service.dart' as service;
 import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
@@ -847,10 +848,13 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final recommendedDose = _currentUser != null
         ? _currentUser!.getRecommendedDose(calculatedDose)
         : calculatedDose * 0.8; // Default 20% reduction
+    
+    // Get risk level for substance
+    final riskLevel = _getRiskLevel(substance.name);
 
     return Container(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
             color: substanceColor.withOpacity(0.3),
@@ -863,22 +867,22 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _calculateDosage(substance),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           child: Container(
             constraints: const BoxConstraints(
-              minHeight: 240, // Reduced from 280
-              maxHeight: 280, // Reduced from 320 for more compact appearance
+              minHeight: 260, // Increased for more content
+              maxHeight: 300, // Increased for additional information
             ),
-            padding: const EdgeInsets.all(14), // Reduced from 16
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: isDark
                   ? LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        Colors.black.withOpacity(0.4),
-                        Colors.black.withOpacity(0.2),
-                        substanceColor.withOpacity(0.1),
+                        Colors.black.withOpacity(0.6),
+                        Colors.black.withOpacity(0.3),
+                        substanceColor.withOpacity(0.15),
                       ],
                     )
                   : LinearGradient(
@@ -890,9 +894,11 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                         substanceColor.withOpacity(0.1),
                       ],
                     ),
-              borderRadius: BorderRadius.circular(14), // Reduced from 16
+              borderRadius: BorderRadius.circular(18),
               border: Border.all(
-                color: substanceColor.withOpacity(0.3),
+                color: isDark 
+                    ? Colors.white.withOpacity(0.2)
+                    : substanceColor.withOpacity(0.3),
                 width: 1,
               ),
             ),
@@ -901,81 +907,116 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Header with icon and administration route with improved spacing
+                  // Header with icon and administration route
                   Row(
                     children: [
                       Container(
-                        padding: const EdgeInsets.all(8), // Reduced from 10
+                        padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: substanceColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10), // Reduced from 12
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: substanceColor.withOpacity(0.3),
+                              blurRadius: 8,
+                              spreadRadius: 1,
+                            ),
+                          ],
                         ),
                         child: Icon(
                           _getSubstanceIcon(substance.name),
                           color: substanceColor,
-                          size: 22, // Reduced from 24
+                          size: 24,
                         ),
                       ),
                       const Spacer(),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), // Reduced
-                          decoration: BoxDecoration(
-                            color: substanceColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(7), // Reduced from 8
-                            border: Border.all(
-                              color: substanceColor.withOpacity(0.3),
-                              width: 1,
-                            ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: substanceColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: substanceColor.withOpacity(0.3),
+                            width: 1,
                           ),
-                          child: Text(
-                            substance.administrationRoute,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: substanceColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 9, // Reduced from 10
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                        ),
+                        child: Text(
+                          substance.administrationRoute,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: substanceColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
                           ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ],
                   ),
                   
-                  const SizedBox(height: 10), // Reduced from 12
+                  const SizedBox(height: 12),
                   
-                  // Substance name - more compact constraints
+                  // Substance name
                   Container(
                     constraints: const BoxConstraints(
-                      minHeight: 30, // Reduced from 35
-                      maxHeight: 45, // Reduced from 50
+                      minHeight: 35,
+                      maxHeight: 50,
                     ),
                     child: Text(
                       substance.name,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w700,
                         color: substanceColor,
-                        fontSize: 15, // Reduced from 16
+                        fontSize: 16,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   
-                  const SizedBox(height: 10), // Reduced from 12
+                  const SizedBox(height: 8),
                   
-                  // Recommended dose section with more compact height
+                  // Risk assessment under substance name
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: riskLevel.color.withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: riskLevel.color.withOpacity(0.4),
+                        width: 1,
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          riskLevel.icon,
+                          color: riskLevel.color,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Risiko: ${riskLevel.displayName}',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: riskLevel.color,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  const SizedBox(height: 12),
+                  
+                  // Recommended dose section
                   Container(
                     width: double.infinity,
-                    constraints: const BoxConstraints(
-                      minHeight: 60, // Reduced from 70
-                      maxHeight: 75, // Reduced from 90
-                    ),
-                    padding: const EdgeInsets.all(8), // Reduced from 10
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: substanceColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10), // Reduced from 12
+                      borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: substanceColor.withOpacity(0.2),
                         width: 1,
@@ -985,7 +1026,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Dosage label with percentage
+                        // Dosage label
                         Text(
                           _currentUser != null 
                               ? _currentUser!.getDosageLabel() 
@@ -993,19 +1034,19 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w600,
-                            fontSize: 9, // Reduced from 9 but kept minimal
+                            fontSize: 10,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
-                        const SizedBox(height: 2), // Kept small
+                        const SizedBox(height: 4),
                         // Dosage amount
                         Text(
                           '${recommendedDose.toStringAsFixed(1)} mg',
                           style: theme.textTheme.titleSmall?.copyWith(
                             color: substanceColor,
                             fontWeight: FontWeight.w800,
-                            fontSize: 12, // Reduced from 13
+                            fontSize: 14,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -1014,39 +1055,47 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                     ),
                   ),
                   
-                  const SizedBox(height: 10), // Reduced from 12
+                  const SizedBox(height: 12),
                   
-                  // Time display - compact and harmonious
-                  Consumer<service.PsychedelicThemeService>(
-                    builder: (context, themeService, child) {
-                      final timeDisplay = Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 4), // Reduced from 6
-                        alignment: Alignment.center,
-                        child: Text(
-                          substance.durationWithIcon,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 13, // Improved sizing
+                  // Duration and safety info row
+                  Row(
+                    children: [
+                      // Duration
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                          child: Text(
+                            substance.durationWithIcon,
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: substanceColor,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 11,
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
-                      );
-
-                      // Add pulsating effect in trippy mode
-                      if (themeService.isPsychedelicMode) {
-                        return PulsatingWidget(
-                          isEnabled: true,
-                          glowColor: substanceColor,
-                          child: timeDisplay,
-                        );
-                      }
-
-                      return timeDisplay;
-                    },
+                      ),
+                      const SizedBox(width: 8),
+                      // Safety indicator
+                      Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: Colors.green.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.verified_user,
+                          color: Colors.green,
+                          size: 14,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -1747,6 +1796,43 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   Color _getSubstanceColor(String substanceName) {
     final substanceColorMap = DesignTokens.getSubstanceColor(substanceName);
     return substanceColorMap['primary'] ?? DesignTokens.primaryIndigo;
+  }
+
+  RiskLevel _getRiskLevel(String substanceName) {
+    final substanceNameLower = substanceName.toLowerCase();
+    
+    // High risk substances
+    if (substanceNameLower.contains('kokain') || 
+        substanceNameLower.contains('cocaine') ||
+        substanceNameLower.contains('heroin') ||
+        substanceNameLower.contains('fentanyl') ||
+        substanceNameLower.contains('methamphetamin') ||
+        substanceNameLower.contains('crystal')) {
+      return RiskLevel.high;
+    }
+    
+    // Medium-high risk
+    if (substanceNameLower.contains('ketamin') ||
+        substanceNameLower.contains('mdma') ||
+        substanceNameLower.contains('amphetamin') ||
+        substanceNameLower.contains('speed') ||
+        substanceNameLower.contains('xtc') ||
+        substanceNameLower.contains('ecstasy')) {
+      return RiskLevel.mediumHigh;
+    }
+    
+    // Medium risk
+    if (substanceNameLower.contains('lsd') ||
+        substanceNameLower.contains('cannabis') ||
+        substanceNameLower.contains('psilocybin') ||
+        substanceNameLower.contains('dmt') ||
+        substanceNameLower.contains('2c-b') ||
+        substanceNameLower.contains('mescalin')) {
+      return RiskLevel.medium;
+    }
+    
+    // Low risk for things like caffeine, alcohol (in moderation)
+    return RiskLevel.low;
   }
 }
 
