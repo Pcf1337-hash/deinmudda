@@ -891,7 +891,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       children: [
                         // Header with icon and administration route
                         Row(
-                        children: [
+                          children: [
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
