@@ -299,7 +299,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                           minHeight: 25, // Ensure minimum height
                           maxHeight: constraints.maxHeight.isFinite 
                               ? constraints.maxHeight 
-                              : 80.0, // Fallback height if infinite
+                              : defaultFallbackHeight, // Fallback height if infinite
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
