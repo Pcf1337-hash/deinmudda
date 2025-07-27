@@ -19,7 +19,6 @@ import 'calendar/pattern_analysis_screen.dart';
 import 'auth/security_settings_screen.dart'; // Import security settings
 import 'notifications/notification_settings_screen.dart'; // Import notification settings
 import 'timer_dashboard_screen.dart'; // Import timer dashboard
-import 'dosage_card_example_screen.dart'; // Import dosage card example
 import '../utils/performance_helper.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -229,17 +228,6 @@ class _MenuScreenState extends State<MenuScreen> {
                 subtitle: const Text('Aktive Timer und Countdowns verwalten'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToTimerDashboard(),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: Icon(
-                  Icons.dashboard_customize_rounded,
-                  color: DesignTokens.accentPurple,
-                ),
-                title: const Text('Dosis-Kacheln'),
-                subtitle: const Text('Moderne Glassmorphism Design-Beispiele'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () => _navigateToDosageCardExample(),
               ),
             ],
           ),
@@ -576,10 +564,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _navigateToTimerDashboard() {
     SafeNavigation.pushSafe(context, const TimerDashboardScreen());
-  }
-
-  void _navigateToDosageCardExample() {
-    SafeNavigation.pushSafe(context, const DosageCardExampleScreen());
   }
 
   void _navigateToDataExport() {
