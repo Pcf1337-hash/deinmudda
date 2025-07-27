@@ -884,11 +884,13 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 // Content
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Header with icon and administration route
-                      Row(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header with icon and administration route
+                        Row(
                         children: [
                           Container(
                             padding: const EdgeInsets.all(8),
@@ -1043,6 +1045,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                       ),
                     ],
                   ),
+                ),
                 ),
               ],
             ),
