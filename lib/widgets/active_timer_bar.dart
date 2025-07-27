@@ -636,7 +636,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         // Ensure we have valid height constraints
         final safeHeight = constraints.maxHeight.isFinite 
             ? constraints.maxHeight 
-            : 50.0; // Fallback to minimum height
+            : kMinimumHeightFallback; // Fallback to minimum height
             
         return Stack(
           children: [
