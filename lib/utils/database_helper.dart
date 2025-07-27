@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import '../services/database_service.dart';
+import '../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../models/entry.dart';
 import '../models/substance.dart';
 
@@ -11,7 +12,7 @@ class DatabaseHelper {
   factory DatabaseHelper() => _instance;
   DatabaseHelper._internal();
 
-  final DatabaseService _databaseService = DatabaseService();
+  late final DatabaseService _databaseService = ServiceLocator.get<DatabaseService>(); // refactored by ArchitekturAgent
 
   // Backup database to JSON
   Future<Map<String, dynamic>> backupDatabase() async {

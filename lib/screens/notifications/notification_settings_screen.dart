@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../services/notification_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
@@ -13,7 +14,7 @@ class NotificationSettingsScreen extends StatefulWidget {
 }
 
 class _NotificationSettingsScreenState extends State<NotificationSettingsScreen> {
-  final NotificationService _notificationService = NotificationService();
+  late final NotificationService _notificationService = ServiceLocator.get<NotificationService>(); // refactored by ArchitekturAgent
   
   bool _isLoading = true;
   bool _notificationsEnabled = false;

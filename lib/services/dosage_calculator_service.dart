@@ -4,10 +4,11 @@ import 'package:sqflite/sqflite.dart';
 import '../models/dosage_calculator_user.dart';
 import '../models/dosage_calculator_substance.dart';
 import '../widgets/dosage_calculator/dosage_result_card.dart';
+import '../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import 'database_service.dart';
 
 class DosageCalculatorService {
-  final DatabaseService _databaseService = DatabaseService();
+  late final DatabaseService _databaseService = ServiceLocator.get<DatabaseService>(); // refactored by ArchitekturAgent
 
   // User Profile Management
   

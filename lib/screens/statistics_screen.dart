@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // removed unused import: package:flutter/foundation.dart // cleaned by BereinigungsAgent
 import '../services/analytics_service.dart';
+import '../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../widgets/glass_card.dart';
 import '../widgets/header_bar.dart';
 import '../widgets/charts/line_chart_widget.dart';
@@ -21,7 +22,7 @@ class StatisticsScreen extends StatefulWidget {
 class _StatisticsScreenState extends State<StatisticsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  final AnalyticsService _analyticsService = AnalyticsService();
+  late final AnalyticsService _analyticsService = ServiceLocator.get<AnalyticsService>(); // refactored by ArchitekturAgent
   
   TimePeriod _selectedPeriod = TimePeriod.thisWeek;
   Map<String, dynamic>? _comprehensiveStats;

@@ -5,6 +5,7 @@ import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 
@@ -17,7 +18,7 @@ class SubstanceSearchScreen extends StatefulWidget {
 
 class _SubstanceSearchScreenState extends State<SubstanceSearchScreen> {
   final _searchController = TextEditingController();
-  final DosageCalculatorService _dosageService = DosageCalculatorService();
+  late final DosageCalculatorService _dosageService = ServiceLocator.get<DosageCalculatorService>(); // refactored by ArchitekturAgent
   
   List<DosageCalculatorSubstance> _allSubstances = [];
   List<DosageCalculatorSubstance> _filteredSubstances = [];

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../services/dosage_calculator_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../widgets/modern_fab.dart';
@@ -20,7 +21,7 @@ class UserProfileScreen extends StatefulWidget {
 class _UserProfileScreenState extends State<UserProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   final _scrollController = ScrollController();
-  final DosageCalculatorService _dosageService = DosageCalculatorService();
+  late final DosageCalculatorService _dosageService = ServiceLocator.get<DosageCalculatorService>(); // refactored by ArchitekturAgent
 
   // Form controllers
   final _weightController = TextEditingController();
