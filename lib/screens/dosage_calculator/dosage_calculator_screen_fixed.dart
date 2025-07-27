@@ -6,6 +6,7 @@ import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../widgets/dosage_calculator/bmi_indicator.dart';
 import '../../theme/design_tokens.dart';
@@ -21,7 +22,7 @@ class DosageCalculatorScreen extends StatefulWidget {
 }
 
 class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
-  final DosageCalculatorService _dosageService = DosageCalculatorService();
+  late final DosageCalculatorService _dosageService = ServiceLocator.get<DosageCalculatorService>(); // refactored by ArchitekturAgent
   final _searchController = TextEditingController();
 
   DosageCalculatorUser? _currentUser;

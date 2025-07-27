@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'dart:math' as math;
 import '../models/entry.dart';
 import '../models/substance.dart';
+import '../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import 'database_service.dart';
 import '../utils/performance_helper.dart';
 
@@ -27,7 +28,7 @@ enum TimePeriod {
 /// Provides detailed statistics, trends, patterns, and correlations
 /// to help users understand their consumption behavior.
 class AnalyticsService {
-  final DatabaseService _databaseService = DatabaseService();
+  late final DatabaseService _databaseService = ServiceLocator.get<DatabaseService>(); // refactored by ArchitekturAgent
 
   /// Generates comprehensive statistics for the specified time period.
   /// 

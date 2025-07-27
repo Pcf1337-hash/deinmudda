@@ -10,6 +10,7 @@ import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../services/psychedelic_theme_service.dart' as service;
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/trippy_fab.dart';
@@ -31,7 +32,7 @@ class DosageCalculatorScreen extends StatefulWidget {
 }
 
 class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
-  final DosageCalculatorService _dosageService = DosageCalculatorService();
+  late final DosageCalculatorService _dosageService = ServiceLocator.get<DosageCalculatorService>(); // refactored by ArchitekturAgent
   final _searchController = TextEditingController();
 
   DosageCalculatorUser? _currentUser;

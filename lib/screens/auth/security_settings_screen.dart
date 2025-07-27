@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../services/auth_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../widgets/header_bar.dart';
 import '../../theme/design_tokens.dart';
@@ -16,7 +17,7 @@ class SecuritySettingsScreen extends StatefulWidget {
 }
 
 class _SecuritySettingsScreenState extends State<SecuritySettingsScreen> {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = ServiceLocator.get<AuthService>(); // refactored by ArchitekturAgent
   
   bool _isLoading = true;
   bool _isBiometricAvailable = false;

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:local_auth/local_auth.dart';
 import '../../services/auth_service.dart';
+import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../widgets/glass_card.dart';
@@ -16,7 +17,7 @@ class AuthScreen extends StatefulWidget {
 }
 
 class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateMixin {
-  final AuthService _authService = AuthService();
+  late final AuthService _authService = ServiceLocator.get<AuthService>(); // refactored by ArchitekturAgent
   
   bool _isLoading = true;
   bool _isBiometricAvailable = false;

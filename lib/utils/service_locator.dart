@@ -16,6 +16,8 @@ import '../services/substance_service.dart';
 import '../services/settings_service.dart';
 import '../services/quick_button_service.dart';
 import '../services/psychedelic_theme_service.dart';
+import '../services/dosage_calculator_service.dart'; // refactored by ArchitekturAgent
+import '../services/analytics_service.dart'; // refactored by ArchitekturAgent
 import '../repositories/entry_repository.dart';
 import '../repositories/substance_repository.dart';
 import '../use_cases/entry_use_cases.dart';
@@ -110,6 +112,14 @@ class ServiceLocator {
       await themeService.init();
       _services[PsychedelicThemeService] = themeService;
       _services[IPsychedelicThemeService] = themeService;
+      
+      // Initialize dosage calculator service (depends on database) - refactored by ArchitekturAgent
+      final dosageCalculatorService = DosageCalculatorService();
+      _services[DosageCalculatorService] = dosageCalculatorService;
+      
+      // Initialize analytics service (depends on database) - refactored by ArchitekturAgent
+      final analyticsService = AnalyticsService();
+      _services[AnalyticsService] = analyticsService;
 
       // Initialize use cases (depend on repositories and services)
       _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);

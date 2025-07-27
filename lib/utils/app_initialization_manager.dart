@@ -106,12 +106,12 @@ class AppInitializationManager {
     _setPhase(AppInitializationPhase.database, 'Initialisiere Datenbank...');
     
     try {
-      _databaseService = DatabaseService();
+      _databaseService = DatabaseService(); // Bootstrap instance before ServiceLocator
       await _databaseService!.database;
       ErrorHandler.logSuccess('INIT_MANAGER', 'Datenbank erfolgreich initialisiert');
     } catch (e) {
       ErrorHandler.logError('INIT_MANAGER', 'Fehler bei Datenbank-Initialisierung: $e');
-      _databaseService = DatabaseService(); // Fallback
+      _databaseService = DatabaseService(); // Bootstrap fallback before ServiceLocator
     }
   }
 
