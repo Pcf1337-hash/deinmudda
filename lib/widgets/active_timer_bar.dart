@@ -302,7 +302,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                         constraints: BoxConstraints(
                           minHeight: 25, // Ensure minimum height
                           maxHeight: constraints.maxHeight.isFinite 
-                              ? constraints.maxHeight 
+                              ? constraints.maxHeight - 17 // Subtract overflow amount to prevent issues
                               : defaultFallbackHeight, // Fallback height if infinite
                         ),
                         decoration: BoxDecoration(
@@ -667,10 +667,10 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
             ),
         // Content with proper constraints to prevent overflow
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs), // Reduced padding
+          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs), // Further reduced padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // Use minimum space required
+            mainAxisSize: MainAxisSize.max, // Allow proper expansion to prevent overflow
             children: [
               // Compact row layout with proper flex distribution
               LayoutBuilder(
