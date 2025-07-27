@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import '../models/enhanced_substance.dart';
+import '../models/dosage_calculator_substance.dart';
 
 /// Enhanced DosageCard Widget with Rich Information Display
 /// 
