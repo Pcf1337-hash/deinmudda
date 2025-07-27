@@ -782,7 +782,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               children: _popularSubstances.take(4).map((substance) {
                 return SizedBox(
                   width: (MediaQuery.of(context).size.width - (16 * 3)) / 2, // Account for padding
-                  height: 240, // Fixed height to prevent overflow
+                  height: _kSubstanceCardHeight, // Fixed height to prevent overflow
                   child: RepaintBoundary(
                     key: Key('substance_card_${substance.name}_${substance.hashCode}_${DateTime.now().millisecondsSinceEpoch % 10000}'),
                     child: _buildEnhancedSubstanceCard(context, substance, isDark),
