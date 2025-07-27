@@ -36,7 +36,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   final _searchController = TextEditingController();
 
   // Constants for UI layout
-  static const double _kSubstanceCardHeight = 240.0;
+  static const double _kSubstanceCardHeight = 288.0;
 
   DosageCalculatorUser? _currentUser;
   List<DosageCalculatorSubstance> _popularSubstances = [];
@@ -827,7 +827,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
-      height: 240, // Fixed height to prevent overflow
+      height: _kSubstanceCardHeight, // Fixed height to prevent overflow
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
@@ -851,7 +851,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               children: [
                 // Background gradient
                 Container(
-                  height: 240, // Match outer container height
+                  height: _kSubstanceCardHeight, // Match outer container height
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
@@ -865,7 +865,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
-                    height: 240, // Match outer container height
+                    height: _kSubstanceCardHeight, // Match outer container height
                     decoration: BoxDecoration(
                       color: isDark
                           ? Colors.white.withOpacity(0.1)
