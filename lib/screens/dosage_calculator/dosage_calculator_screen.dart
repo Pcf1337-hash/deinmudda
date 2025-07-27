@@ -842,15 +842,20 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
     final theme = Theme.of(context);
     final substanceColor = _getSubstanceColor(substance.name);
     final calculatedDose = _currentUser != null
-        ? substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.light)
-        : substance.lightDosePerKg * 70; // Default weight estimate
+        ? substance.calculateDosage(_currentUser!.weightKg, DosageIntensity.normal)
+        : substance.normalDosePerKg * 70; // Default weight estimate
     final recommendedDose = _currentUser != null
         ? _currentUser!.getRecommendedDose(calculatedDose)
         : calculatedDose * 0.8; // Default 20% reduction
 
-    return Container(
+    // Get effective gradient colors based on administration route
+    final isOral = substance.administrationRoute.toLowerCase() == 'oral';
+    final List<Color> effectiveGradientColors = _getEffectiveGradientColors(isDark, isOral, substanceColor);
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
             color: substanceColor.withOpacity(0.3),
@@ -863,198 +868,318 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _calculateDosage(substance),
-          borderRadius: BorderRadius.circular(16),
-          child: Container(
-            constraints: const BoxConstraints(
-              minHeight: 240, // Reduced from 280
-              maxHeight: 280, // Reduced from 320 for more compact appearance
-            ),
-            padding: const EdgeInsets.all(14), // Reduced from 16
-            decoration: BoxDecoration(
-              gradient: isDark
-                  ? LinearGradient(
+          borderRadius: BorderRadius.circular(24),
+          splashColor: Colors.white.withOpacity(0.1),
+          highlightColor: Colors.white.withOpacity(0.05),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Stack(
+              children: [
+                // Background gradient
+                Container(
+                  constraints: const BoxConstraints(
+                    minHeight: 240,
+                    maxHeight: 280,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Colors.black.withOpacity(0.4),
-                        Colors.black.withOpacity(0.2),
-                        substanceColor.withOpacity(0.1),
-                      ],
-                    )
-                  : LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.white.withOpacity(0.9),
-                        Colors.white.withOpacity(0.7),
-                        substanceColor.withOpacity(0.1),
-                      ],
+                      colors: effectiveGradientColors,
                     ),
-              borderRadius: BorderRadius.circular(14), // Reduced from 16
-              border: Border.all(
-                color: substanceColor.withOpacity(0.3),
-                width: 1,
-              ),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with icon and administration route with improved spacing
-                  Row(
+                  ),
+                ),
+                
+                // Glassmorphism effect
+                BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Container(
+                    constraints: const BoxConstraints(
+                      minHeight: 240,
+                      maxHeight: 280,
+                    ),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withOpacity(0.1)
+                          : Colors.white.withOpacity(0.2),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.2)
+                            : Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                      borderRadius: BorderRadius.circular(24),
+                    ),
+                  ),
+                ),
+                
+                // Content
+                Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(8), // Reduced from 10
-                        decoration: BoxDecoration(
-                          color: substanceColor.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(10), // Reduced from 12
+                      // Header with icon and administration route
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.15)
+                                  : Colors.white.withOpacity(0.25),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              _getSubstanceIcon(substance.name),
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.9)
+                                  : Colors.white,
+                              size: 20,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: substanceColor.withOpacity(0.2),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(
+                                color: substanceColor.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              isOral ? 'Oral' : 'Nasal',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: substanceColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Substance name
+                      Text(
+                        substance.name,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.95)
+                              : Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
                         ),
-                        child: Icon(
-                          _getSubstanceIcon(substance.name),
-                          color: substanceColor,
-                          size: 22, // Reduced from 24
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      
+                      const SizedBox(height: 6),
+                      
+                      // Risk assessment below substance name
+                      _buildRiskAssessment(context, substance, isDark),
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Dosage information
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withOpacity(0.1)
+                              : Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: substanceColor.withOpacity(0.2),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            Text(
+                              _currentUser != null 
+                                  ? _currentUser!.getDosageLabel() 
+                                  : 'Empfohlene Dosis:',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.8)
+                                    : Colors.white.withOpacity(0.9),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 11,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${recommendedDose.toStringAsFixed(1)} mg',
+                              style: theme.textTheme.headlineSmall?.copyWith(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.95)
+                                    : Colors.white,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 22,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      const Spacer(),
-                      Flexible(
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3), // Reduced
-                          decoration: BoxDecoration(
-                            color: substanceColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(7), // Reduced from 8
-                            border: Border.all(
-                              color: substanceColor.withOpacity(0.3),
-                              width: 1,
+                      
+                      const SizedBox(height: 12),
+                      
+                      // Duration display with enhanced styling
+                      Consumer<service.PsychedelicThemeService>(
+                        builder: (context, themeService, child) {
+                          final timeDisplay = Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            alignment: Alignment.center,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.schedule_rounded,
+                                  color: isDark
+                                      ? Colors.white.withOpacity(0.8)
+                                      : Colors.white.withOpacity(0.9),
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  substance.duration,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isDark
+                                        ? Colors.white.withOpacity(0.8)
+                                        : Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                          child: Text(
-                            substance.administrationRoute,
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: substanceColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 9, // Reduced from 10
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
+                          );
+
+                          // Add pulsating effect in trippy mode
+                          if (themeService.isPsychedelicMode) {
+                            return PulsatingWidget(
+                              isEnabled: true,
+                              glowColor: substanceColor,
+                              child: timeDisplay,
+                            );
+                          }
+
+                          return timeDisplay;
+                        },
                       ),
                     ],
                   ),
-                  
-                  const SizedBox(height: 10), // Reduced from 12
-                  
-                  // Substance name - more compact constraints
-                  Container(
-                    constraints: const BoxConstraints(
-                      minHeight: 30, // Reduced from 35
-                      maxHeight: 45, // Reduced from 50
-                    ),
-                    child: Text(
-                      substance.name,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w700,
-                        color: substanceColor,
-                        fontSize: 15, // Reduced from 16
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 10), // Reduced from 12
-                  
-                  // Recommended dose section with more compact height
-                  Container(
-                    width: double.infinity,
-                    constraints: const BoxConstraints(
-                      minHeight: 60, // Reduced from 70
-                      maxHeight: 75, // Reduced from 90
-                    ),
-                    padding: const EdgeInsets.all(8), // Reduced from 10
-                    decoration: BoxDecoration(
-                      color: substanceColor.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10), // Reduced from 12
-                      border: Border.all(
-                        color: substanceColor.withOpacity(0.2),
-                        width: 1,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Dosage label with percentage
-                        Text(
-                          _currentUser != null 
-                              ? _currentUser!.getDosageLabel() 
-                              : 'Optimale Dosis (-20%):',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 9, // Reduced from 9 but kept minimal
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 2), // Kept small
-                        // Dosage amount
-                        Text(
-                          '${recommendedDose.toStringAsFixed(1)} mg',
-                          style: theme.textTheme.titleSmall?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 12, // Reduced from 13
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 10), // Reduced from 12
-                  
-                  // Time display - compact and harmonious
-                  Consumer<service.PsychedelicThemeService>(
-                    builder: (context, themeService, child) {
-                      final timeDisplay = Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 4), // Reduced from 6
-                        alignment: Alignment.center,
-                        child: Text(
-                          substance.durationWithIcon,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: substanceColor,
-                            fontWeight: FontWeight.w500,
-                            fontSize: 13, // Improved sizing
-                          ),
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      );
-
-                      // Add pulsating effect in trippy mode
-                      if (themeService.isPsychedelicMode) {
-                        return PulsatingWidget(
-                          isEnabled: true,
-                          glowColor: substanceColor,
-                          child: timeDisplay,
-                        );
-                      }
-
-                      return timeDisplay;
-                    },
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildRiskAssessment(BuildContext context, DosageCalculatorSubstance substance, bool isDark) {
+    final theme = Theme.of(context);
+    
+    // Determine risk level based on substance type
+    String riskText;
+    Color riskColor;
+    IconData riskIcon;
+    
+    final substanceName = substance.name.toLowerCase();
+    if (substanceName.contains('lsd') || substanceName.contains('psilocybin')) {
+      riskText = 'Mittleres Risiko';
+      riskColor = DesignTokens.warningOrange;
+      riskIcon = Icons.warning_amber_rounded;
+    } else if (substanceName.contains('mdma') || substanceName.contains('amphetamin')) {
+      riskText = 'Hohes Risiko';
+      riskColor = DesignTokens.errorRed;
+      riskIcon = Icons.error_rounded;
+    } else if (substanceName.contains('cannabis')) {
+      riskText = 'Niedriges Risiko';
+      riskColor = DesignTokens.successGreen;
+      riskIcon = Icons.check_circle_rounded;
+    } else if (substanceName.contains('ketamin') || substanceName.contains('cocaine')) {
+      riskText = 'Sehr hohes Risiko';
+      riskColor = DesignTokens.riskCritical;
+      riskIcon = Icons.dangerous_rounded;
+    } else {
+      riskText = 'Unbekanntes Risiko';
+      riskColor = DesignTokens.warningYellow;
+      riskIcon = Icons.help_rounded;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: riskColor.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: riskColor.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            riskIcon,
+            color: riskColor,
+            size: 12,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            riskText,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: riskColor,
+              fontWeight: FontWeight.w600,
+              fontSize: 10,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Determines effective gradient colors based on administration route and theme
+  List<Color> _getEffectiveGradientColors(bool isDark, bool isOral, Color substanceColor) {
+    if (isOral) {
+      // Warm colors for oral administration
+      if (isDark) {
+        return [
+          Colors.black.withOpacity(0.4),
+          Colors.black.withOpacity(0.2),
+          Color.lerp(substanceColor, Colors.orange, 0.2)!.withOpacity(0.3),
+        ];
+      } else {
+        return [
+          Colors.white.withOpacity(0.9),
+          Colors.white.withOpacity(0.7),
+          Color.lerp(substanceColor, Colors.deepOrange, 0.1)!.withOpacity(0.3),
+        ];
+      }
+    } else {
+      // Cool colors for nasal administration
+      if (isDark) {
+        return [
+          Colors.black.withOpacity(0.4),
+          Colors.black.withOpacity(0.2),
+          Color.lerp(substanceColor, Colors.blue, 0.2)!.withOpacity(0.3),
+        ];
+      } else {
+        return [
+          Colors.white.withOpacity(0.9),
+          Colors.white.withOpacity(0.7),
+          Color.lerp(substanceColor, Colors.indigo, 0.1)!.withOpacity(0.3),
+        ];
+      }
+    }
   }
 
   Widget _buildImprovedSubstanceCard(BuildContext context, DosageCalculatorSubstance substance) {
