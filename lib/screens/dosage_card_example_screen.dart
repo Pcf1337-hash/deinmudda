@@ -82,12 +82,12 @@ class DosageCardExampleScreen extends StatelessWidget {
                       final screenWidth = constraints.maxWidth;
                       
                       if (screenWidth > 500) {
-                        // Use GridView for larger screens
+                        // Use GridView for larger screens with improved aspect ratio
                         return GridView.count(
                           crossAxisCount: 2,
-                          childAspectRatio: 0.85,
-                          mainAxisSpacing: 8,
-                          crossAxisSpacing: 8,
+                          childAspectRatio: 0.85, // Improved from 0.85 for more compact tiles
+                          mainAxisSpacing: 6, // Reduced from 8
+                          crossAxisSpacing: 6, // Reduced from 8
                           physics: const BouncingScrollPhysics(),
                           children: _buildDosageCards(),
                         );
@@ -97,8 +97,8 @@ class DosageCardExampleScreen extends StatelessWidget {
                           physics: const BouncingScrollPhysics(),
                           child: Wrap(
                             alignment: WrapAlignment.center,
-                            spacing: 8,
-                            runSpacing: 8,
+                            spacing: 6, // Reduced from 8
+                            runSpacing: 6, // Reduced from 8
                             children: _buildDosageCards(),
                           ),
                         );
