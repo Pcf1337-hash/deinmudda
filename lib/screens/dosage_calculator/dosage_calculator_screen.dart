@@ -851,7 +851,7 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
               children: [
                 // Background gradient
                 Container(
-                  height: 288, // Match outer container height
+                  height: _kSubstanceCardHeight, // Match outer container height
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
