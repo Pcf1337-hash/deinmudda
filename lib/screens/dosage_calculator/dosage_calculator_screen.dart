@@ -778,44 +778,51 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
             debugLabel: 'Popular Substances Grid',
             builder: (context, constraints) {
               final availableWidth = constraints.maxWidth;
-              final cardWidth = ((availableWidth - 32) / 2).clamp(150.0, 200.0); // Account for margins
+              final cardWidth = ((availableWidth - 32) / 2).clamp(150.0, 200.0);
               
-              return Container(
+              // Calculate required height for 4 items in 2x2 grid
+              final crossAxisCount = 2;
+              final itemCount = _popularSubstances.take(4).length;
+              final rowCount = (itemCount / crossAxisCount).ceil();
+              final childAspectRatio = 0.9; // Adjusted for smaller card height
+              final crossAxisSpacing = 12.0;
+              final mainAxisSpacing = 12.0;
+              
+              // Calculate item height based on width and aspect ratio
+              final itemWidth = (availableWidth - crossAxisSpacing * (crossAxisCount - 1)) / crossAxisCount;
+              final itemHeight = itemWidth / childAspectRatio;
+              
+              // Calculate total required height
+              final totalHeight = (itemHeight * rowCount) + (mainAxisSpacing * (rowCount - 1)) + 32; // 32 for padding
+              
+              return ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxHeight: 580, // Reduced from 650 to accommodate smaller cards
+                  maxHeight: totalHeight.clamp(200.0, 600.0), // Constrain between reasonable bounds
                   maxWidth: availableWidth,
                 ),
                 child: LayoutErrorBoundary(
                   debugLabel: 'Substances Grid Content',
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Use GridView instead of Wrap for better control
-                        GridView.builder(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            childAspectRatio: 0.85, // Improved aspect ratio for more compact tiles
-                            crossAxisSpacing: 12, // Reduced from 16
-                            mainAxisSpacing: 12, // Reduced from 16
-                          ),
-                          itemCount: _popularSubstances.take(4).length,
-                          itemBuilder: (context, index) {
-                            final substance = _popularSubstances[index];
-                            return LayoutErrorBoundary(
-                              debugLabel: 'Substance Card ${substance.name}',
-                              child: RepaintBoundary(
-                                key: Key('substance_card_${substance.name}_${substance.hashCode}_${DateTime.now().millisecondsSinceEpoch % 10000}'), // Make key unique with timestamp
-                                child: _buildEnhancedSubstanceCard(context, substance, isDark),
-                              ),
-                            );
-                          },
-                        ),
-                      ],
+                  child: GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: crossAxisCount,
+                      childAspectRatio: childAspectRatio,
+                      crossAxisSpacing: crossAxisSpacing,
+                      mainAxisSpacing: mainAxisSpacing,
                     ),
+                    itemCount: itemCount,
+                    itemBuilder: (context, index) {
+                      final substance = _popularSubstances[index];
+                      return LayoutErrorBoundary(
+                        debugLabel: 'Substance Card ${substance.name}',
+                        child: RepaintBoundary(
+                          key: Key('substance_card_${substance.name}_${substance.hashCode}_${index}'),
+                          child: _buildEnhancedSubstanceCard(context, substance, isDark),
+                        ),
+                      );
+                    },
                   ),
                 ),
               );
@@ -878,8 +885,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                 // Background gradient
                 Container(
                   constraints: const BoxConstraints(
-                    minHeight: 240,
-                    maxHeight: 280,
+                    minHeight: 200,
+                    maxHeight: 240,
                   ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -895,8 +902,8 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
                   filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
                   child: Container(
                     constraints: const BoxConstraints(
-                      minHeight: 240,
-                      maxHeight: 280,
+                      minHeight: 200,
+                      maxHeight: 240,
                     ),
                     decoration: BoxDecoration(
                       color: isDark

@@ -297,7 +297,9 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                         margin: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
                         constraints: BoxConstraints(
                           minHeight: 25, // Ensure minimum height
-                          maxHeight: constraints.maxHeight, // Respect parent constraints
+                          maxHeight: constraints.maxHeight.isFinite 
+                              ? constraints.maxHeight 
+                              : 80.0, // Fallback height if infinite
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -629,29 +631,36 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
       return const SizedBox.shrink();
     }
     
-    return Stack(
-      children: [
-        // Animated progress background
-        AnimatedBuilder(
-          animation: _progressAnimation,
-          builder: (context, child) {
-            return Container(
-              height: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: Spacing.borderRadiusLg,
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    progressColor.withOpacity(0.3),
-                    progressColor.withOpacity(0.1),
-                  ],
-                  stops: [0.0, progress],
-                ),
-              ),
-            );
-          },
-        ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Ensure we have valid height constraints
+        final safeHeight = constraints.maxHeight.isFinite 
+            ? constraints.maxHeight 
+            : 50.0; // Fallback to minimum height
+            
+        return Stack(
+          children: [
+            // Animated progress background with constrained height
+            AnimatedBuilder(
+              animation: _progressAnimation,
+              builder: (context, child) {
+                return Container(
+                  height: safeHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: Spacing.borderRadiusLg,
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        progressColor.withOpacity(0.3),
+                        progressColor.withOpacity(0.1),
+                      ],
+                      stops: [0.0, progress],
+                    ),
+                  ),
+                );
+              },
+            ),
         // Content with proper constraints to prevent overflow
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs), // Reduced padding
@@ -875,6 +884,8 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           ),
         ),
       ],
+    );
+      },
     );
   }
 }
