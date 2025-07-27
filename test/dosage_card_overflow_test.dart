@@ -100,10 +100,11 @@ void main() {
 
       // Find the Column inside SingleChildScrollView
       final scrollView = tester.widget<SingleChildScrollView>(find.byType(SingleChildScrollView));
-      final column = scrollView.child as Column;
+      final column = scrollView.child as? Column;
+      assert(column != null, 'Expected SingleChildScrollView child to be a Column, but it was ${scrollView.child.runtimeType}');
       
       // Verify Column uses MainAxisSize.min to prevent infinite height issues
-      expect(column.mainAxisSize, equals(MainAxisSize.min));
+      expect(column!.mainAxisSize, equals(MainAxisSize.min));
       expect(tester.takeException(), isNull);
     });
 
