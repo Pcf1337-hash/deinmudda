@@ -47,7 +47,7 @@ class Substance {
   final DateTime updatedAt;
 
   /// Creates a substance with all required parameters.
-  const Substance({
+  Substance({
     required this.id,
     required this.name,
     required this.category,
