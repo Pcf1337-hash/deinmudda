@@ -95,7 +95,7 @@ class _DemoActiveTimerBar extends StatelessWidget {
         // This is the fix: safe height handling
         final safeHeight = constraints.maxHeight.isFinite 
             ? constraints.maxHeight.clamp(50.0, 100.0)
-            : 80.0;
+            : 50.0;
             
         return Container(
           margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
