@@ -40,6 +40,10 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   bool _isDisposed = false;
   final List<int> _suggestionMinutes = [15, 30, 45, 60, 90, 120];
 
+  // Constants for UI layout
+  static const double defaultFallbackHeight = 50.0;
+  static const double kMinimumHeightFallback = 25.0;
+
   @override
   void initState() {
     super.initState();

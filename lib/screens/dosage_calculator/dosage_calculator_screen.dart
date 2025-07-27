@@ -35,6 +35,9 @@ class _DosageCalculatorScreenState extends State<DosageCalculatorScreen> {
   late final DosageCalculatorService _dosageService = ServiceLocator.get<DosageCalculatorService>(); // refactored by ArchitekturAgent
   final _searchController = TextEditingController();
 
+  // Constants for UI layout
+  static const double _kSubstanceCardHeight = 240.0;
+
   DosageCalculatorUser? _currentUser;
   List<DosageCalculatorSubstance> _popularSubstances = [];
   List<Map<String, dynamic>> _recentCalculations = [];

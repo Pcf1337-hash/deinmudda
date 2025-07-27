@@ -19,8 +19,6 @@ import 'calendar/pattern_analysis_screen.dart';
 import 'auth/security_settings_screen.dart'; // Import security settings
 import 'notifications/notification_settings_screen.dart'; // Import notification settings
 import 'timer_dashboard_screen.dart'; // Import timer dashboard
-import 'dosage_card_example_screen.dart'; // Import dosage card example
-import 'enhanced_dosage_cards_screen.dart'; // Import enhanced dosage cards
 import '../utils/performance_helper.dart';
 
 class MenuScreen extends StatefulWidget {
@@ -230,48 +228,6 @@ class _MenuScreenState extends State<MenuScreen> {
                 subtitle: const Text('Aktive Timer und Countdowns verwalten'),
                 trailing: const Icon(Icons.arrow_forward_ios),
                 onTap: () => _navigateToTimerDashboard(),
-              ),
-              const Divider(height: 1),
-              ListTile(
-                leading: Icon(
-                  Icons.dashboard_customize_rounded,
-                  color: DesignTokens.accentPurple,
-                ),
-                title: const Text('Dosis-Kacheln'),
-                subtitle: const Text('Moderne Glassmorphism Design-Beispiele'),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () => _navigateToDosageCardExample(),
-              ),
-              ListTile(
-                leading: Icon(
-                  Icons.dashboard_customize_outlined,
-                  color: DesignTokens.accentPurple.withOpacity(0.8),
-                ),
-                title: const Text('Erweiterte Dosis-Kacheln'),
-                subtitle: const Text('Umfassende Substanzinformationen mit allen Details'),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.green.withOpacity(0.2),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        'NEU',
-                        style: TextStyle(
-                          color: Colors.green,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.arrow_forward_ios),
-                  ],
-                ),
-                onTap: () => _navigateToEnhancedDosageCards(),
               ),
             ],
           ),
@@ -608,14 +564,6 @@ class _MenuScreenState extends State<MenuScreen> {
 
   void _navigateToTimerDashboard() {
     SafeNavigation.pushSafe(context, const TimerDashboardScreen());
-  }
-
-  void _navigateToDosageCardExample() {
-    SafeNavigation.pushSafe(context, const DosageCardExampleScreen());
-  }
-
-  void _navigateToEnhancedDosageCards() {
-    SafeNavigation.pushSafe(context, const EnhancedDosageCardsScreen());
   }
 
   void _navigateToDataExport() {
