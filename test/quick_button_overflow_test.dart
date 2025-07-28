@@ -11,11 +11,10 @@ void main() {
   group('QuickButton Overflow Fix Tests', () {
     testWidgets('QuickButton handles Row overflow with cost and timer info', (WidgetTester tester) async {
       // Create a mock quick button config with cost and timer info
-      final mockConfig = QuickButtonConfig(
-        id: '1',
+      final mockConfig = QuickButtonConfig.create(
         substanceId: '1',
         substanceName: 'Test Substance',
-        amount: 10.0,
+        dosage: 10.0,
         unit: 'mg',
         cost: 5.99,
         position: 0,
@@ -55,11 +54,10 @@ void main() {
     });
 
     testWidgets('QuickButton Row uses MainAxisSize.min', (WidgetTester tester) async {
-      final mockConfig = QuickButtonConfig(
-        id: '1',
+      final mockConfig = QuickButtonConfig.create(
         substanceId: '1',
         substanceName: 'Test',
-        amount: 10.0,
+        dosage: 10.0,
         unit: 'mg',
         cost: 5.99,
         position: 0,
@@ -85,11 +83,10 @@ void main() {
     });
 
     testWidgets('QuickButton handles very small container height', (WidgetTester tester) async {
-      final mockConfig = QuickButtonConfig(
-        id: '1',
+      final mockConfig = QuickButtonConfig.create(
         substanceId: '1',
         substanceName: 'LongSubstanceName',
-        amount: 10.0,
+        dosage: 10.0,
         unit: 'mg',
         cost: 15.99,
         position: 0,
