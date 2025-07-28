@@ -172,6 +172,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                   Padding(
                     padding: Spacing.paddingMd,
                     child: Column(
+                      mainAxisSize: MainAxisSize.max,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         // Icon
@@ -226,9 +227,12 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                         ),
                         
                         // Compact info row: cost and timer duration side by side
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                        SizedBox(
+                          height: 12.0, // Explicit height constraint to prevent overflow
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                             // Cost information - show if cost is set
                             if (widget.config.cost > 0) ...[
                               Flexible(
@@ -245,7 +249,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: DesignTokens.accentEmerald,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 11, // Increased from 9 for better readability
+                                        fontSize: 9, // Reduced from 11 for better fit
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
@@ -290,7 +294,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                             children: [
                                               Icon(
                                                 Icons.timer_outlined,
-                                                size: 8,
+                                                size: 7, // Reduced from 8 for better fit
                                                 color: DesignTokens.accentPurple,
                                               ),
                                               const SizedBox(width: 1),
@@ -301,7 +305,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                                   style: theme.textTheme.bodySmall?.copyWith(
                                                     color: DesignTokens.accentPurple,
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 11, // Increased from 9 for better readability
+                                                    fontSize: 9, // Reduced from 11 for better fit
                                                   ),
                                                   textAlign: TextAlign.center,
                                                   maxLines: 1,
@@ -319,6 +323,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               },
                             ),
                           ],
+                        ),
                         ),
                       ],
                     ),
@@ -395,6 +400,7 @@ class AddQuickButtonWidget extends StatelessWidget {
         child: Padding(
           padding: Spacing.paddingMd,
           child: Column(
+            mainAxisSize: MainAxisSize.max,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(
