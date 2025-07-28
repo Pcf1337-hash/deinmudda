@@ -624,25 +624,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                   : ConstrainedBox(
                                       key: const ValueKey('quick_entry_content'),
                                       constraints: BoxConstraints(
-                                        maxHeight: constraints.maxHeight * 0.9, // Use 90% of available height
-                                        minHeight: 80,
+                                        maxHeight: constraints.maxHeight * 0.8, // Reduced to accommodate our fixed heights
+                                        minHeight: 120, // Align with QuickEntryBar minimum height
                                       ),
-                                      child: SingleChildScrollView(
-                                        physics: const ClampingScrollPhysics(),
-                                        child: QuickEntryBar(
-                                          quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
-                                          onQuickEntry: _handleQuickEntry,
-                                          onAddButton: _navigateToQuickButtonConfig,
-                                          onEditMode: () {
-                                            if (mounted) {
-                                              safeSetState(() {
-                                                _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                                              });
-                                            }
-                                          },
-                                          isEditing: _isQuickEntryEditMode,
-                                          onReorder: _reorderQuickButtons,
-                                        ),
+                                      child: QuickEntryBar(
+                                        quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
+                                        onQuickEntry: _handleQuickEntry,
+                                        onAddButton: _navigateToQuickButtonConfig,
+                                        onEditMode: () {
+                                          if (mounted) {
+                                            safeSetState(() {
+                                              _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                                            });
+                                          }
+                                        },
+                                        isEditing: _isQuickEntryEditMode,
+                                        onReorder: _reorderQuickButtons,
                                       ),
                                     ),
                             );
