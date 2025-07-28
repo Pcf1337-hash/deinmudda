@@ -184,7 +184,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                           child: Icon(
                             substanceIcon,
                             color: substanceColor,
-                            size: Spacing.iconMd,
+                            size: Spacing.iconLg,
                           ),
                         ),
                         
@@ -198,7 +198,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               widget.config.substanceName,
                               style: theme.textTheme.bodySmall?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                fontSize: 12, // Increased from 10 for better readability
+                                fontSize: 14, // Increased from 12 for better readability
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 1,
@@ -216,7 +216,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                               style: theme.textTheme.bodySmall?.copyWith(
                                 color: substanceColor,
                                 fontWeight: FontWeight.w500,
-                                fontSize: 11, // Increased from 9 for better readability
+                                fontSize: 13, // Increased from 11 for better readability
                               ),
                               textAlign: TextAlign.center,
                               maxLines: 1,
@@ -245,7 +245,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                       style: theme.textTheme.bodySmall?.copyWith(
                                         color: DesignTokens.accentEmerald,
                                         fontWeight: FontWeight.w600,
-                                        fontSize: 9, // Increased from 7 for better readability
+                                        fontSize: 11, // Increased from 9 for better readability
                                       ),
                                       textAlign: TextAlign.center,
                                       maxLines: 1,
@@ -290,7 +290,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                             children: [
                                               Icon(
                                                 Icons.timer_outlined,
-                                                size: 6,
+                                                size: 8,
                                                 color: DesignTokens.accentPurple,
                                               ),
                                               const SizedBox(width: 1),
@@ -301,7 +301,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                                                   style: theme.textTheme.bodySmall?.copyWith(
                                                     color: DesignTokens.accentPurple,
                                                     fontWeight: FontWeight.w600,
-                                                    fontSize: 9, // Increased from 7 for better readability
+                                                    fontSize: 11, // Increased from 9 for better readability
                                                   ),
                                                   textAlign: TextAlign.center,
                                                   maxLines: 1,
@@ -400,7 +400,7 @@ class AddQuickButtonWidget extends StatelessWidget {
               Icon(
                 Icons.add_rounded,
                 color: DesignTokens.primaryIndigo,
-                size: Spacing.iconMd, // Use same icon size as regular buttons
+                size: Spacing.iconLg, // Use same icon size as regular buttons
               ),
               Spacing.verticalSpaceXs,
               Flexible(
@@ -411,7 +411,7 @@ class AddQuickButtonWidget extends StatelessWidget {
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: DesignTokens.primaryIndigo,
                       fontWeight: FontWeight.w600,
-                      fontSize: 12, // Match regular button font size for consistency
+                      fontSize: 14, // Match regular button font size for consistency
                     ),
                     textAlign: TextAlign.center,
                     maxLines: 1,
