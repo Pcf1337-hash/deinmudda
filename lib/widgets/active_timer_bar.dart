@@ -240,8 +240,16 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                 scale: _pulseAnimation.value,
                 child: GestureDetector(
                   onTap: () {
-                    if (mounted && !_isDisposed && widget.onTap != null) {
-                      widget.onTap!();
+                    if (mounted && !_isDisposed) {
+                      // If the widget has an onTap callback, use it
+                      if (widget.onTap != null) {
+                        widget.onTap!();
+                      } else {
+                        // Otherwise, toggle timer input for editing
+                        safeSetState(() {
+                          _showTimerInput = !_showTimerInput;
+                        });
+                      }
                     }
                   },
                   child: LayoutBuilder(
@@ -291,6 +299,16 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
+                              ),
+                              // Minimal edit indicator for very small layouts
+                              const SizedBox(width: 4),
+                              Tooltip(
+                                message: 'Zum Bearbeiten tippen',
+                                child: Icon(
+                                  Icons.edit_rounded,
+                                  color: textColor.withOpacity(0.5),
+                                  size: 8,
+                                ),
                               ),
                             ],
                           ),
@@ -744,7 +762,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                   ],
                                 ),
                               ),
-                              // Edit button - only show if sufficient space
+                              // Edit button - adaptive based on available space
                               if (!isSmall) ...[
                                 SizedBox(width: Spacing.xs),
                                 SizedBox(
@@ -764,17 +782,40 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                                       size: 14,
                                     ),
                                     padding: EdgeInsets.zero,
+                                    tooltip: 'Timer bearbeiten',
+                                  ),
+                                ),
+                              ] else ...[
+                                // Mini edit indicator for small spaces
+                                SizedBox(width: 4),
+                                Tooltip(
+                                  message: 'Zum Bearbeiten tippen',
+                                  child: Container(
+                                    width: 16,
+                                    height: 16,
+                                    decoration: BoxDecoration(
+                                      color: textColor.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Icon(
+                                      Icons.edit_rounded,
+                                      color: textColor.withOpacity(0.6),
+                                      size: 10,
+                                    ),
                                   ),
                                 ),
                               ],
                             ],
                           ),
                         ),
+                        // Visual separator for better hierarchy
+                        if (availableHeight > 30)
+                          SizedBox(height: isSmall ? 1.0 : 2.0),
                         // Progress bar - only show if there's enough vertical space
                         if (availableHeight > 30) // More conservative space requirement
                           Flexible(
                             child: Padding(
-                              padding: EdgeInsets.only(top: isSmall ? 2.0 : 4.0),
+                              padding: EdgeInsets.only(top: isSmall ? 1.0 : 2.0),
                               child: TweenAnimationBuilder<double>(
                                 duration: const Duration(milliseconds: 800),
                                 tween: Tween(begin: 0.0, end: progress),
