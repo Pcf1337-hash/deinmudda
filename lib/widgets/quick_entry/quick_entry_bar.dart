@@ -186,6 +186,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
   Widget _buildNormalButtonList(BuildContext context, bool isDark, TimerService timerService) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Quick buttons in a scrollable container
         Expanded(
@@ -302,6 +303,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
   Widget _buildReorderableButtonList(BuildContext context, bool isDark) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // Reorderable buttons in a scrollable container
         Expanded(
