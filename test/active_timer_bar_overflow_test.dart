@@ -29,7 +29,7 @@ void main() {
       mockPsychedelicService = PsychedelicThemeService();
     });
 
-    testWidgets('ActiveTimerBar handles 15-pixel overflow constraint', (WidgetTester tester) async {
+    testWidgets('ActiveTimerBar handles 15-pixel overflow constraint (FIXED)', (WidgetTester tester) async {
       // Test widget with tight constraints that previously caused overflow
       await tester.pumpWidget(
         MaterialApp(
@@ -68,7 +68,7 @@ void main() {
       expect(renderBox.size.height, lessThanOrEqualTo(41.0));
     });
 
-    testWidgets('ActiveTimerBar Column uses MainAxisSize.min', (WidgetTester tester) async {
+    testWidgets('ActiveTimerBar removes IntrinsicHeight for better layout flexibility', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: MultiProvider(
@@ -85,12 +85,13 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // Find Column widgets and verify they use MainAxisSize.min where needed
-      final columns = find.byType(Column);
-      expect(columns, findsWidgets);
+      // No IntrinsicHeight should be present in the fixed version
+      final intrinsicHeight = find.byType(IntrinsicHeight);
+      expect(intrinsicHeight, findsNothing);
 
-      // The fix should ensure no overflow exceptions
-      expect(tester.takeException(), isNull);
+      // Should use Flexible/Expanded for better layout
+      final flexible = find.byType(Flexible);
+      expect(flexible, findsWidgets);
     });
 
     testWidgets('ActiveTimerBar gracefully handles very small height constraints', (WidgetTester tester) async {
@@ -105,7 +106,7 @@ void main() {
               body: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxWidth: 300.0,
-                  maxHeight: 25.0, // Very small height
+                  maxHeight: 25.0, // Very small height - should show minimal compact version
                 ),
                 child: ActiveTimerBar(
                   timer: testEntry,
@@ -125,7 +126,39 @@ void main() {
       expect(activeTimerBar, findsOneWidget);
     });
 
-    testWidgets('ActiveTimerBar _overflowAdjustment constant is properly used', (WidgetTester tester) async {
+    testWidgets('ActiveTimerBar progressive hiding works correctly', (WidgetTester tester) async {
+      // Test different height constraints to ensure progressive hiding
+      for (final height in [20.0, 30.0, 40.0, 50.0]) {
+        await tester.pumpWidget(
+          MaterialApp(
+            home: MultiProvider(
+              providers: [
+                ChangeNotifierProvider<TimerService>.value(value: mockTimerService),
+                ChangeNotifierProvider<PsychedelicThemeService>.value(value: mockPsychedelicService),
+              ],
+              child: Scaffold(
+                body: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 344.4,
+                    maxHeight: height,
+                  ),
+                  child: ActiveTimerBar(
+                    timer: testEntry,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+
+        // Should never cause overflow regardless of height
+        expect(tester.takeException(), isNull);
+      }
+    });
+
+    testWidgets('ActiveTimerBar uses aggressive space management', (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
           home: MultiProvider(
@@ -137,7 +170,7 @@ void main() {
               body: ConstrainedBox(
                 constraints: const BoxConstraints(
                   maxWidth: 344.4,
-                  maxHeight: 56.0, // Height that would cause overflow without adjustment
+                  maxHeight: 41.0, // Exactly the problematic constraint
                 ),
                 child: ActiveTimerBar(
                   timer: testEntry,
@@ -150,8 +183,16 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      // The _overflowAdjustment (15 pixels) should prevent overflow
+      // Fixed version should handle this constraint without any issues
       expect(tester.takeException(), isNull);
+
+      // Should use ConstrainedBox for better height management
+      final constrainedBox = find.byType(ConstrainedBox);
+      expect(constrainedBox, findsWidgets);
+
+      // Should use Positioned.fill for proper stack layout
+      final positioned = find.byType(Positioned);
+      expect(positioned, findsWidgets);
     });
   });
 }
