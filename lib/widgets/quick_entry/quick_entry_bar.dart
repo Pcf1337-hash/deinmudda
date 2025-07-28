@@ -86,7 +86,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Improved header with better spacing
+        // Optimized header with reduced spacing for compact layout
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: Spacing.xs),
           child: Row(
@@ -124,17 +124,19 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           ),
         ),
         
-        Spacing.verticalSpaceSm, // Consistent spacing
+        Spacing.verticalSpaceXs, // Reduced spacing for more compact layout
         
-        // Quick buttons with timer status indicators
+        // Quick buttons with improved alignment and height consistency
         Consumer<TimerService>(
           builder: (context, timerService, child) {
-            return Flexible(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: 80,
-                  maxHeight: widget.isEditing ? 120 : 140, // Increased for timer indicators
-                ),
+            return ConstrainedBox(
+              constraints: BoxConstraints(
+                minHeight: 100, // Ensure consistent minimum height
+                maxHeight: widget.isEditing ? 120 : 140, // Consistent height constraints
+              ),
+              child: Container(
+                // Ensure symmetric padding for better visual balance
+                padding: const EdgeInsets.symmetric(vertical: Spacing.xs),
                 child: widget.isEditing
                     ? _buildReorderableButtonList(context, isDark)
                     : _buildNormalButtonList(context, isDark, timerService),
@@ -143,36 +145,40 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
           },
         ),
         
-        // Edit mode instructions - compact version with better overflow handling
+        // Compact edit mode instructions with better overflow handling
         if (widget.isEditing) ...[
-          const SizedBox(height: 6), // Further reduced spacing
+          const SizedBox(height: 4), // Minimal spacing
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), // Reduced padding
+            constraints: const BoxConstraints(
+              maxHeight: 32, // Constrain height to prevent overflow
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: DesignTokens.warningYellow.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6), // Smaller radius
+              borderRadius: BorderRadius.circular(4),
               border: Border.all(
                 color: DesignTokens.warningYellow.withOpacity(0.3),
                 width: 1,
               ),
             ),
             child: Row(
+              mainAxisSize: MainAxisSize.min, // Use minimum space needed
               children: [
                 Icon(
                   Icons.info_outline_rounded,
                   color: DesignTokens.warningYellow,
-                  size: 14, // Smaller icon
+                  size: 12,
                 ),
-                const SizedBox(width: 6), // Further reduced spacing
-                Expanded(
+                const SizedBox(width: 4),
+                Flexible(
                   child: Text(
-                    'Ziehen • Tippen', // Much shorter text to save space
+                    'Ziehen • Tippen',
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: DesignTokens.warningYellow,
-                      fontSize: 11, // Smaller font
-                      height: 1.2, // Reduce line height
+                      fontSize: 10,
+                      height: 1.0, // Tighter line height
                     ),
-                    maxLines: 1, // Single line to save space
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -186,40 +192,50 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
   Widget _buildNormalButtonList(BuildContext context, bool isDark, TimerService timerService) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center, // Ensure vertical centering
       children: [
-        // Quick buttons in a scrollable container
+        // Quick buttons in a scrollable container with improved centering
         Expanded(
-          child: ListView.builder(
-            controller: _scrollController,
-            scrollDirection: Axis.horizontal,
-            itemCount: widget.quickButtons.length,
-            itemBuilder: (context, index) {
-              final button = widget.quickButtons[index];
-              
-              // Check if there's an active timer for this substance
-              final activeTimer = timerService.getActiveTimer();
-              final hasActiveTimer = activeTimer != null && 
-                                   activeTimer.substanceId == button.substanceId;
-              
-              return Padding(
-                padding: EdgeInsets.only(
-                  right: index < widget.quickButtons.length - 1 ? Spacing.sm : 0,
-                ),
-                child: _buildQuickButtonWithTimer(
-                  button: button,
-                  hasActiveTimer: hasActiveTimer,
-                  timerProgress: hasActiveTimer ? activeTimer.timerProgress : 0.0,
-                  onTap: () => widget.onQuickEntry(button),
-                ),
-              );
-            },
+          child: Container(
+            height: 100, // Fixed height for consistent button alignment
+            child: ListView.builder(
+              controller: _scrollController,
+              scrollDirection: Axis.horizontal,
+              itemCount: widget.quickButtons.length,
+              itemBuilder: (context, index) {
+                final button = widget.quickButtons[index];
+                
+                // Check if there's an active timer for this substance
+                final activeTimer = timerService.getActiveTimer();
+                final hasActiveTimer = activeTimer != null && 
+                                     activeTimer.substanceId == button.substanceId;
+                
+                return Padding(
+                  padding: EdgeInsets.only(
+                    right: index < widget.quickButtons.length - 1 ? Spacing.sm : 0,
+                  ),
+                  child: Center( // Center each button vertically within the container
+                    child: _buildQuickButtonWithTimer(
+                      button: button,
+                      hasActiveTimer: hasActiveTimer,
+                      timerProgress: hasActiveTimer ? activeTimer.timerProgress : 0.0,
+                      onTap: () => widget.onQuickEntry(button),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
-        // Add button always visible on the right
-        AddQuickButtonWidget(
-          key: ValueKey('add_button_normal_mode'),
-          onTap: widget.onAddButton,
+        // Add button with improved alignment and consistent height
+        Container(
+          height: 100, // Match the height of the scrollable container
+          child: Center( // Center the add button vertically
+            child: AddQuickButtonWidget(
+              key: ValueKey('add_button_normal_mode'),
+              onTap: widget.onAddButton,
+            ),
+          ),
         ),
       ],
     );
@@ -302,48 +318,104 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
   }
 
   Widget _buildReorderableButtonList(BuildContext context, bool isDark) {
+    // Handle empty state with neutral fallback display
+    if (_reorderedButtons.isEmpty) {
+      return Container(
+        height: 100,
+        child: Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.grey.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: Colors.grey.withOpacity(0.3),
+                    style: BorderStyle.dashed,
+                  ),
+                ),
+                child: Text(
+                  'Keine Buttons zum Sortieren',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.grey[600],
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Container(
+                height: 100,
+                child: Center(
+                  child: AddQuickButtonWidget(
+                    key: ValueKey('add_button_reorder_empty'),
+                    onTap: widget.onAddButton,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Reorderable buttons in a scrollable container
+        // Reorderable buttons with improved unique keys and consistent height
         Expanded(
-          child: ReorderableListView.builder(
-            scrollDirection: Axis.horizontal,
-            onReorder: _onReorder,
-            itemCount: _reorderedButtons.length,
-            itemBuilder: (context, index) {
-              final button = _reorderedButtons[index];
-              return QuickButtonWidget(
-                key: ValueKey('reorder_${button.id}_${button.position}'), // More stable key
-                config: button,
-                isEditing: true,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => QuickButtonConfigScreen(existingConfig: button),
+          child: Container(
+            height: 100, // Fixed height for consistent alignment
+            child: ReorderableListView.builder(
+              scrollDirection: Axis.horizontal,
+              onReorder: _onReorder,
+              itemCount: _reorderedButtons.length,
+              itemBuilder: (context, index) {
+                final button = _reorderedButtons[index];
+                // Improved unique key combining ID and position for better stability
+                return Container(
+                  key: ValueKey('reorder_${button.id}_pos_${button.position}_idx_$index'),
+                  height: 100, // Ensure consistent height
+                  child: Center( // Center each button vertically
+                    child: QuickButtonWidget(
+                      config: button,
+                      isEditing: true,
+                      onTap: () => Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => QuickButtonConfigScreen(existingConfig: button),
+                        ),
+                      ),
+                      onLongPress: () {},
+                    ),
                   ),
-                ),
-                onLongPress: () {},
-              );
-            },
-            proxyDecorator: (child, index, animation) {
-              return AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) {
-                  final double scale = 1.0 + animation.value * 0.1;
-                  return Transform.scale(
-                    scale: scale,
-                    child: child,
-                  );
-                },
-                child: child,
-              );
-            },
+                );
+              },
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final double scale = 1.0 + animation.value * 0.1;
+                    return Transform.scale(
+                      scale: scale,
+                      child: child,
+                    );
+                  },
+                  child: child,
+                );
+              },
+            ),
           ),
         ),
-        // Add button always visible on the right
-        AddQuickButtonWidget(
-          key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), // Stable key based on list length
-          onTap: widget.onAddButton,
+        // Add button with consistent height and alignment
+        Container(
+          height: 100,
+          child: Center(
+            child: AddQuickButtonWidget(
+              key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), 
+              onTap: widget.onAddButton,
+            ),
+          ),
         ),
       ],
     );
@@ -354,10 +426,15 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
 
     return ConstrainedBox(
       constraints: const BoxConstraints(
-        maxHeight: 200, // Ensure empty state doesn't exceed reasonable height
+        minHeight: 120, // Consistent minimum height
+        maxHeight: 180, // Prevent overflow with reasonable maximum
       ),
       child: Container(
-        padding: Spacing.paddingLg,
+        // Symmetric padding for better visual balance
+        padding: const EdgeInsets.symmetric(
+          horizontal: Spacing.md,
+          vertical: Spacing.sm,
+        ),
         decoration: BoxDecoration(
           gradient: isDark
               ? DesignTokens.glassGradientDark
@@ -370,70 +447,65 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             width: 1,
           ),
         ),
-        child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.flash_on_rounded,
-                size: Spacing.iconLg, // Reduced from iconXl to fit better
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // Use minimum space needed
+          mainAxisAlignment: MainAxisAlignment.center, // Center content vertically
+          children: [
+            Icon(
+              Icons.flash_on_rounded,
+              size: Spacing.iconLg,
+              color: DesignTokens.primaryIndigo,
+            ),
+            Spacing.verticalSpaceXs,
+            Text(
+              'Schnelleingabe einrichten',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
                 color: DesignTokens.primaryIndigo,
               ),
-              Spacing.verticalSpaceSm, // Reduced from verticalSpaceMd
-              Text(
-                'Schnelleingabe einrichten',
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: DesignTokens.primaryIndigo,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              Spacing.verticalSpaceXs,
-              Text(
-                'Erstellen Sie Quick Buttons für häufig verwendete Substanzen und Dosierungen.',
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            Spacing.verticalSpaceXs,
+            Flexible(
+              child: Text(
+                'Erstellen Sie Quick Buttons für häufig verwendete Substanzen.',
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
                 textAlign: TextAlign.center,
-                maxLines: 3, // Limit text lines to prevent overflow
+                maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              Spacing.verticalSpaceSm, // Reduced from verticalSpaceMd
-              // Use Flexible instead of ConstrainedBox to prevent overflow
-              Flexible(
-                child: Container(
-                  width: double.infinity,
-                  constraints: const BoxConstraints(
-                    maxWidth: 220, // Slightly increased for better text fit
-                    minHeight: 36, // Minimum height to prevent cut-off
-                  ),
-                  child: ElevatedButton.icon(
-                    onPressed: widget.onAddButton,
-                    icon: const Icon(Icons.add_rounded, size: 16), // Even smaller icon
-                    label: const Text(
-                      'Ersten Button erstellen',
-                      style: TextStyle(fontSize: 12), // Smaller text
-                      maxLines: 1, // Prevent text wrapping
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: DesignTokens.primaryIndigo,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6), // Even smaller padding
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(6), // Smaller radius
-                      ),
-                      // Add minimum size to prevent shrinking too much
-                      minimumSize: const Size(120, 32),
-                      // Add maximum size to prevent expanding too much
-                      maximumSize: const Size(220, 40),
-                    ),
+            ),
+            Spacing.verticalSpaceXs,
+            // Constrained button to prevent overflow
+            ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 200,
+                minHeight: 32,
+                maxHeight: 40,
+              ),
+              child: ElevatedButton.icon(
+                onPressed: widget.onAddButton,
+                icon: const Icon(Icons.add_rounded, size: 14),
+                label: const Text(
+                  'Ersten Button erstellen',
+                  style: TextStyle(fontSize: 12),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: DesignTokens.primaryIndigo,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(6),
                   ),
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
