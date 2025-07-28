@@ -299,12 +299,15 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                       
                       // Regular layout for sufficient space
                       return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xs),
+                        margin: EdgeInsets.symmetric(
+                          horizontal: Spacing.xs, // Reduced margin 
+                          vertical: constraints.maxHeight <= 35 ? 1.0 : 2.0, // Minimal margin for tiny heights
+                        ),
                         constraints: BoxConstraints(
-                          minHeight: 25, // Ensure minimum height
+                          minHeight: 20, // Reduced minimum height
                           maxHeight: constraints.maxHeight.isFinite 
-                              ? constraints.maxHeight - _overflowAdjustment // Subtract overflow amount to prevent issues
-                              : defaultFallbackHeight, // Fallback height if infinite
+                              ? (constraints.maxHeight - 8).clamp(20, double.infinity) // More aggressive overflow prevention
+                              : defaultFallbackHeight,
                         ),
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -313,12 +316,12 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                               progressColor.withOpacity(0.05),
                             ],
                           ),
-                          borderRadius: Spacing.borderRadiusLg,
+                          borderRadius: BorderRadius.circular(constraints.maxHeight <= 35 ? 4 : 8), // Smaller radius for tiny heights
                           border: Border.all(
                             color: progressColor.withOpacity(0.3),
-                            width: 1.5,
+                            width: constraints.maxHeight <= 35 ? 1.0 : 1.5,
                           ),
-                          boxShadow: [
+                          boxShadow: constraints.maxHeight <= 35 ? [] : [ // No shadow for very small heights
                             BoxShadow(
                               color: progressColor.withOpacity(0.2),
                               blurRadius: 12,
@@ -334,7 +337,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: Spacing.borderRadiusLg,
+                          borderRadius: BorderRadius.circular(constraints.maxHeight <= 35 ? 4 : 8),
                           child: _buildTimerInnerContent(theme, progressColor, textColor, isPsychedelicMode, progress),
                         ),
                       );
@@ -562,17 +565,17 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
 
   // Helper method to get responsive font size with height awareness
   double _getResponsiveFontSize(double availableWidth, {required bool isTitle, bool isSmallHeight = false}) {
-    // Reduce all sizes for very small heights
+    // More aggressive size reduction for very small heights
     if (isSmallHeight) {
-      return isTitle ? 11.0 : 9.0;
+      return isTitle ? 10.0 : 8.0; // Even smaller for very constrained spaces
     }
     
     if (availableWidth < 280) {
-      return isTitle ? 12.0 : 10.0; // Very small screens
+      return isTitle ? 11.0 : 9.0; // Very small screens
     } else if (availableWidth < 350) {
-      return isTitle ? 14.0 : 11.0; // Small screens
+      return isTitle ? 13.0 : 10.0; // Small screens
     } else {
-      return isTitle ? 16.0 : 12.0; // Normal screens
+      return isTitle ? 15.0 : 11.0; // Normal screens
     }
   }
 
@@ -641,255 +644,174 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
         // Ensure we have valid height constraints
         final safeHeight = constraints.maxHeight.isFinite 
             ? constraints.maxHeight 
-            : kMinimumHeightFallback; // Fallback to minimum height
+            : kMinimumHeightFallback;
             
         return Stack(
           children: [
-            // Animated progress background with constrained height
-            AnimatedBuilder(
-              animation: _progressAnimation,
-              builder: (context, child) {
-                return Container(
-                  height: safeHeight,
-                  decoration: BoxDecoration(
-                    borderRadius: Spacing.borderRadiusLg,
-                    gradient: LinearGradient(
-                      begin: Alignment.centerLeft,
-                      end: Alignment.centerRight,
-                      colors: [
-                        progressColor.withOpacity(0.3),
-                        progressColor.withOpacity(0.1),
-                      ],
-                      stops: [0.0, progress],
-                    ),
+            // Simple progress background - no complex animations for small spaces
+            if (safeHeight > 30)
+              Container(
+                height: safeHeight,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(safeHeight <= 35 ? 4 : 8),
+                  gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [
+                      progressColor.withOpacity(0.3),
+                      progressColor.withOpacity(0.1),
+                    ],
+                    stops: [0.0, progress],
                   ),
-                );
-              },
-            ),
-        // Content with proper constraints to prevent overflow
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs), // Further reduced padding
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min, // Use min to prevent overflow by not expanding beyond content size
-            children: [
-              // Compact row layout with proper flex distribution
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  // Calculate available height for content
-                  final availableHeight = constraints.maxHeight;
-                  final isVerySmall = availableHeight < 40;
-                  
-                  return IntrinsicHeight(
-                    child: Row(
+                ),
+              ),
+            // Content with proper constraints to prevent overflow
+            Positioned.fill(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: Spacing.xs, // Reduced horizontal padding
+                  vertical: safeHeight <= 35 ? 2.0 : Spacing.xxs, // Very minimal vertical padding for tiny heights
+                ),
+                child: LayoutBuilder(
+                  builder: (context, outerConstraints) {
+                    final availableHeight = outerConstraints.maxHeight;
+                    final isVerySmall = availableHeight <= 35;
+                    final isSmall = availableHeight <= 45;
+                    
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Icon container with reduced size for small heights
-                        Container(
-                          padding: EdgeInsets.all(isVerySmall ? Spacing.xxs : Spacing.xs),
-                          decoration: BoxDecoration(
-                            color: progressColor.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(isVerySmall ? 4 : 6),
+                        // Main content row with height constraints
+                        ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: isVerySmall ? availableHeight : availableHeight * 0.7, // Leave space for progress bar
                           ),
-                          child: Icon(
-                            Icons.timer_rounded,
-                            color: progressColor,
-                            size: isVerySmall ? 14 : 16, // Smaller icon for tight constraints
-                          ),
-                        ),
-                        SizedBox(width: isVerySmall ? Spacing.xs : Spacing.sm),
-                        Expanded(
-                          flex: 3, // Give more space to the substance name
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min, // Prevent overflow
+                          child: Row(
                             children: [
-                              // Substance name with strict height control
-                              Flexible(
-                                child: Text(
-                                  widget.timer.substanceName ?? 'Unbekannte Substanz',
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true, isSmallHeight: isVerySmall),
+                              // Icon container - only show if space allows
+                              if (!isVerySmall) ...[
+                                Container(
+                                  padding: EdgeInsets.all(isSmall ? 2.0 : Spacing.xxs),
+                                  decoration: BoxDecoration(
+                                    color: progressColor.withOpacity(0.2),
+                                    borderRadius: BorderRadius.circular(4),
                                   ),
-                                  maxLines: isVerySmall ? 1 : 2, // Single line for very small heights
-                                  overflow: TextOverflow.ellipsis,
+                                  child: Icon(
+                                    Icons.timer_rounded,
+                                    color: progressColor,
+                                    size: isSmall ? 12 : 14,
+                                  ),
+                                ),
+                                SizedBox(width: isSmall ? 4 : Spacing.xs),
+                              ],
+                              // Content area
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    // Substance name
+                                    Expanded(
+                                      flex: 3,
+                                      child: Text(
+                                        widget.timer.substanceName ?? 'Unbekannte Substanz',
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          color: textColor,
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: _getResponsiveFontSize(outerConstraints.maxWidth, isTitle: true, isSmallHeight: isSmall),
+                                          height: 1.0, // Tight line height to save space
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    SizedBox(width: isSmall ? 4 : Spacing.xs),
+                                    // Timer display
+                                    Expanded(
+                                      flex: 2,
+                                      child: Text(
+                                        _formatTimerText(widget.timer.formattedRemainingTime),
+                                        style: theme.textTheme.titleMedium?.copyWith(
+                                          color: textColor,
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: _getResponsiveFontSize(outerConstraints.maxWidth, isTitle: true, isSmallHeight: isSmall),
+                                          height: 1.0, // Tight line height
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.right,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                              // Only show status text if there's enough space
-                              if (!isVerySmall) 
-                                Text(
-                                  'Timer läuft',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: textColor.withOpacity(0.7),
-                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false, isSmallHeight: isVerySmall),
+                              // Edit button - only show if sufficient space
+                              if (!isSmall) ...[
+                                SizedBox(width: Spacing.xs),
+                                SizedBox(
+                                  width: 28,
+                                  height: 28,
+                                  child: IconButton(
+                                    onPressed: () {
+                                      if (mounted && !_isDisposed) {
+                                        safeSetState(() {
+                                          _showTimerInput = !_showTimerInput;
+                                        });
+                                      }
+                                    },
+                                    icon: Icon(
+                                      _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
+                                      color: textColor,
+                                      size: 14,
+                                    ),
+                                    padding: EdgeInsets.zero,
                                   ),
                                 ),
-                          ],
-                        ),
-                        ),
-                        Flexible(
-                          flex: 2, // Timer display area
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Flexible(
-                                child: Text(
-                                  _formatTimerText(widget.timer.formattedRemainingTime),
-                                  style: theme.textTheme.titleMedium?.copyWith(
-                                    color: textColor,
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: true, isSmallHeight: isVerySmall),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.right,
-                                ),
-                              ),
-                              if (widget.timer.isTimerExpired && !isVerySmall) 
-                                Text(
-                                  'Abgelaufen',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: DesignTokens.errorRed,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: _getResponsiveFontSize(constraints.maxWidth, isTitle: false, isSmallHeight: isVerySmall),
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                              ],
                             ],
                           ),
                         ),
-                        // Only show edit button if there's enough space
-                        if (!isVerySmall) ...[
-                          SizedBox(width: isVerySmall ? Spacing.xxs : Spacing.xs),
-                          IconButton(
-                            onPressed: () {
-                              if (mounted && !_isDisposed) {
-                                safeSetState(() {
-                                  _showTimerInput = !_showTimerInput;
-                                });
-                              }
-                            },
-                            icon: Icon(
-                              _showTimerInput ? Icons.keyboard_arrow_up : Icons.edit_rounded,
-                              color: textColor,
-                              size: 16, // Smaller icon
-                            ),
-                            constraints: const BoxConstraints(
-                              minWidth: 32,
-                              minHeight: 32,
-                            ),
-                            padding: EdgeInsets.zero,
-                          ),
-                        ],
-                      ],
-                    ),
-                  );
-                },
-              ),
-              // Only show progress bar if there's enough vertical space
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final availableHeight = constraints.maxHeight;
-                  final showProgressBar = availableHeight > 25; // Show only if enough space
-                  
-                  if (!showProgressBar) {
-                    return const SizedBox.shrink();
-                  }
-                  
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(height: availableHeight < 40 ? Spacing.xxs : Spacing.xs),
-                      // Enhanced progress bar with animation
-                      TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 800),
-                        tween: Tween(begin: 0.0, end: progress),
-                        builder: (context, animatedProgress, child) {
-                          return Container(
-                            height: availableHeight < 40 ? 3 : 4, // Smaller bar for tight space
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(2),
-                              color: progressColor.withOpacity(0.2),
-                            ),
-                            child: Stack(
-                              children: [
-                                // Background progress
-                                Container(
-                                  height: availableHeight < 40 ? 3 : 4,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(2),
-                                    gradient: LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      colors: [
-                                        progressColor,
-                                        progressColor.withOpacity(0.8),
-                                      ],
-                                      stops: [0.0, animatedProgress],
+                        // Progress bar - only show if there's enough vertical space
+                        if (availableHeight > 30) // More conservative space requirement
+                          Flexible(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: isSmall ? 2.0 : 4.0),
+                              child: TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 800),
+                                tween: Tween(begin: 0.0, end: progress),
+                                builder: (context, animatedProgress, child) {
+                                  return Container(
+                                    height: isSmall ? 2 : 3, // Very thin progress bar for small spaces
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(1),
+                                      color: progressColor.withOpacity(0.2),
                                     ),
-                                  ),
-                                ),
-                                // Animated shine effect - only if Impeller supports it and there's space
-                                if (isPsychedelicMode && ImpellerHelper.shouldEnableFeature('shine') && availableHeight >= 40)
-                                  AnimatedBuilder(
-                                    animation: _animationController,
-                                    builder: (context, child) {
-                                      return Container(
-                                        height: 4,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(2),
-                                          gradient: LinearGradient(
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                            colors: [
-                                              Colors.white.withOpacity(0.0),
-                                              Colors.white.withOpacity(0.3 * _pulseAnimation.value),
-                                              Colors.white.withOpacity(0.0),
-                                            ],
-                                            stops: [
-                                              (animatedProgress - 0.1).clamp(0.0, 1.0),
-                                              animatedProgress.clamp(0.0, 1.0),
-                                              (animatedProgress + 0.1).clamp(0.0, 1.0),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                              ],
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(1),
+                                      child: LinearProgressIndicator(
+                                        value: animatedProgress,
+                                        backgroundColor: Colors.transparent,
+                                        valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                                        minHeight: isSmall ? 2 : 3,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ],
-                  );
-                },
+                          ),
+                        // Timer input field - only shown if sufficient space
+                        if (availableHeight > 60 && _showTimerInput)
+                          Flexible(
+                            child: _buildTimerInputField(progressColor, textColor),
+                          ),
+                      ],
+                    );
+                  },
+                ),
               ),
-              // Timer input field with animation - only shown if enough space
-              LayoutBuilder(
-                builder: (context, constraints) {
-                  final availableHeight = constraints.maxHeight;
-                  final hasSpaceForInput = availableHeight > 50;
-                  
-                  if (!hasSpaceForInput) {
-                    return const SizedBox.shrink();
-                  }
-                  
-                  return AnimatedSize(
-                    duration: const Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                    child: _showTimerInput ? _buildTimerInputField(progressColor, textColor) : const SizedBox.shrink(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
+            ),
+          ],
+        );
       },
     );
   }
