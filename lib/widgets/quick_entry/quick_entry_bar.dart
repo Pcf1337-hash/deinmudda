@@ -319,16 +319,18 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             itemCount: _reorderedButtons.length,
             itemBuilder: (context, index) {
               final button = _reorderedButtons[index];
-              return QuickButtonWidget(
-                key: ValueKey('reorder_${button.id}_${button.position}'), // More stable key
-                config: button,
-                isEditing: true,
-                onTap: () => Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => QuickButtonConfigScreen(existingConfig: button),
+              return Center( // Wrap in Center for consistent alignment
+                child: QuickButtonWidget(
+                  key: ValueKey('reorder_${button.id}_${button.position}'), // More stable key
+                  config: button,
+                  isEditing: true,
+                  onTap: () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => QuickButtonConfigScreen(existingConfig: button),
+                    ),
                   ),
+                  onLongPress: () {},
                 ),
-                onLongPress: () {},
               );
             },
             proxyDecorator: (child, index, animation) {

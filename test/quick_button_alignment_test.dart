@@ -167,5 +167,42 @@ void main() {
         }
       }
     });
+
+    testWidgets('Reorderable mode should maintain consistent alignment', (WidgetTester tester) async {
+      final quickButton = QuickButtonConfig(
+        id: 'test-id',
+        substanceId: 'substance-1',
+        substanceName: 'Test Substance',
+        dosage: 100.0,
+        unit: 'mg',
+        cost: 5.0,
+        position: 0,
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: ChangeNotifierProvider<TimerService>(
+              create: (_) => TimerService(),
+              child: QuickEntryBar(
+                quickButtons: [quickButton],
+                onQuickEntry: (config) {},
+                onAddButton: () {},
+                isEditing: true, // Enable reorderable mode
+              ),
+            ),
+          ),
+        ),
+      );
+
+      // Find the ReorderableListView
+      final reorderableListFinder = find.byType(ReorderableListView);
+      expect(reorderableListFinder, findsOneWidget);
+
+      // Check that buttons in reorderable mode also have Center alignment
+      final centerFinder = find.byType(Center);
+      expect(centerFinder, findsAtLeastNWidgets(2),
+          reason: 'Reorderable mode should also wrap buttons in Center widgets');
+    });
   });
 }
