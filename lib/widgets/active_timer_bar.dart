@@ -43,6 +43,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
   // Constants for UI layout
   static const double defaultFallbackHeight = 50.0;
   static const double kMinimumHeightFallback = 25.0;
+  static const double _overflowAdjustment = 15.0; // Account for the 15-pixel overflow issue
 
   @override
   void initState() {
@@ -670,7 +671,7 @@ class _ActiveTimerBarState extends State<ActiveTimerBar>
           padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs), // Further reduced padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.max, // Allow proper expansion to prevent overflow
+            mainAxisSize: MainAxisSize.min, // Use min to prevent overflow by not expanding beyond content size
             children: [
               // Compact row layout with proper flex distribution
               LayoutBuilder(
