@@ -216,10 +216,12 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             },
           ),
         ),
-        // Add button always visible on the right
-        AddQuickButtonWidget(
-          key: ValueKey('add_button_normal_mode'),
-          onTap: widget.onAddButton,
+        // Add button always visible on the right - wrap in Center for consistent alignment
+        Center(
+          child: AddQuickButtonWidget(
+            key: ValueKey('add_button_normal_mode'),
+            onTap: widget.onAddButton,
+          ),
         ),
       ],
     );
@@ -232,61 +234,65 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
     required double timerProgress,
     required VoidCallback onTap,
   }) {
-    return Stack(
-      children: [
-        QuickButtonWidget(
-          key: ValueKey('quickbutton_${button.id}_${button.position}'),
-          config: button,
-          isEditing: false,
-          onTap: onTap,
-          onLongPress: widget.onEditMode,
-        ),
-        
-        // Timer progress indicator
-        if (hasActiveTimer)
-          Positioned(
-            top: 4,
-            right: 4,
-            child: Container(
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
-                borderRadius: BorderRadius.circular(10),
-                border: Border.all(
-                  color: _getTimerColor(timerProgress),
-                  width: 2,
+    // Wrap the Stack in a Center to ensure proper vertical alignment
+    return Center(
+      child: Stack(
+        clipBehavior: Clip.none, // Allow timer indicators to extend beyond bounds
+        children: [
+          QuickButtonWidget(
+            key: ValueKey('quickbutton_${button.id}_${button.position}'),
+            config: button,
+            isEditing: false,
+            onTap: onTap,
+            onLongPress: widget.onEditMode,
+          ),
+          
+          // Timer progress indicator
+          if (hasActiveTimer)
+            Positioned(
+              top: 4,
+              right: 4,
+              child: Container(
+                width: 20,
+                height: 20,
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.7),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(
+                    color: _getTimerColor(timerProgress),
+                    width: 2,
+                  ),
                 ),
-              ),
-              child: Center(
-                child: Icon(
-                  Icons.timer,
-                  size: 12,
-                  color: _getTimerColor(timerProgress),
+                child: Center(
+                  child: Icon(
+                    Icons.timer,
+                    size: 12,
+                    color: _getTimerColor(timerProgress),
+                  ),
                 ),
               ),
             ),
-          ),
-        
-        // Timer progress ring
-        if (hasActiveTimer)
-          Positioned(
-            top: 2,
-            right: 2,
-            child: SizedBox(
-              width: 24,
-              height: 24,
-              child: CircularProgressIndicator(
-                value: timerProgress,
-                strokeWidth: 2,
-                backgroundColor: Colors.white.withOpacity(0.3),
-                valueColor: AlwaysStoppedAnimation<Color>(
-                  _getTimerColor(timerProgress),
+          
+          // Timer progress ring
+          if (hasActiveTimer)
+            Positioned(
+              top: 2,
+              right: 2,
+              child: SizedBox(
+                width: 24,
+                height: 24,
+                child: CircularProgressIndicator(
+                  value: timerProgress,
+                  strokeWidth: 2,
+                  backgroundColor: Colors.white.withOpacity(0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    _getTimerColor(timerProgress),
+                  ),
                 ),
               ),
             ),
-          ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -340,10 +346,12 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             },
           ),
         ),
-        // Add button always visible on the right
-        AddQuickButtonWidget(
-          key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), // Stable key based on list length
-          onTap: widget.onAddButton,
+        // Add button always visible on the right - wrap in Center for consistent alignment
+        Center(
+          child: AddQuickButtonWidget(
+            key: ValueKey('add_button_reorder_${_reorderedButtons.length}'), // Stable key based on list length
+            onTap: widget.onAddButton,
+          ),
         ),
       ],
     );

@@ -168,13 +168,15 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
               ),
               child: Stack(
                 children: [
-                  // Main content
-                  Padding(
-                    padding: Spacing.paddingMd,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.max,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
+                  // Main content - wrapped in Center for explicit vertical alignment
+                  Center(
+                    child: Padding(
+                      padding: Spacing.paddingMd,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center, // Explicit horizontal centering
+                        children: [
                         // Icon
                         Container(
                           padding: const EdgeInsets.all(Spacing.xs),
@@ -328,6 +330,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
                       ],
                     ),
                   ),
+                  ), // Close Center widget
                   
                   // Edit mode indicator
                   if (widget.isEditing)
@@ -397,37 +400,40 @@ class AddQuickButtonWidget extends StatelessWidget {
             style: BorderStyle.solid,
           ),
         ),
-        child: Padding(
-          padding: Spacing.paddingMd,
-          child: Column(
-            mainAxisSize: MainAxisSize.max,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.add_rounded,
-                color: DesignTokens.primaryIndigo,
-                size: Spacing.iconLg, // Use same icon size as regular buttons
-              ),
-              Spacing.verticalSpaceXs,
-              Flexible(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    'Hinzufügen',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: DesignTokens.primaryIndigo,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 14, // Match regular button font size for consistency
+        child: Center( // Explicit Center widget for vertical alignment
+          child: Padding(
+            padding: Spacing.paddingMd,
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center, // Explicit horizontal centering
+              children: [
+                Icon(
+                  Icons.add_rounded,
+                  color: DesignTokens.primaryIndigo,
+                  size: Spacing.iconLg, // Use same icon size as regular buttons
+                ),
+                Spacing.verticalSpaceXs,
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      'Hinzufügen',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: DesignTokens.primaryIndigo,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14, // Match regular button font size for consistency
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        ),
+        ), // Close Center widget
       ),
     ).animate().fadeIn(
       duration: DesignTokens.animationMedium,
