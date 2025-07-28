@@ -10,6 +10,9 @@ import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../services/psychedelic_theme_service.dart' as service;
+import '../../services/substance_service.dart';
+import '../../services/timer_service.dart';
+import '../../use_cases/entry_use_cases.dart';
 import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
@@ -2473,14 +2476,7 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: () {
-              Navigator.of(context).pop();
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Diese Funktion ist in der eigenständigen Dosisrechner-Version nicht verfügbar'),
-                ),
-              );
-            },
+            onPressed: () => _saveAsEntry(context),
             icon: const Icon(Icons.save_rounded),
             label: const Text('Als Eintrag speichern'),
             style: ElevatedButton.styleFrom(
@@ -2543,6 +2539,67 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
         return Icons.balance_rounded;
       case DosageIntensity.strong:
         return Icons.warning_rounded;
+    }
+  }
+
+  /// Saves the current dosage calculation as an entry with timer
+  Future<void> _saveAsEntry(BuildContext context) async {
+    try {
+      // Get required services
+      final createEntryUseCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
+      final substanceService = ServiceLocator.get<SubstanceService>();
+      
+      // Find substance by name to get ID
+      final substance = await substanceService.getSubstanceByName(widget.substance.name);
+      if (substance == null) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Substanz nicht gefunden'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+      
+      // Get selected dose and unit
+      final selectedDose = _getDoseForIntensity(_selectedIntensity);
+      final unit = widget.calculation.unit;
+      
+      // Parse duration from substance
+      final customDuration = TimerService.parseDurationFromString(widget.substance.duration);
+      
+      // Create entry with timer
+      await createEntryUseCase.execute(
+        substanceId: substance.id,
+        dosage: selectedDose,
+        unit: unit,
+        customDuration: customDuration,
+      );
+      
+      // Show success message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Eintrag erfolgreich gespeichert und Timer gestartet'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        
+        // Navigate back
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      // Show error message
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Speichern: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 }
