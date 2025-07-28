@@ -266,9 +266,15 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 ### 🎮 Benutzer-Experience
 
-- **🎨 Modernes Glasmorphismus-Design** - Elegante, transluzente UI-Elemente
+- **🎨 Modernes Glasmorphismus-Design** - Elegante, transluzente UI-Elemente mit BackdropFilter-Blur-Effekten
+  - **2x2 Grid Layout** - Optimale Substanz-Karten-Anordnung mit Glassmorphismus-Effekten
+  - **Dynamische Farbverläufe** - Oral-Administration (warme Töne), Nasal-Administration (kühle Töne)
+  - **Interaktive Animationen** - Scale-Animationen bei Touch mit Shimmer-Overlay-Effekten
+  - **Substanz-spezifische Icons** - Visuelle Kategorisierung (❤️ MDMA, 🧠 LSD, ☁️ Ketamin, ⚡ Kokain)
 - **🌙 Intelligenter Dark/Light Mode** - Automatische Anpassung mit Trippy-Mode für spezielle Anwendungen
 - **📱 Vollständig Responsive** - Optimiert für alle Bildschirmgrößen (320px-800px+)
+  - **Adaptive Grid-Systeme** - GridView für große Bildschirme, Wrap-Layout für kleine Bildschirme
+  - **Overflow-Protection** - SingleChildScrollView für sichere Content-Darstellung
 - **⚡ Schnelle Performance** - SQLite-basiert für blitzschnelle Datenabfragen
 - **♿ Barrierefreie Bedienung** - Unterstützung für große Schriftarten und Screenreader
 
@@ -280,6 +286,10 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
   - **🎯 4 Dosierungsstrategien**: Calculated (0%), Optimal (-20%), Safe (-40%), Beginner (-60%)
   - **👤 Benutzer-Profile**: Vollständige Integration mit personalisierten Empfehlungen
   - **💊 Enhanced Substance Cards**: Integrierte Duration-Anzeige und verbesserte UI-Balance
+  - **🎨 DosageCard Widget System**: Moderne Glassmorphismus-Karten mit substanzspezifischen Farbverläufen
+    - **Interaktive Elemente**: Tap-Animationen, Scale-Effekte, visuelles Feedback
+    - **Administrations-Routen**: Farbkodierte Darstellung für Oral (warme Töne) vs Nasal (kühle Töne)
+    - **Typography-Hierarchie**: Strukturierte Informationsdarstellung (Titel 16px, Dosis 24px, Duration 14px)
 - **📊 Medizinische Statistiken** - Konsummuster, Häufigkeiten und Trends
 - **🔍 Risikobewertung** - Automatische Kategorisierung (Low/Medium/High/Critical)
 - **📝 Umfassende Dokumentation** - Alle Daten exportierbar für Ärzte/Therapeuten
@@ -498,11 +508,41 @@ lib/
 ├── widgets/                     # Wiederverwendbare UI Components + PlatformAdaptiveWidgets
 │   ├── platform_adaptive_widgets.dart    # Cross-Platform UI Components
 │   ├── trippy_fab.dart                    # Unified Trippy FAB Design
+│   ├── dosage_card.dart                   # Glassmorphismus DosageCard Widget
 │   └── header_bar.dart                    # Consistent HeaderBar mit Lightning Icons
 ├── theme/                       # Design System, Themes & Trippy Theme Implementation
 ├── utils/                       # Utility Functions, Helpers & PlatformHelper
 └── assets/                      # Statische Assets (Bilder, Daten)
 ```
+
+### Kritische Layout-Fixes & Optimierungen
+
+#### RenderFlex Overflow-Behebung
+**Problem**: RenderFlex overflowed by 41-50 pixels in verschiedenen Screens
+**Lösung**: 
+- **Dosage Calculator**: Wrapped Column in `SingleChildScrollView` mit `MainAxisSize.min`
+- **ActiveTimerBar**: LayoutBuilder für sichere Constraint-Behandlung (`height: double.infinity` → `safeHeight`)
+- **Grid-Layouts**: Umstellung von komplexen GridView-Berechnungen zu einfacheren Wrap-Layouts
+
+#### Layout-Constraint-Sicherheit
+```dart
+// Sichere Constraint-Behandlung
+final safeHeight = constraints.maxHeight.isFinite 
+    ? constraints.maxHeight 
+    : fallbackHeight;
+```
+
+#### DosageCard Widget-System
+- **Glassmorphismus-Implementierung**: BackdropFilter mit sigma 10 für Blur-Effekte
+- **Responsive Design**: GridView (>500px) → Wrap-Layout (≤500px) 
+- **Administrations-Routen**: Farbkodierte Darstellung (Oral: warme Töne, Nasal: kühle Töne)
+- **Performance-Optimiert**: Minimal rebuilds, effiziente Animation-Controller
+
+#### Overflow-Prevention-Strategien
+1. **SingleChildScrollView**: Für vertikales Scrollen bei Content-Overflow
+2. **LayoutBuilder**: Für dynamische Constraint-Anpassung  
+3. **BoxConstraints-Validierung**: Sichere Höhen-/Breiten-Behandlung
+4. **Wrap-Layouts**: Flexible Alternative zu starren Grid-Systemen
 
 </details>
 
@@ -517,6 +557,34 @@ lib/
 - **Juli 2025**: Timer-System Stabilisierung und UI-Overflow-Fixes
 - **Juli 2025**: Glasmorphismus-Design Implementation
 - **Juli 2025**: Cross-Platform Polishing und Performance-Optimierungen
+
+### Detaillierte Änderungen aus aktueller Entwicklung
+
+#### [Unreleased] - Cross-Platform Polishing & Layout-Fixes
+**Added:**
+- **Cross-Platform Polishing** - Complete platform-specific UI optimization
+  - Added `PlatformHelper` utility class für iOS/Android detection
+  - Created `PlatformAdaptiveWidgets` für consistent UI across platforms
+  - Implemented `PlatformAdaptiveFAB` mit platform-specific animations
+  - Added `KeyboardHandler` für cross-platform keyboard management
+  - Created comprehensive `CrossPlatformTestHelper` für testing UI consistency
+
+**Fixed:**
+- **RenderFlex Overflow Issues** - Eliminated 41-50 pixel overflow errors
+  - Dosage Calculator: Wrapped Column in `SingleChildScrollView` mit `MainAxisSize.min`
+  - ActiveTimerBar: Added LayoutBuilder für sichere Constraint-Behandlung
+  - Grid-Layouts: Umstellung von komplexen GridView zu einfacheren Wrap-Layouts
+- **Layout Constraint Safety** - Added comprehensive constraint validation
+  - Infinite height constraint handling mit fallback mechanisms
+  - BoxConstraints validation für sichere UI-Rendering
+- **DosageCard Widget Stability** - Enhanced glassmorphism implementation
+  - Performance-optimized animation controllers
+  - Responsive design mit adaptive layouts
+
+**Enhanced:**
+- **System UI Overlay** - Platform-specific status bar und navigation handling  
+- **Haptic Feedback** - Platform-appropriate feedback patterns
+- **Visual Consistency** - Unified design language across iOS/Android
 
 ### Letzte Änderungen
 - **🌍 Cross-Platform Polishing** - Vollständige Platform-Adaptive UI für iOS/Android
