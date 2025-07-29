@@ -8,10 +8,12 @@ import 'package:flutter/services.dart';
 import '../../models/dosage_calculator_user.dart';
 import '../../models/dosage_calculator_substance.dart';
 import '../../models/dosage_calculation.dart';
+import '../../models/substance.dart';
 import '../../services/dosage_calculator_service.dart';
 import '../../services/psychedelic_theme_service.dart' as service;
 import '../../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../../use_cases/entry_use_cases.dart';
+import '../../repositories/substance_repository.dart';
 import '../../widgets/glass_card.dart';
 import '../../widgets/pulsating_widgets.dart';
 import '../../widgets/trippy_fab.dart';
@@ -2505,10 +2507,10 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
     final substance = widget.substance;
     
     // Validate substance
-    if (substance == null || substance.id == null) {
+    if (substance == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Fehler: Ungültige Substanz ausgewählt'),
+          content: Text('Fehler: Keine Substanz ausgewählt'),
           backgroundColor: Colors.red,
         ),
       );
@@ -2524,12 +2526,15 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       // Calculate timer duration from substance
       final timerDuration = substance.defaultDuration;
       
+      // Ensure substance exists in database or create it
+      final substanceId = await _ensureSubstanceExists(substance);
+      
       // Get the use case from service locator
       final useCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
       
       // Execute the use case
       final entry = await useCase.execute(
-        substanceId: substance.id!,
+        substanceId: substanceId,
         dosage: dosage,
         unit: unit,
         dateTime: DateTime.now(),
@@ -2563,6 +2568,64 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       );
       // Dialog stays open on error
     }
+  }
+
+  /// Ensures a substance exists in the database, creating it if necessary
+  /// Returns the substance ID to use for entries
+  Future<String> _ensureSubstanceExists(DosageCalculatorSubstance dosageSubstance) async {
+    final substanceRepository = ServiceLocator.get<ISubstanceRepository>();
+    
+    // Try to find existing substance by name first
+    final existingSubstance = await substanceRepository.getSubstanceByName(dosageSubstance.name);
+    if (existingSubstance != null) {
+      return existingSubstance.id;
+    }
+    
+    // Create a new substance from the dosage calculator substance
+    final newSubstance = Substance.create(
+      name: dosageSubstance.name,
+      category: _mapToSubstanceCategory(dosageSubstance.name),
+      defaultRiskLevel: _mapToRiskLevel(dosageSubstance.name),
+      pricePerUnit: 0.0, // Default price
+      defaultUnit: 'mg',
+      notes: dosageSubstance.safetyNotes,
+      duration: dosageSubstance.defaultDuration,
+    );
+    
+    // Save the substance
+    await substanceRepository.createSubstance(newSubstance);
+    return newSubstance.id;
+  }
+
+  /// Maps substance name to category based on common substances
+  SubstanceCategory _mapToSubstanceCategory(String substanceName) {
+    final name = substanceName.toLowerCase();
+    if (name.contains('mdma') || name.contains('lsd') || name.contains('ketamin') || 
+        name.contains('kokain') || name.contains('cannabis') || name.contains('psilocybin')) {
+      return SubstanceCategory.recreational;
+    } else if (name.contains('ibuprofen') || name.contains('paracetamol')) {
+      return SubstanceCategory.medication;
+    } else if (name.contains('koffein') || name.contains('amphetamin')) {
+      return SubstanceCategory.stimulant;
+    } else if (name.contains('alkohol')) {
+      return SubstanceCategory.depressant;
+    } else if (name.contains('vitamin') || name.contains('melatonin')) {
+      return SubstanceCategory.supplement;
+    }
+    return SubstanceCategory.other;
+  }
+
+  /// Maps substance name to risk level based on common substances
+  RiskLevel _mapToRiskLevel(String substanceName) {
+    final name = substanceName.toLowerCase();
+    if (name.contains('mdma') || name.contains('kokain') || name.contains('ketamin')) {
+      return RiskLevel.high;
+    } else if (name.contains('lsd') || name.contains('cannabis') || name.contains('alkohol')) {
+      return RiskLevel.medium;
+    } else if (name.contains('koffein') || name.contains('vitamin') || name.contains('ibuprofen')) {
+      return RiskLevel.low;
+    }
+    return RiskLevel.medium; // Default to medium risk
   }
 
   double _getDoseForIntensity(DosageIntensity intensity) {
