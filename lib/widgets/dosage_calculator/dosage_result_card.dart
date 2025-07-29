@@ -843,6 +843,7 @@ class _DosageResultCardState extends State<DosageResultCard>
       dosage: dose,
       unit: 'mg',
       dateTime: DateTime.now(),
+      cost: 0.0, // Default cost - this widget doesn't have cost input UI
       notes: 'Dosierung berechnet für ${_selectedIntensity.displayName} Intensität (${widget.user.formattedWeight})',
     );
 
