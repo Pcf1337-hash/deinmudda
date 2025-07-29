@@ -16,7 +16,7 @@ import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
 import '../widgets/quick_entry/quick_entry_bar.dart';
-import '../widgets/active_timer_bar.dart';
+import '../widgets/multi_timer_display.dart';
 import '../widgets/consistent_fab.dart';
 import '../widgets/layout_error_boundary.dart';
 import '../utils/error_handler.dart';
@@ -337,36 +337,6 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
   }
 
-  Future<void> _stopActiveTimer() async {
-    try {
-      final activeTimer = _timerService.getActiveTimer();
-      if (activeTimer == null || !mounted) return;
-      
-      await _timerService.stopTimer(activeTimer.id);
-      
-      if (mounted) {
-        _safeShowSnackBar(
-          SnackBar(
-            content: Text('Timer für ${activeTimer.substanceName} gestoppt'),
-            backgroundColor: DesignTokens.warningYellow,
-          ),
-        );
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('❌ Fehler beim Stoppen des Timers: $e');
-      }
-      
-      if (mounted) {
-        _safeShowSnackBar(
-          SnackBar(
-            content: Text('Fehler beim Stoppen des Timers: $e'),
-            backgroundColor: DesignTokens.errorRed,
-          ),
-        );
-      }
-    }
-  }
 
   Future<void> _navigateToQuickButtonConfig() async {
     final result = await Navigator.of(context).push(
@@ -560,34 +530,16 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                   padding: Spacing.paddingHorizontalMd,
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // Active Timer Bar (only shown when timer is active)
+                      // Multi Timer Display (shows all active timers in attractive tiles)
                       LayoutErrorBoundary(
-                        debugLabel: 'Active Timer Bar',
-                        child: RepaintBoundary( // Isolate timer bar rendering for better performance
-                          child: Consumer<TimerService>(
-                            builder: (context, timerService, child) {
-                              final activeTimer = timerService.getActiveTimer();
-                              if (activeTimer != null && mounted) {
-                                return LayoutBuilder(
-                                  builder: (context, constraints) {
-                                    return Container(
-                                      constraints: BoxConstraints(
-                                        maxHeight: constraints.maxHeight * 0.15, // Use 15% of available height max
-                                        minHeight: 25, // Ensure minimum usable height
-                                      ),
-                                      child: ActiveTimerBar(
-                                        timer: activeTimer,
-                                        onTap: () => _navigateToTimerDashboard(),
-                                      ).animate().fadeIn(
-                                        duration: DesignTokens.animationMedium,
-                                        delay: const Duration(milliseconds: 200),
-                                      ),
-                                    );
-                                  },
-                                );
-                              }
-                              return const SizedBox.shrink();
-                            },
+                        debugLabel: 'Multi Timer Display',
+                        child: RepaintBoundary( // Isolate timer display rendering for better performance
+                          child: MultiTimerDisplay(
+                            onTimerTap: () => _navigateToTimerDashboard(),
+                            onEmptyStateTap: () => _navigateToTimerDashboard(),
+                          ).animate().fadeIn(
+                            duration: DesignTokens.animationMedium,
+                            delay: const Duration(milliseconds: 200),
                           ),
                         ),
                       ),
@@ -794,10 +746,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ),
                     if (hasActiveTimer)
                       FABHelper.createSpeedDialChild(
-                        icon: Icons.timer_off_rounded,
-                        label: 'Timer stoppen',
-                        backgroundColor: DesignTokens.warningYellow,
-                        onTap: () => _stopActiveTimer(),
+                        icon: Icons.timer_rounded,
+                        label: 'Timer verwalten',
+                        backgroundColor: DesignTokens.accentCyan,
+                        onTap: () => _navigateToTimerDashboard(),
                       ),
                   ];
 
