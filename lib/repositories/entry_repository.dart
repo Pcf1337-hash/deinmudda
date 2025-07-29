@@ -199,10 +199,58 @@ class EntryRepository implements IEntryRepository {
       );
       final monthEntries = monthResult.first['count'] as int;
       
+      // Get TODAY's statistics (fix for _buildTodayStatsSection showing only 0)
+      final today = DateTime.now();
+      final todayStart = DateTime(today.year, today.month, today.day);
+      final todayEnd = todayStart.add(const Duration(days: 1));
+      final todayStartString = todayStart.toIso8601String();
+      final todayEndString = todayEnd.toIso8601String();
+      
+      // Today's entries count
+      final todayEntriesResult = await db.rawQuery(
+        'SELECT COUNT(*) as count FROM entries WHERE dateTime >= ? AND dateTime < ?',
+        [todayStartString, todayEndString]
+      );
+      final todayEntries = todayEntriesResult.first['count'] as int;
+      
+      // Today's total cost
+      final todayCostResult = await db.rawQuery(
+        'SELECT SUM(cost) as total FROM entries WHERE dateTime >= ? AND dateTime < ? AND cost IS NOT NULL',
+        [todayStartString, todayEndString]
+      );
+      final todayCost = (todayCostResult.first['total'] as num?)?.toDouble() ?? 0.0;
+      
+      // Today's unique substances count
+      final todaySubstancesResult = await db.rawQuery(
+        'SELECT COUNT(DISTINCT substanceId) as count FROM entries WHERE dateTime >= ? AND dateTime < ? AND substanceId IS NOT NULL',
+        [todayStartString, todayEndString]
+      );
+      final todaySubstances = todaySubstancesResult.first['count'] as int;
+      
+      // Additional statistics that might be useful
+      final mostUsedSubstanceResult = await db.rawQuery(
+        'SELECT substanceName, COUNT(*) as count FROM entries WHERE substanceName IS NOT NULL GROUP BY substanceName ORDER BY count DESC LIMIT 1'
+      );
+      final mostUsedSubstance = mostUsedSubstanceResult.isNotEmpty 
+          ? mostUsedSubstanceResult.first['substanceName'] as String
+          : 'Keine Daten';
+      
+      final averageDailyCostResult = await db.rawQuery(
+        'SELECT AVG(daily_cost) as avg FROM (SELECT DATE(dateTime) as day, SUM(cost) as daily_cost FROM entries WHERE cost IS NOT NULL GROUP BY DATE(dateTime))'
+      );
+      final averageDailyCost = (averageDailyCostResult.first['avg'] as num?)?.toDouble() ?? 0.0;
+      
       return {
         'totalEntries': totalEntries,
         'weekEntries': weekEntries,
         'monthEntries': monthEntries,
+        // Today's statistics for HomeScreen _buildTodayStatsSection
+        'todayEntries': todayEntries,
+        'todayCost': todayCost,
+        'todaySubstances': todaySubstances,
+        // Additional statistics for insights
+        'mostUsedSubstance': mostUsedSubstance,
+        'averageDailyCost': averageDailyCost,
       };
     } catch (e) {
       throw Exception('Failed to get statistics: $e');
