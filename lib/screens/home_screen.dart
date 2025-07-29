@@ -652,101 +652,103 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       ),
                       
                       // Use FutureBuilder for data-dependent sections with better error handling
-                      FutureBuilder<List<Entry>>(
-                        future: _entriesFuture,
-                        builder: (context, snapshot) {
-                          if (kDebugMode) {
-                            print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
-                          }
-                          
-                          // Show loading state with better constraints
-                          if (snapshot.connectionState == ConnectionState.waiting) {
+                      RepaintBoundary( // Isolate data content rendering for better scroll performance
+                        child: FutureBuilder<List<Entry>>(
+                          future: _entriesFuture,
+                          builder: (context, snapshot) {
                             if (kDebugMode) {
-                              print('🔄 HomeScreen: Zeige Loading-Zustand');
+                              print('🔄 HomeScreen FutureBuilder: ConnectionState=${snapshot.connectionState}');
                             }
-                            return Container(
-                              constraints: const BoxConstraints(
-                                minHeight: 200,
-                                maxHeight: 400, // Increased to prevent overflow
-                              ),
-                              padding: const EdgeInsets.all(Spacing.lg),
-                              child: const Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 16),
-                                    Text('Lade Einträge...'),
-                                  ],
+                            
+                            // Show loading state with better constraints
+                            if (snapshot.connectionState == ConnectionState.waiting) {
+                              if (kDebugMode) {
+                                print('🔄 HomeScreen: Zeige Loading-Zustand');
+                              }
+                              return Container(
+                                constraints: const BoxConstraints(
+                                  minHeight: 200,
+                                  maxHeight: 400, // Increased to prevent overflow
                                 ),
-                              ),
+                                padding: const EdgeInsets.all(Spacing.lg),
+                                child: const Center(
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircularProgressIndicator(),
+                                      SizedBox(height: 16),
+                                      Text('Lade Einträge...'),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }
+                            
+                            // Handle errors gracefully without error boundary wrapper
+                            if (snapshot.hasError) {
+                              if (kDebugMode) {
+                                print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
+                              }
+                              return _buildErrorFallback(context, isDark);
+                            }
+                            
+                            final entries = snapshot.data ?? [];
+                            if (kDebugMode) {
+                              print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
+                            }
+                            
+                            // Wrap content sections individually for more granular error handling
+                            // Only show error fallback for actual rendering errors, not layout overflow warnings
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min, // Use minimum required space
+                              children: [
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Recent Entries Section',
+                                  fallback: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(
+                                      'Fehler beim Laden der letzten Einträge',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildRecentEntriesSection(context, isDark, entries),
+                                ),
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Today Stats Section',
+                                  fallback: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(
+                                      'Statistiken temporär nicht verfügbar',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildTodayStatsSection(context, isDark),
+                                ),
+                                Spacing.verticalSpaceLg,
+                                LayoutErrorBoundary(
+                                  debugLabel: 'Quick Insights Section',
+                                  fallback: Container(
+                                    padding: const EdgeInsets.all(16),
+                                    child: Text(
+                                      'Insights temporär nicht verfügbar',
+                                      style: theme.textTheme.bodyMedium?.copyWith(
+                                        color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                                      ),
+                                    ),
+                                  ),
+                                  child: _buildQuickInsightsSection(context, isDark),
+                                ),
+                              ],
                             );
-                          }
-                          
-                          // Handle errors gracefully without error boundary wrapper
-                          if (snapshot.hasError) {
-                            if (kDebugMode) {
-                              print('❌ HomeScreen: Fehler beim Laden der Einträge: ${snapshot.error}');
-                            }
-                            return _buildErrorFallback(context, isDark);
-                          }
-                          
-                          final entries = snapshot.data ?? [];
-                          if (kDebugMode) {
-                            print('✅ HomeScreen: ${entries.length} Einträge im Builder erhalten');
-                          }
-                          
-                          // Wrap content sections individually for more granular error handling
-                          // Only show error fallback for actual rendering errors, not layout overflow warnings
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min, // Use minimum required space
-                            children: [
-                              Spacing.verticalSpaceLg,
-                              LayoutErrorBoundary(
-                                debugLabel: 'Recent Entries Section',
-                                fallback: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Fehler beim Laden der letzten Einträge',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                    ),
-                                  ),
-                                ),
-                                child: _buildRecentEntriesSection(context, isDark, entries),
-                              ),
-                              Spacing.verticalSpaceLg,
-                              LayoutErrorBoundary(
-                                debugLabel: 'Today Stats Section',
-                                fallback: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Statistiken temporär nicht verfügbar',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                    ),
-                                  ),
-                                ),
-                                child: _buildTodayStatsSection(context, isDark),
-                              ),
-                              Spacing.verticalSpaceLg,
-                              LayoutErrorBoundary(
-                                debugLabel: 'Quick Insights Section',
-                                fallback: Container(
-                                  padding: const EdgeInsets.all(16),
-                                  child: Text(
-                                    'Insights temporär nicht verfügbar',
-                                    style: theme.textTheme.bodyMedium?.copyWith(
-                                      color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
-                                    ),
-                                  ),
-                                ),
-                                child: _buildQuickInsightsSection(context, isDark),
-                              ),
-                            ],
-                          );
-                        },
+                          },
+                        ),
                       ),
                   
                   const SizedBox(height: 120), // Bottom padding for navigation
