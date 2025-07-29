@@ -27,6 +27,7 @@ class CreateEntryUseCase {
     required String unit,
     DateTime? dateTime,
     String? notes,
+    double cost = 0.0,
   }) async {
     // Validate substance exists
     final substance = await _substanceRepository.getSubstanceById(substanceId);
@@ -52,7 +53,7 @@ class CreateEntryUseCase {
       dosage: dosage,
       unit: unit,
       dateTime: dateTime ?? DateTime.now(),
-      cost: 0.0, // Default cost
+      cost: cost,
       notes: notes,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
@@ -81,6 +82,7 @@ class CreateEntryWithTimerUseCase {
     required String unit,
     DateTime? dateTime,
     String? notes,
+    double cost = 0.0,
     Duration? customDuration,
   }) async {
     // Validate substance exists
@@ -102,7 +104,7 @@ class CreateEntryWithTimerUseCase {
       dosage: dosage,
       unit: unit,
       dateTime: dateTime ?? DateTime.now(),
-      cost: 0.0, // Default cost
+      cost: cost,
       notes: notes,
       createdAt: DateTime.now(),
       updatedAt: DateTime.now(),
