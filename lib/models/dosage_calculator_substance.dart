@@ -1,6 +1,7 @@
 import 'package:uuid/uuid.dart';
 
 class DosageCalculatorSubstance {
+  final String? id;
   final String name;
   final double lightDosePerKg;
   final double normalDosePerKg;
@@ -12,6 +13,7 @@ class DosageCalculatorSubstance {
   final DateTime updatedAt;
 
   DosageCalculatorSubstance({
+    this.id,
     required this.name,
     required this.lightDosePerKg,
     required this.normalDosePerKg,
@@ -29,6 +31,7 @@ class DosageCalculatorSubstance {
 
   // Factory constructor
   factory DosageCalculatorSubstance.create({
+    String? id,
     required String name,
     required double lightDosePerKg,
     required double normalDosePerKg,
@@ -39,6 +42,7 @@ class DosageCalculatorSubstance {
   }) {
     final now = DateTime.now();
     return DosageCalculatorSubstance(
+      id: id ?? const Uuid().v4(),
       name: name,
       lightDosePerKg: lightDosePerKg,
       normalDosePerKg: normalDosePerKg,
@@ -88,6 +92,37 @@ class DosageCalculatorSubstance {
   // Enhanced duration with icon
   String get durationWithIcon {
     return '⏱ ${durationDisplay}';
+  }
+
+  // Parse duration string to Duration object for timer functionality
+  Duration get defaultDuration {
+    return _parseDurationString(duration);
+  }
+
+  // Helper method to parse duration strings like "4-6 Stunden", "30-60 Minuten", etc.
+  Duration _parseDurationString(String durationStr) {
+    final lowercaseDuration = durationStr.toLowerCase();
+    
+    // Extract first number from duration string
+    final match = RegExp(r'(\d+)').firstMatch(lowercaseDuration);
+    if (match == null) {
+      // Default to 2 hours if parsing fails
+      return const Duration(hours: 2);
+    }
+    
+    final number = int.parse(match.group(1)!);
+    
+    // Determine unit based on content
+    if (lowercaseDuration.contains('minute') || lowercaseDuration.contains('min')) {
+      return Duration(minutes: number);
+    } else if (lowercaseDuration.contains('stunde') || lowercaseDuration.contains('hour') || lowercaseDuration.contains('h')) {
+      return Duration(hours: number);
+    } else if (lowercaseDuration.contains('tag') || lowercaseDuration.contains('day') || lowercaseDuration.contains('d')) {
+      return Duration(days: number);
+    } else {
+      // Default to hours for unknown units
+      return Duration(hours: number);
+    }
   }
 
   // Calculate dosage for specific user and intensity
@@ -161,6 +196,7 @@ class DosageCalculatorSubstance {
   // JSON serialization
   Map<String, dynamic> toJson() {
     return {
+      'id': id,
       'name': name,
       'lightDosePerKg': lightDosePerKg,
       'normalDosePerKg': normalDosePerKg,
@@ -175,6 +211,7 @@ class DosageCalculatorSubstance {
 
   factory DosageCalculatorSubstance.fromJson(Map<String, dynamic> json) {
     return DosageCalculatorSubstance(
+      id: json['id'] as String?,
       name: json['name'] as String,
       lightDosePerKg: (json['lightDosePerKg'] as num).toDouble(),
       normalDosePerKg: (json['normalDosePerKg'] as num).toDouble(),
@@ -190,6 +227,7 @@ class DosageCalculatorSubstance {
   // Database serialization
   Map<String, dynamic> toDatabase() {
     return {
+      'id': id,
       'name': name,
       'lightDosePerKg': lightDosePerKg,
       'normalDosePerKg': normalDosePerKg,
@@ -204,6 +242,7 @@ class DosageCalculatorSubstance {
 
   factory DosageCalculatorSubstance.fromDatabase(Map<String, dynamic> map) {
     return DosageCalculatorSubstance(
+      id: map['id'] as String?,
       name: map['name'] as String,
       lightDosePerKg: (map['lightDosePerKg'] as num).toDouble(),
       normalDosePerKg: (map['normalDosePerKg'] as num).toDouble(),
@@ -218,6 +257,7 @@ class DosageCalculatorSubstance {
 
   // Copy with method
   DosageCalculatorSubstance copyWith({
+    String? id,
     String? name,
     double? lightDosePerKg,
     double? normalDosePerKg,
@@ -229,6 +269,7 @@ class DosageCalculatorSubstance {
     DateTime? updatedAt,
   }) {
     return DosageCalculatorSubstance(
+      id: id ?? this.id,
       name: name ?? this.name,
       lightDosePerKg: lightDosePerKg ?? this.lightDosePerKg,
       normalDosePerKg: normalDosePerKg ?? this.normalDosePerKg,
@@ -244,15 +285,22 @@ class DosageCalculatorSubstance {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-    return other is DosageCalculatorSubstance && other.name == name;
+    if (other is DosageCalculatorSubstance) {
+      // If both have IDs, compare by ID, otherwise compare by name
+      if (id != null && other.id != null) {
+        return id == other.id;
+      }
+      return name == other.name;
+    }
+    return false;
   }
 
   @override
-  int get hashCode => name.hashCode;
+  int get hashCode => id?.hashCode ?? name.hashCode;
 
   @override
   String toString() {
-    return 'DosageCalculatorSubstance(name: $name, route: $administrationRoute, duration: $duration)';
+    return 'DosageCalculatorSubstance(id: $id, name: $name, route: $administrationRoute, duration: $duration)';
   }
 }
 
