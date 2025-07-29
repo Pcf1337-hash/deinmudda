@@ -1867,6 +1867,15 @@ class _SafeDosageResultCard extends StatefulWidget {
 
 class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
   DosageIntensity _selectedIntensity = DosageIntensity.normal; // Start with normal/optimal dose
+  final TextEditingController _costController = TextEditingController();
+  final FocusNode _costFocusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _costController.dispose();
+    _costFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2470,9 +2479,89 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
   }
 
   Widget _buildActionButtons(BuildContext context, bool isDark) {
+    final theme = Theme.of(context);
+    
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        // Cost input field
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.grey[800] : Colors.grey[100],
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.grey[700]! : Colors.grey[300]!,
+              width: 1,
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Kosten (optional)',
+                style: theme.textTheme.titleSmall?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: Colors.indigo,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextFormField(
+                controller: _costController,
+                focusNode: _costFocusNode,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                decoration: InputDecoration(
+                  prefixIcon: Container(
+                    padding: const EdgeInsets.all(12),
+                    child: Text(
+                      '€',
+                      style: theme.textTheme.bodyLarge?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.indigo,
+                      ),
+                    ),
+                  ),
+                  hintText: '0,00',
+                  filled: true,
+                  fillColor: isDark ? Colors.grey[900] : Colors.white,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.grey[600]! : Colors.grey[400]!,
+                    ),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.grey[600]! : Colors.grey[400]!,
+                    ),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: const BorderSide(
+                      color: Colors.indigo,
+                      width: 2,
+                    ),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                validator: (value) {
+                  if (value != null && value.isNotEmpty) {
+                    final cost = double.tryParse(value.replaceAll(',', '.'));
+                    if (cost == null || cost < 0) {
+                      return 'Bitte geben Sie einen gültigen Betrag ein';
+                    }
+                  }
+                  return null;
+                },
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
@@ -2517,6 +2606,23 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       return; // Don't close dialog
     }
 
+    // Parse and validate cost
+    double cost = 0.0;
+    final costText = _costController.text.trim();
+    if (costText.isNotEmpty) {
+      final parsedCost = double.tryParse(costText.replaceAll(',', '.'));
+      if (parsedCost == null || parsedCost < 0) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Bitte geben Sie einen gültigen Betrag ein'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return; // Don't close dialog
+      }
+      cost = parsedCost;
+    }
+
     try {
       // Get dosage from selected intensity
       final dosage = _getDoseForIntensity(_selectedIntensity);
@@ -2532,20 +2638,22 @@ class _SafeDosageResultCardState extends State<_SafeDosageResultCard> {
       // Get the use case from service locator
       final useCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
       
-      // Execute the use case
+      // Execute the use case with cost
       final entry = await useCase.execute(
         substanceId: substanceId,
         dosage: dosage,
         unit: unit,
         dateTime: DateTime.now(),
         notes: notes,
+        cost: cost,
         customDuration: timerDuration,
       );
       
       // Show success snackbar
+      final costMessage = cost > 0 ? ' (Kosten: ${cost.toStringAsFixed(2).replaceAll('.', ',')}€)' : '';
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Eintrag gespeichert'),
+        SnackBar(
+          content: Text('Eintrag gespeichert$costMessage'),
           backgroundColor: Colors.green,
         ),
       );
