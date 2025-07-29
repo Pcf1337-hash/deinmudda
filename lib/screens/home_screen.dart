@@ -850,7 +850,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       backgroundColor: Colors.transparent,
       flexibleSpace: RepaintBoundary( // Isolate app bar rendering for better scroll performance
         child: FlexibleSpaceBar(
-        background: Container(
+          background: Container(
           decoration: BoxDecoration(
             gradient: isPsychedelic
                 ? LinearGradient(
@@ -1001,7 +1001,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                 },
                               ),
                             ),
-                          ),                        ],
+                          ),
+                        ],
                       ).animate().fadeIn(
                         duration: const Duration(milliseconds: 400), // Reduced from DesignTokens.animationSlow
                         delay: const Duration(milliseconds: 100), // Reduced delay
@@ -1044,6 +1045,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
               ),
             ),
           ),
+        ),
         ),
       ),
     );
