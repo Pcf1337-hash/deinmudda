@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     
     try {
       final isScrolled = _scrollController.offset > 50;
-      if (isScrolled != _isScrolled) {
+      if (isScrolled != _isScrolled && mounted) { // Add additional mounted check
         safeSetState(() {
           _isScrolled = isScrolled;
         });
@@ -553,7 +553,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                 : null,
               child: CustomScrollView(
                 controller: _scrollController,
-                physics: const ClampingScrollPhysics(), // Add explicit physics
+                physics: const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), // Platform-adaptive smooth scrolling
                 slivers: [
                   _buildSliverAppBar(context, isDark, dateFormat.format(now), psychedelicService),
                 SliverPadding(
@@ -563,30 +563,32 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       // Active Timer Bar (only shown when timer is active)
                       LayoutErrorBoundary(
                         debugLabel: 'Active Timer Bar',
-                        child: Consumer<TimerService>(
-                          builder: (context, timerService, child) {
-                            final activeTimer = timerService.getActiveTimer();
-                            if (activeTimer != null && mounted) {
-                              return LayoutBuilder(
-                                builder: (context, constraints) {
-                                  return Container(
-                                    constraints: BoxConstraints(
-                                      maxHeight: constraints.maxHeight * 0.15, // Use 15% of available height max
-                                      minHeight: 25, // Ensure minimum usable height
-                                    ),
-                                    child: ActiveTimerBar(
-                                      timer: activeTimer,
-                                      onTap: () => _navigateToTimerDashboard(),
-                                    ).animate().fadeIn(
-                                      duration: DesignTokens.animationMedium,
-                                      delay: const Duration(milliseconds: 200),
-                                    ),
-                                  );
-                                },
-                              );
-                            }
-                            return const SizedBox.shrink();
-                          },
+                        child: RepaintBoundary( // Isolate timer bar rendering for better performance
+                          child: Consumer<TimerService>(
+                            builder: (context, timerService, child) {
+                              final activeTimer = timerService.getActiveTimer();
+                              if (activeTimer != null && mounted) {
+                                return LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return Container(
+                                      constraints: BoxConstraints(
+                                        maxHeight: constraints.maxHeight * 0.15, // Use 15% of available height max
+                                        minHeight: 25, // Ensure minimum usable height
+                                      ),
+                                      child: ActiveTimerBar(
+                                        timer: activeTimer,
+                                        onTap: () => _navigateToTimerDashboard(),
+                                      ).animate().fadeIn(
+                                        duration: DesignTokens.animationMedium,
+                                        delay: const Duration(milliseconds: 200),
+                                      ),
+                                    );
+                                  },
+                                );
+                              }
+                              return const SizedBox.shrink();
+                            },
+                          ),
                         ),
                       ),
                       
@@ -595,55 +597,57 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                       // Quick Entry Bar with AnimatedSwitcher for overflow protection
                       LayoutErrorBoundary(
                         debugLabel: 'Quick Entry Bar Animated Container',
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: _isLoadingQuickButtons
-                                  ? SizedBox(
-                                      key: const ValueKey('quick_entry_loading'),
-                                      height: 60, // Minimal height during loading
-                                      child: Center(
-                                        child: Container(
-                                          padding: const EdgeInsets.all(16),
-                                          child: const Row(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              SizedBox(
-                                                width: 16,
-                                                height: 16,
-                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                              ),
-                                              SizedBox(width: 12),
-                                              Text('Lade Quick-Buttons...'),
-                                            ],
+                        child: RepaintBoundary( // Isolate quick entry bar rendering
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              return AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: _isLoadingQuickButtons
+                                    ? SizedBox(
+                                        key: const ValueKey('quick_entry_loading'),
+                                        height: 60, // Minimal height during loading
+                                        child: Center(
+                                          child: Container(
+                                            padding: const EdgeInsets.all(16),
+                                            child: const Row(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              children: [
+                                                SizedBox(
+                                                  width: 16,
+                                                  height: 16,
+                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                ),
+                                                SizedBox(width: 12),
+                                                Text('Lade Quick-Buttons...'),
+                                              ],
+                                            ),
                                           ),
                                         ),
+                                      )
+                                    : ConstrainedBox(
+                                        key: const ValueKey('quick_entry_content'),
+                                        constraints: BoxConstraints(
+                                          maxHeight: constraints.maxHeight * 0.8, // Reduced to accommodate our fixed heights
+                                          minHeight: 120, // Align with QuickEntryBar minimum height
+                                        ),
+                                        child: QuickEntryBar(
+                                          quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
+                                          onQuickEntry: _handleQuickEntry,
+                                          onAddButton: _navigateToQuickButtonConfig,
+                                          onEditMode: () {
+                                            if (mounted) {
+                                              safeSetState(() {
+                                                _isQuickEntryEditMode = !_isQuickEntryEditMode;
+                                              });
+                                            }
+                                          },
+                                          isEditing: _isQuickEntryEditMode,
+                                          onReorder: _reorderQuickButtons,
+                                        ),
                                       ),
-                                    )
-                                  : ConstrainedBox(
-                                      key: const ValueKey('quick_entry_content'),
-                                      constraints: BoxConstraints(
-                                        maxHeight: constraints.maxHeight * 0.8, // Reduced to accommodate our fixed heights
-                                        minHeight: 120, // Align with QuickEntryBar minimum height
-                                      ),
-                                      child: QuickEntryBar(
-                                        quickButtons: _quickButtons.take(6).toList(), // Limit to 6 for performance
-                                        onQuickEntry: _handleQuickEntry,
-                                        onAddButton: _navigateToQuickButtonConfig,
-                                        onEditMode: () {
-                                          if (mounted) {
-                                            safeSetState(() {
-                                              _isQuickEntryEditMode = !_isQuickEntryEditMode;
-                                            });
-                                          }
-                                        },
-                                        isEditing: _isQuickEntryEditMode,
-                                        onReorder: _reorderQuickButtons,
-                                      ),
-                                    ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ),
                       
@@ -753,10 +757,11 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ), // Close CustomScrollView
           ), // Close Container
           ), // Close LayoutErrorBoundary
-          floatingActionButton: Consumer<PsychedelicThemeService>(
-            builder: (context, psychedelicService, child) {
-              return Consumer<TimerService>(
-                builder: (context, timerService, child) {
+          floatingActionButton: RepaintBoundary( // Isolate FAB rendering for better performance
+            child: Consumer<PsychedelicThemeService>(
+              builder: (context, psychedelicService, child) {
+                return Consumer<TimerService>(
+                  builder: (context, timerService, child) {
                   final theme = Theme.of(context);
                   final isDark = theme.brightness == Brightness.dark;
                   final hasActiveTimer = timerService.isTimerActive();
@@ -824,6 +829,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
               );
             },
           ),
+          ),
         );
       }, // End of Consumer builder
     );
@@ -840,7 +846,8 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       pinned: true,
       elevation: 0,
       backgroundColor: Colors.transparent,
-      flexibleSpace: FlexibleSpaceBar(
+      flexibleSpace: RepaintBoundary( // Isolate app bar rendering for better scroll performance
+        child: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(
             gradient: isPsychedelic
@@ -994,13 +1001,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                             ),
                           ),                        ],
                       ).animate().fadeIn(
-                        duration: DesignTokens.animationSlow,
-                        delay: const Duration(milliseconds: 200),
+                        duration: const Duration(milliseconds: 400), // Reduced from DesignTokens.animationSlow
+                        delay: const Duration(milliseconds: 100), // Reduced delay
                       ).slideX(
-                        begin: -0.3,
+                        begin: -0.2, // Reduced slide distance
                         end: 0,
-                        duration: DesignTokens.animationSlow,
-                        curve: DesignTokens.curveEaseOut,
+                        duration: const Duration(milliseconds: 400), // Reduced from DesignTokens.animationSlow
+                        curve: Curves.easeOut, // Simplified curve
                       ),
                       const SizedBox(height: 8), // Improved spacing
                       // Improved date text with responsive sizing
@@ -1021,13 +1028,13 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ).animate().fadeIn(
-                        duration: DesignTokens.animationSlow,
-                        delay: const Duration(milliseconds: 400),
+                        duration: const Duration(milliseconds: 400), // Reduced from DesignTokens.animationSlow
+                        delay: const Duration(milliseconds: 150), // Reduced delay
                       ).slideX(
-                        begin: -0.3,
+                        begin: -0.2, // Reduced slide distance
                         end: 0,
-                        duration: DesignTokens.animationSlow,
-                        curve: DesignTokens.curveEaseOut,
+                        duration: const Duration(milliseconds: 400), // Reduced from DesignTokens.animationSlow
+                        curve: Curves.easeOut, // Simplified curve
                       ),
                     ],
                   );
@@ -1086,7 +1093,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ],
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 900),
+          delay: const Duration(milliseconds: 300), // Reduced delay
         ),
         Spacing.verticalSpaceMd,
         if (entries == null)
@@ -1111,22 +1118,23 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         final entryData = entries.take(3).elementAt(index);
         
         try {
-          // Only animate if animations should be enabled
+          // Only animate if animations should be enabled and reduce animation complexity
           Widget card = CompactEntryCard(
             entry: entryData,
             onTap: () => _navigateToEditEntry(entryData),
           );
           
-          if (PerformanceHelper.shouldEnableAnimations()) {
+          // Simplified animation to improve scrolling performance
+          if (PerformanceHelper.shouldEnableAnimations() && index < 2) { // Only animate first 2 cards
             card = card.animate().fadeIn(
-              duration: PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium),
-              delay: Duration(milliseconds: 1000 + (index * 100).toInt()),
+              duration: PerformanceHelper.getAnimationDuration(const Duration(milliseconds: 300)), // Faster animation
+              delay: Duration(milliseconds: 200 + (index * 50).toInt()), // Reduced delay
             );
           }
           
           return Padding(
             padding: const EdgeInsets.only(bottom: Spacing.sm),
-            child: card,
+            child: RepaintBoundary(child: card), // Isolate each card rendering
           );
         } catch (e) {
           if (kDebugMode) {
@@ -1170,7 +1178,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ],
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 1100),
+          delay: const Duration(milliseconds: 400), // Reduced delay
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
@@ -1191,44 +1199,50 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                 return Row(
                   children: [
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        isDark,
-                        'Einträge',
-                        todayEnt.toString(),
-                        Icons.note_rounded,
-                        DesignTokens.primaryIndigo,
-                      ).animate().fadeIn(
-                        duration: DesignTokens.animationMedium,
-                        delay: const Duration(milliseconds: 1200),
+                      child: RepaintBoundary( // Isolate stat card rendering
+                        child: _buildStatCard(
+                          context,
+                          isDark,
+                          'Einträge',
+                          todayEnt.toString(),
+                          Icons.note_rounded,
+                          DesignTokens.primaryIndigo,
+                        ).animate().fadeIn(
+                          duration: DesignTokens.animationMedium,
+                          delay: const Duration(milliseconds: 500), // Reduced delay
+                        ),
                       ),
                     ),
                     Spacing.horizontalSpaceMd,
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        isDark,
-                        'Kosten',
-                        '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
-                        Icons.euro_rounded,
-                        DesignTokens.accentEmerald,
-                      ).animate().fadeIn(
-                        duration: DesignTokens.animationMedium,
-                        delay: const Duration(milliseconds: 1300),
+                      child: RepaintBoundary( // Isolate stat card rendering
+                        child: _buildStatCard(
+                          context,
+                          isDark,
+                          'Kosten',
+                          '${todayCost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                          Icons.euro_rounded,
+                          DesignTokens.accentEmerald,
+                        ).animate().fadeIn(
+                          duration: DesignTokens.animationMedium,
+                          delay: const Duration(milliseconds: 550), // Reduced delay
+                        ),
                       ),
                     ),
                     Spacing.horizontalSpaceMd,
                     Expanded(
-                      child: _buildStatCard(
-                        context,
-                        isDark,
-                        'Substanzen',
-                        todaySubstances.toString(),
-                        Icons.science_rounded,
-                        DesignTokens.accentCyan,
-                      ).animate().fadeIn(
-                        duration: DesignTokens.animationMedium,
-                        delay: const Duration(milliseconds: 1400),
+                      child: RepaintBoundary( // Isolate stat card rendering
+                        child: _buildStatCard(
+                          context,
+                          isDark,
+                          'Substanzen',
+                          todaySubstances.toString(),
+                          Icons.science_rounded,
+                          DesignTokens.accentCyan,
+                        ).animate().fadeIn(
+                          duration: DesignTokens.animationMedium,
+                          delay: const Duration(milliseconds: 600), // Reduced delay
+                        ),
                       ),
                     ),
                   ],
@@ -1291,7 +1305,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ),
         ).animate().fadeIn(
           duration: DesignTokens.animationMedium,
-          delay: const Duration(milliseconds: 1500),
+          delay: const Duration(milliseconds: 650), // Reduced delay
         ),
         Spacing.verticalSpaceMd,
         FutureBuilder<Map<String, dynamic>>(
@@ -1309,40 +1323,46 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
               return Column(
                 children: [
-                  _buildInsightCard(
-                    context,
-                    isDark,
-                    'Häufigste Substanz',
-                    mostUsedSubstance,
-                    Icons.trending_up_rounded,
-                    DesignTokens.accentPurple,
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationMedium,
-                    delay: const Duration(milliseconds: 1600),
+                  RepaintBoundary( // Isolate insight card rendering
+                    child: _buildInsightCard(
+                      context,
+                      isDark,
+                      'Häufigste Substanz',
+                      mostUsedSubstance,
+                      Icons.trending_up_rounded,
+                      DesignTokens.accentPurple,
+                    ).animate().fadeIn(
+                      duration: DesignTokens.animationMedium,
+                      delay: const Duration(milliseconds: 700), // Reduced delay
+                    ),
                   ),
                   Spacing.verticalSpaceSm,
-                  _buildInsightCard(
-                    context,
-                    isDark,
-                    'Durchschnittliche Tageskosten',
-                    '${averageDailyCost.toStringAsFixed(2).replaceAll('.', ',')}€',
-                    Icons.analytics_rounded,
-                    DesignTokens.warningYellow,
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationMedium,
-                    delay: const Duration(milliseconds: 1700),
+                  RepaintBoundary( // Isolate insight card rendering
+                    child: _buildInsightCard(
+                      context,
+                      isDark,
+                      'Durchschnittliche Tageskosten',
+                      '${averageDailyCost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                      Icons.analytics_rounded,
+                      DesignTokens.warningYellow,
+                    ).animate().fadeIn(
+                      duration: DesignTokens.animationMedium,
+                      delay: const Duration(milliseconds: 750), // Reduced delay
+                    ),
                   ),
                   Spacing.verticalSpaceSm,
-                  _buildInsightCard(
-                    context,
-                    isDark,
-                    'Gesamte Einträge',
-                    totalEntries.toString(),
-                    Icons.inventory_rounded,
-                    DesignTokens.accentEmerald,
-                  ).animate().fadeIn(
-                    duration: DesignTokens.animationMedium,
-                    delay: const Duration(milliseconds: 1800),
+                  RepaintBoundary( // Isolate insight card rendering
+                    child: _buildInsightCard(
+                      context,
+                      isDark,
+                      'Gesamte Einträge',
+                      totalEntries.toString(),
+                      Icons.inventory_rounded,
+                      DesignTokens.accentEmerald,
+                    ).animate().fadeIn(
+                      duration: DesignTokens.animationMedium,
+                      delay: const Duration(milliseconds: 800), // Reduced delay
+                    ),
                   ),
                 ],
               );
