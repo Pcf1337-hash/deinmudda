@@ -33,7 +33,7 @@ class AppBootstrapper {
       ErrorHandler.logStartup('BOOTSTRAP', 'App-Initialisierung gestartet');
 
       // 1. Ensure Flutter is initialized
-      WidgetsBinding.instance.ensureInitialized();
+      WidgetsFlutterBinding.ensureInitialized();
 
       // 2. Setup error handlers first
       _setupGlobalErrorHandlers();
