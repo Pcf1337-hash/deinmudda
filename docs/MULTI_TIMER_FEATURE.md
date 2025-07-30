@@ -25,7 +25,7 @@ When only one timer is active:
 When multiple timers are active:
 - Shows a header with timer count and "View All" button
 - Horizontal scrollable tile layout
-- Each tile is 160px wide with compact information
+- Each tile is 120px wide (30% screen width, 110-150px range) with compact information
 - Staggered entrance animations for visual appeal
 
 ### User Interactions
