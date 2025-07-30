@@ -55,21 +55,22 @@
 
 ## Multiple Active Timers Layout
 
-### RESPONSIVE MULTIPLE TIMER VIEW
+### RESPONSIVE MULTIPLE TIMER VIEW (OPTIMIZED)
 ```
 ┌─────────────────────────────────────────────────┐
 │ 📱 3 aktive Timer                     [Alle] │ ← Compact header
 ├─────────────────────────────────────────────────┤
-│ ┌────────┐ ┌────────┐ ┌────────┐ →         │
-│ │ ⏰ LSD  │ │ ⏰ MDMA │ │ ⏰ Weed │ scroll  │ ← Horizontal scroll
-│ │ [●●●○○○]│ │ [●●●●●○]│ │ [●○○○○○]│         │
-│ │ 2h15m  │ │ 45m    │ │ 3h30m  │         │ ← Compact text
-│ │ 50% ⚡ │ │ 85% 🔥 │ │ 15% 🌱 │         │
-│ └────────┘ └────────┘ └────────┘         │
+│ ┌─────────┐ ┌─────────┐ ┌─────────┐ →        │
+│ │ ⏰ LSD   │ │ ⏰ MDMA  │ │⏰Cannabis│ scroll │ ← Horizontal scroll
+│ │ Dimen.  │ │ Complex │ │ Sativa  │        │ ← Better name visibility
+│ │ [●●●○○○] │ │ [●●●●●○] │ │ [●○○○○○] │        │
+│ │ 2h15m   │ │ 45m     │ │ 3h30m   │        │ ← Compact info
+│ │ 50%     │ │ 85%     │ │ 15%     │        │
+│ └─────────┘ └─────────┘ └─────────┘        │
 └─────────────────────────────────────────────────┘
      ↑            ↑            ↑
-   130px       130px       130px
-(30% screen width, clamped 110-150px)
+   128px       128px       128px
+(32% screen width, clamped 115-160px with optimized spacing)
 ```
 
 ## Responsive Breakpoints
@@ -77,22 +78,22 @@
 ### Small Screen (320px width)
 ```
 Single Timer Card: 48px height (320 * 0.15 = 48, clamped to 60px minimum)
-Tile Width: 110px (320 * 0.3 = 96, clamped to 110px minimum)
-Font Sizes: 12px title, 10px body
+Tile Width: 115px (320 * 0.32 = 102.4, clamped to 115px minimum)
+Font Sizes: 11px title, 9px body (optimized for text visibility)
 ```
 
 ### Medium Screen (400px width)  
 ```
 Single Timer Card: 60px height (400 * 0.15 = 60px)
-Tile Width: 120px (400 * 0.3 = 120px)
-Font Sizes: 14px title, 12px body
+Tile Width: 128px (400 * 0.32 = 128px)
+Font Sizes: 13px title, 11px body (balanced visibility)
 ```
 
 ### Large Screen (600px width)
 ```
 Single Timer Card: 90px height (600 * 0.15 = 90, clamped to maximum)
-Tile Width: 150px (600 * 0.3 = 180, clamped to 150px maximum)  
-Font Sizes: 16px title, 14px body
+Tile Width: 160px (600 * 0.32 = 192, clamped to 160px maximum)  
+Font Sizes: 15px title, 13px body (optimal readability)
 ```
 
 ## Material Design 3 Color System

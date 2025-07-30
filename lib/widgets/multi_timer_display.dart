@@ -534,8 +534,8 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 itemCount: activeTimers.length,
                 itemBuilder: (context, index) {
                   final timer = activeTimers[index];
-                  // Calculate responsive tile width based on screen size - made narrower per user feedback
-                  final double tileWidth = (constraints.maxWidth * 0.3).clamp(110.0, 150.0);
+                  // Optimized tile width for better substance name visibility while keeping side-by-side layout
+                  final double tileWidth = (constraints.maxWidth * 0.32).clamp(115.0, 160.0);
                   
                   return Container(
                     width: tileWidth,
@@ -598,7 +598,7 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(tileHeight * 0.1), // Responsive padding
+          padding: EdgeInsets.all(tileHeight * 0.08), // Reduced padding for more text space
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -606,7 +606,7 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
               Row(
                 children: [
                   Container(
-                    padding: EdgeInsets.all(tileHeight * 0.05),
+                    padding: EdgeInsets.all(tileHeight * 0.04), // Reduced icon padding
                     decoration: BoxDecoration(
                       color: progressColor.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
@@ -614,58 +614,59 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                     child: Icon(
                       Icons.timer_rounded,
                       color: progressColor,
-                      size: (tileHeight * 0.15).clamp(12.0, 16.0), // Responsive icon size
+                      size: (tileHeight * 0.12).clamp(10.0, 14.0), // Smaller icon for more text space
                     ),
                   ),
                   const Spacer(),
-                  // Responsive circular progress indicator
+                  // Smaller progress indicator for more text space
                   SizedBox(
-                    width: tileHeight * 0.25,
-                    height: tileHeight * 0.25,
+                    width: tileHeight * 0.2,
+                    height: tileHeight * 0.2,
                     child: CircularProgressIndicator(
                       value: progress,
-                      strokeWidth: 2.0,
+                      strokeWidth: 1.8, // Thinner stroke
                       valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                       backgroundColor: progressColor.withOpacity(0.2),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: tileHeight * 0.1), // Responsive spacing
-              // Substance name with flexible sizing
+              SizedBox(height: tileHeight * 0.08), // Reduced spacing for more text area
+              // Substance name with optimized layout for better visibility
               Expanded(
-                flex: 2,
+                flex: 3, // Increased flex for more text space
                 child: Text(
                   timer.substanceName ?? 'Unbekannt',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: textColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: (tileHeight * 0.14).clamp(12.0, 16.0), // Responsive font
+                    fontSize: (tileHeight * 0.13).clamp(11.0, 15.0), // Optimized font size
+                    height: 1.1, // Tighter line height for better fit
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
               // Flexible spacer
-              const Spacer(),
-              // Time remaining with responsive font
+              SizedBox(height: tileHeight * 0.02), // Minimal spacing
+              // Time remaining with optimized font
               Text(
                 _formatTimerText(timer.formattedRemainingTime),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: textColor.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
-                  fontSize: (tileHeight * 0.12).clamp(10.0, 14.0), // Responsive font
+                  fontSize: (tileHeight * 0.11).clamp(9.0, 13.0), // Slightly smaller but readable
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              SizedBox(height: tileHeight * 0.02),
-              // Progress percentage with responsive font
+              SizedBox(height: tileHeight * 0.015), // Minimal spacing
+              // Progress percentage with compact font
               Text(
-                '${(progress * 100).toInt()}% fertig',
+                '${(progress * 100).toInt()}%',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: textColor.withOpacity(0.6),
-                  fontSize: (tileHeight * 0.1).clamp(8.0, 12.0), // Responsive font
+                  fontSize: (tileHeight * 0.09).clamp(8.0, 11.0), // Compact but readable
                 ),
               ),
             ],

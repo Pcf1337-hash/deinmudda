@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Layout Optimization - Before vs After</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+            font-size: 18px;
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+            padding: 10px;
+            border-radius: 12px;
+        }
+        
+        .before .section-title {
+            background: rgba(244, 67, 54, 0.2);
+            border: 1px solid rgba(244, 67, 54, 0.4);
+        }
+        
+        .after .section-title {
+            background: rgba(76, 175, 80, 0.2);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+        }
+        
+        .phone-mockup {
+            width: 320px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 20px;
+            margin: 0 auto;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .timer-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #00BCD4;
+        }
+        
+        .timer-tiles {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 4px;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+        
+        .timer-tiles::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* BEFORE styles - narrower tiles with less text space */
+        .before .timer-tile {
+            min-width: 100px;
+            height: 120px;
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.12), rgba(255, 193, 7, 0.04));
+            border: 1px solid rgba(255, 193, 7, 0.25);
+            border-radius: 12px;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .before .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .before .tile-icon {
+            background: rgba(255, 193, 7, 0.2);
+            border-radius: 6px;
+            padding: 4px;
+            width: 16px;
+            height: 16px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .before .tile-progress {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #FFC107 0%, #FFC107 60%, rgba(255, 193, 7, 0.2) 60%);
+        }
+        
+        .before .tile-name {
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+            line-height: 1.2;
+            margin-bottom: 8px;
+            flex: 1;
+            /* Text gets truncated in before version */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .before .tile-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 10px;
+            margin-bottom: 4px;
+        }
+        
+        .before .tile-percentage {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 9px;
+        }
+        
+        /* AFTER styles - wider tiles with optimized spacing */
+        .after .timer-tile {
+            min-width: 128px; /* Increased from 100px */
+            height: 120px;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.12), rgba(76, 175, 80, 0.04));
+            border: 1px solid rgba(76, 175, 80, 0.25);
+            border-radius: 12px;
+            padding: 8px; /* Reduced padding for more text space */
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .after .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px; /* Reduced spacing */
+        }
+        
+        .after .tile-icon {
+            background: rgba(76, 175, 80, 0.2);
+            border-radius: 6px;
+            padding: 3px; /* Smaller icon padding */
+            width: 12px; /* Smaller icon */
+            height: 12px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .after .tile-progress {
+            width: 16px; /* Smaller progress indicator */
+            height: 16px;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, #4CAF50 0%, #4CAF50 60%, rgba(76, 175, 80, 0.2) 60%);
+        }
+        
+        .after .tile-name {
+            color: white;
+            font-weight: 600;
+            font-size: 11px;
+            line-height: 1.1; /* Tighter line height */
+            margin-bottom: 4px; /* Reduced spacing */
+            flex: 3; /* More space for text */
+            /* Better text handling - allows 2 lines */
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        
+        .after .tile-time {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 10px;
+            margin-bottom: 2px; /* Minimal spacing */
+        }
+        
+        .after .tile-percentage {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 9px;
+        }
+        
+        .truncated {
+            color: #FF5722 !important;
+            text-decoration: underline;
+        }
+        
+        .improvements {
+            background: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            border-radius: 16px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+        
+        .improvements h3 {
+            margin: 0 0 15px 0;
+            font-size: 20px;
+            color: #4CAF50;
+        }
+        
+        .improvements ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        
+        .improvements li {
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+        
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .metric-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .metric-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #4CAF50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            .phone-mockup {
+                width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Timer Layout Optimization</h1>
+            <p>Verbesserung der Sichtbarkeit von Substanznamen bei Beibehaltung des horizontalen Layouts</p>
+        </div>
+        
+        <div class="comparison">
+            <div class="before">
+                <div class="section-title">❌ VORHER (Problematisch)</div>
+                <div class="phone-mockup">
+                    <div class="timer-header">
+                        <span>⏱️ 5 aktive Timer</span>
+                        <span style="font-size: 12px;">[Alle]</span>
+                    </div>
+                    <div class="timer-tiles">
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">💊</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name truncated">L-Theanin Complex</div>
+                            <div class="tile-time">3h 45m</div>
+                            <div class="tile-percentage">60%</div>
+                        </div>
+                        
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">🌿</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name truncated">Cannabis Sativa</div>
+                            <div class="tile-time">45m</div>
+                            <div class="tile-percentage">85%</div>
+                        </div>
+                        
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">🔥</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name truncated">MDMA Crystal</div>
+                            <div class="tile-time">12m</div>
+                            <div class="tile-percentage">95%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="after">
+                <div class="section-title">✅ NACHHER (Optimiert)</div>
+                <div class="phone-mockup">
+                    <div class="timer-header">
+                        <span>⏱️ 5 aktive Timer</span>
+                        <span style="font-size: 12px;">[Alle]</span>
+                    </div>
+                    <div class="timer-tiles">
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">💊</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name">L-Theanin Complex</div>
+                            <div class="tile-time">3h 45m</div>
+                            <div class="tile-percentage">60%</div>
+                        </div>
+                        
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">🌿</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name">Cannabis Sativa</div>
+                            <div class="tile-time">45m</div>
+                            <div class="tile-percentage">85%</div>
+                        </div>
+                        
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="tile-icon">🔥</div>
+                                <div class="tile-progress"></div>
+                            </div>
+                            <div class="tile-name">MDMA Crystal</div>
+                            <div class="tile-time">12m</div>
+                            <div class="tile-percentage">95%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="improvements">
+            <h3>🚀 Implementierte Verbesserungen</h3>
+            <ul>
+                <li><strong>Optimierte Tile-Breite:</strong> Von 30% auf 32% der Bildschirmbreite (115-160px statt 110-150px)</li>
+                <li><strong>Reduzierte interne Abstände:</strong> Weniger Padding für mehr Textplatz</li>
+                <li><strong>Kompaktere Icons:</strong> Kleinere Icons und Progress-Indikatoren</li>
+                <li><strong>Verbesserte Text-Zuordnung:</strong> Mehr Flex-Space für Substanznamen (flex: 3 statt 2)</li>
+                <li><strong>Optimierte Schriftgrößen:</strong> Bessere Balance zwischen Lesbarkeit und Platzeffizienz</li>
+                <li><strong>Horizontales Layout beibehalten:</strong> Wie gewünscht nebeneinander, nicht untereinander</li>
+            </ul>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">+6.7%</div>
+                <div class="metric-label">Mehr Tile-Breite<br>(400px Bildschirm)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">+50%</div>
+                <div class="metric-label">Mehr Text-Flex-Space<br>(flex: 2 → 3)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">-20%</div>
+                <div class="metric-label">Weniger Padding<br>(10% → 8% der Höhe)</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">-20%</div>
+                <div class="metric-label">Kleinere Icons<br>(15% → 12% der Höhe)</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,44 +1,53 @@
-# Timer Tile Width Reduction Summary
+# Timer Layout Optimization for Substance Name Visibility
 
 ## Problem Statement (German)
-"kannst du beim dem active timer die jetzt ja 2 anzeigen in dr active time rbar haben einmal oben den balken und die kacheln der balken ist doch überflüssig wenn die kacheln laufen kannst du die kacheln ein bischen schmaler machen ich finde die sehr breit und klobig"
+"bitte behalte das design bei das sie nebneinander bleiben und nicht untereinander dieses würde bei mehreren timern einfach scheisse aussehen"
 
-**Translation**: "can you with the active timer that now have 2 displays in the active time bar - once at the top the bar and the tiles - the bar is unnecessary when the tiles are running, can you make the tiles a bit narrower, I find them very wide and clunky"
+**Translation**: "please keep the design so they stay next to each other and not underneath each other, this would look shit with multiple timers"
 
 ## Analysis
-The user was referring to the timer tiles in the `MultiTimerDisplay` widget being too wide and clunky. The tiles were using 40% of screen width with a size range of 140-180px.
+The user wanted to maintain the horizontal (side-by-side) layout for multiple timers while improving the visibility of substance names that were being truncated. The horizontal layout was already working correctly, but the internal spacing and text layout within each timer tile needed optimization.
 
 ## Solution Implemented
 
-### 1. Reduced Tile Width
-- **Before**: `(constraints.maxWidth * 0.4).clamp(140.0, 180.0)` 
-- **After**: `(constraints.maxWidth * 0.3).clamp(110.0, 150.0)`
+### 1. Optimized Tile Width for Better Text Visibility
+- **Before**: `(constraints.maxWidth * 0.3).clamp(110.0, 150.0)` 
+- **After**: `(constraints.maxWidth * 0.32).clamp(115.0, 160.0)`
 
 ### 2. Size Comparison by Screen Size
 
-| Screen Width | Old Size | New Size | Reduction |
-|-------------|----------|----------|-----------|
-| 320px       | 140px    | 110px    | 21.4%     |
-| 400px       | 160px    | 120px    | 25.0%     |
-| 600px       | 180px    | 150px    | 16.7%     |
+| Screen Width | Old Size | New Size | Improvement |
+|-------------|----------|----------|-------------|
+| 320px       | 110px    | 115px    | +4.5%       |
+| 400px       | 120px    | 128px    | +6.7%       |
+| 600px       | 150px    | 160px    | +6.7%       |
 
-### 3. Files Updated
-1. **lib/widgets/multi_timer_display.dart**: Updated tile width calculation
-2. **VISUAL_LAYOUT_GUIDE.md**: Updated documentation and ASCII diagrams
-3. **docs/MULTI_TIMER_FEATURE.md**: Updated feature documentation
-4. **test/widgets/multi_timer_display_test.dart**: Added test to verify the changes
+### 3. Internal Layout Optimizations
+- **Reduced padding**: From `tileHeight * 0.1` to `tileHeight * 0.08` for more text space
+- **Smaller icons**: From `tileHeight * 0.15` to `tileHeight * 0.12` with reduced padding
+- **Compact progress indicators**: Smaller size and thinner stroke for more text area
+- **Increased text flex**: From `flex: 2` to `flex: 3` for substance names
+- **Optimized font sizes**: Better balance between readability and space efficiency
+- **Tighter line height**: `height: 1.1` for better text fitting
+
+### 4. Files Updated
+1. **lib/widgets/multi_timer_display.dart**: Updated tile width and internal layout optimization
+2. **test/widgets/multi_timer_display_test.dart**: Updated tests to reflect new calculations
+3. **TIMER_TILE_WIDTH_REDUCTION_SUMMARY.md**: Updated documentation
 
 ## Benefits
-- ✅ **Tiles are narrower**: 16-25% reduction in width across all screen sizes
-- ✅ **Less clunky appearance**: More compact and elegant layout
-- ✅ **Better space utilization**: More timers can fit on screen before scrolling
-- ✅ **Maintains functionality**: All text and UI elements still fit properly due to responsive design
+- ✅ **Maintained side-by-side layout**: Horizontal scrolling preserved as requested
+- ✅ **Better substance name visibility**: 4.5-6.7% more width plus optimized internal spacing
+- ✅ **Reduced text truncation**: More space allocated to substance names with `flex: 3`
+- ✅ **Optimized space utilization**: Compact icons and spacing for more text area
 - ✅ **Preserved responsive behavior**: Still adapts to different screen sizes correctly
+- ✅ **Maintained performance**: All existing optimizations preserved
 
 ## Technical Notes
-The change maintains all existing functionality because:
-- Text uses `overflow: TextOverflow.ellipsis` and `maxLines` properties
-- Layout uses `Expanded` widgets and responsive font sizing
-- All content is already designed to be flexible and adaptive
+The changes focus on the balance between compactness and text visibility:
+- Slightly increased tile width while maintaining the horizontal layout
+- Optimized internal spacing to give more room for substance names
+- Reduced secondary UI elements (icons, progress indicators) to prioritize text
+- Enhanced text layout with better flex allocation and tighter spacing
 
-The narrower tiles provide a more elegant appearance while maintaining excellent usability and readability.
+The horizontal layout is maintained exactly as the user requested, while substance names now have significantly more space to display without truncation.
