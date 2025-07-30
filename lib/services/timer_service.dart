@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/entry.dart';
 import '../models/substance.dart';
@@ -160,7 +161,7 @@ class TimerService extends ChangeNotifier implements ITimerService {
     } else {
       // Timer already expired, handle immediately
       if (!_isDisposed) {
-        WidgetsBinding.instance.addPostFrameCallback((_) async {
+        WidgetsFlutterBinding.instance.addPostFrameCallback((_) async {
           if (!_isDisposed) {
             await _handleTimerExpired(entry);
           }
