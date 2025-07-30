@@ -161,7 +161,7 @@ class TimerService extends ChangeNotifier implements ITimerService {
     } else {
       // Timer already expired, handle immediately
       if (!_isDisposed) {
-        WidgetsFlutterBinding.instance.addPostFrameCallback((_) async {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
           if (!_isDisposed) {
             await _handleTimerExpired(entry);
           }
