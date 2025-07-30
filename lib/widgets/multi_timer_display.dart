@@ -365,84 +365,109 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 // Main content with flexible padding
                 Padding(
                   padding: EdgeInsets.all(cardHeight * 0.15), // Responsive padding
-                  child: Row(
-                    children: [
-                      // Timer icon with responsive sizing
-                      Container(
-                        padding: EdgeInsets.all(cardHeight * 0.08),
-                        decoration: BoxDecoration(
-                          color: progressColor.withOpacity(0.15),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Icon(
-                          Icons.timer_rounded,
-                          color: progressColor,
-                          size: (cardHeight * 0.25).clamp(16.0, 24.0), // Responsive icon size
-                        ),
-                      ),
-                      SizedBox(width: cardHeight * 0.2), // Responsive spacing
-                      // Flexible content area prevents overflow
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            // Substance name with overflow protection
-                            Flexible(
-                              child: Text(
-                                timer.substanceName ?? 'Unbekannte Substanz',
-                                style: theme.textTheme.titleMedium?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: (cardHeight * 0.2).clamp(14.0, 18.0), // Responsive font
+                  child: LayoutBuilder(
+                    builder: (context, contentConstraints) {
+                      return Row(
+                        children: [
+                          // Timer icon with responsive sizing
+                          Container(
+                            padding: EdgeInsets.all(cardHeight * 0.08),
+                            decoration: BoxDecoration(
+                              color: progressColor.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              Icons.timer_rounded,
+                              color: progressColor,
+                              size: (cardHeight * 0.25).clamp(16.0, 24.0), // Responsive icon size
+                            ),
+                          ),
+                          SizedBox(width: cardHeight * 0.15), // Reduced spacing for more content space
+                          // Optimized content area with FittedBox for better text scaling
+                          Expanded(
+                            child: LayoutBuilder(
+                              builder: (context, textConstraints) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    // Substance name with FittedBox for optimal scaling
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: ConstrainedBox(
+                                          constraints: BoxConstraints(
+                                            minWidth: textConstraints.maxWidth * 0.7, // Reserve space for progress
+                                            maxWidth: textConstraints.maxWidth * 0.7,
+                                          ),
+                                          child: Text(
+                                            timer.substanceName ?? 'Unbekannte Substanz',
+                                            style: theme.textTheme.titleMedium?.copyWith(
+                                              color: textColor,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: (cardHeight * 0.22).clamp(14.0, 20.0), // Optimized responsive font
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(height: cardHeight * 0.03),
+                                    // Timer status with better scaling
+                                    Flexible(
+                                      child: FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          _formatTimerText(timer.formattedRemainingTime),
+                                          style: theme.textTheme.bodyMedium?.copyWith(
+                                            color: textColor.withOpacity(0.8),
+                                            fontWeight: FontWeight.w500,
+                                            fontSize: (cardHeight * 0.18).clamp(12.0, 16.0), // Optimized responsive font
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                          // Compact responsive progress indicator
+                          SizedBox(
+                            width: cardHeight * 0.45,
+                            height: cardHeight * 0.45,
+                            child: Stack(
+                              children: [
+                                CircularProgressIndicator(
+                                  value: progress,
+                                  strokeWidth: 2.5,
+                                  valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                                  backgroundColor: progressColor.withOpacity(0.2),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            SizedBox(height: cardHeight * 0.05),
-                            // Timer status with responsive font size
-                            Flexible(
-                              child: Text(
-                                _formatTimerText(timer.formattedRemainingTime),
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: textColor.withOpacity(0.8),
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: (cardHeight * 0.16).clamp(12.0, 16.0), // Responsive font
+                                Center(
+                                  child: FittedBox(
+                                    fit: BoxFit.scaleDown,
+                                    child: Text(
+                                      '${(progress * 100).toInt()}%',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        color: textColor,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: (cardHeight * 0.14).clamp(8.0, 14.0), // Optimized responsive font
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              ],
                             ),
-                          ],
-                        ),
-                      ),
-                      // Responsive progress indicator
-                      SizedBox(
-                        width: cardHeight * 0.5,
-                        height: cardHeight * 0.5,
-                        child: Stack(
-                          children: [
-                            CircularProgressIndicator(
-                              value: progress,
-                              strokeWidth: 2.5,
-                              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                              backgroundColor: progressColor.withOpacity(0.2),
-                            ),
-                            Center(
-                              child: Text(
-                                '${(progress * 100).toInt()}%',
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: textColor,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: (cardHeight * 0.12).clamp(8.0, 12.0), // Responsive font
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               ],
@@ -462,58 +487,65 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   Widget _buildMultipleTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode, Map<String, dynamic> perfAnalysis) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Calculate responsive dimensions to prevent overflow
-        final double maxContainerHeight = constraints.maxHeight * 0.3; // Max 30% of available height
-        final double headerHeight = 40; // Fixed header height
-        final double tileHeight = (maxContainerHeight - headerHeight).clamp(80.0, 120.0);
+        // Calculate responsive dimensions with optimized height allocation
+        final double maxContainerHeight = constraints.maxHeight * 0.35; // Increased from 30% to 35%
+        final double headerHeight = 35; // Slightly reduced header height
+        final double tileHeight = (maxContainerHeight - headerHeight).clamp(90.0, 140.0); // Increased max height
         final double totalHeight = headerHeight + tileHeight;
         
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min, // Use minimum space needed
           children: [
-            // Compact header with timer count
+            // Optimized compact header with timer count
             Container(
               height: headerHeight,
-              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 6.0),
               child: Row(
                 children: [
                   Icon(
                     Icons.timer_rounded,
                     color: DesignTokens.accentCyan,
-                    size: 16, // Smaller icon for compact header
+                    size: 14, // Compact icon for efficient space use
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 6),
                   Expanded(
-                    child: Text(
-                      '${activeTimers.length} aktive Timer',
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: DesignTokens.accentCyan,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14, // Fixed readable size
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '${activeTimers.length} Timer aktiv',
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          color: DesignTokens.accentCyan,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13, // Optimized readable size
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   // Compact "View All" button
                   GestureDetector(
                     onTap: widget.onTimerTap,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
                       decoration: BoxDecoration(
                         color: DesignTokens.accentCyan.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: DesignTokens.accentCyan.withOpacity(0.3),
                         ),
                       ),
-                      child: Text(
-                        'Alle',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: DesignTokens.accentCyan,
-                          fontWeight: FontWeight.w500,
-                          fontSize: 12,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          'Alle',
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: DesignTokens.accentCyan,
+                            fontWeight: FontWeight.w500,
+                            fontSize: 11,
+                          ),
                         ),
                       ),
                     ),
@@ -534,8 +566,8 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 itemCount: activeTimers.length,
                 itemBuilder: (context, index) {
                   final timer = activeTimers[index];
-                  // Calculate responsive tile width based on screen size - made narrower per user feedback
-                  final double tileWidth = (constraints.maxWidth * 0.3).clamp(110.0, 150.0);
+                  // Calculate optimized tile width for better content visibility
+                  final double tileWidth = (constraints.maxWidth * 0.4).clamp(140.0, 180.0);
                   
                   return Container(
                     width: tileWidth,
@@ -597,79 +629,110 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
             ),
           ],
         ),
-        child: Padding(
-          padding: EdgeInsets.all(tileHeight * 0.1), // Responsive padding
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with icon and progress - responsive layout
-              Row(
+        child: LayoutBuilder(
+          builder: (context, tileConstraints) {
+            return Padding(
+              padding: EdgeInsets.all(tileHeight * 0.08), // Slightly reduced padding for more content space
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(tileHeight * 0.05),
-                    decoration: BoxDecoration(
-                      color: progressColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      Icons.timer_rounded,
-                      color: progressColor,
-                      size: (tileHeight * 0.15).clamp(12.0, 16.0), // Responsive icon size
+                  // Optimized header with compact layout
+                  SizedBox(
+                    height: tileHeight * 0.2, // Fixed height for header
+                    child: Row(
+                      children: [
+                        // Compact timer icon
+                        Container(
+                          padding: EdgeInsets.all(tileHeight * 0.04),
+                          decoration: BoxDecoration(
+                            color: progressColor.withOpacity(0.15),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Icon(
+                            Icons.timer_rounded,
+                            color: progressColor,
+                            size: (tileHeight * 0.12).clamp(10.0, 14.0), // Smaller icon
+                          ),
+                        ),
+                        SizedBox(width: tileConstraints.maxWidth * 0.02),
+                        // Compact progress indicator
+                        SizedBox(
+                          width: tileHeight * 0.18,
+                          height: tileHeight * 0.18,
+                          child: CircularProgressIndicator(
+                            value: progress,
+                            strokeWidth: 1.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                            backgroundColor: progressColor.withOpacity(0.2),
+                          ),
+                        ),
+                        const Spacer(),
+                        // Progress percentage moved to header for space efficiency
+                        Text(
+                          '${(progress * 100).toInt()}%',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: progressColor,
+                            fontWeight: FontWeight.w600,
+                            fontSize: (tileHeight * 0.1).clamp(8.0, 11.0),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+                  SizedBox(height: tileHeight * 0.06),
+                  // Optimized substance name with FittedBox for better scaling
+                  Flexible(
+                    flex: 3, // Increased flex for more space
+                    child: LayoutBuilder(
+                      builder: (context, nameConstraints) {
+                        return FittedBox(
+                          fit: BoxFit.scaleDown,
+                          alignment: Alignment.centerLeft,
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(
+                              minWidth: nameConstraints.maxWidth,
+                              maxWidth: nameConstraints.maxWidth,
+                            ),
+                            child: Text(
+                              timer.substanceName ?? 'Unbekannt',
+                              style: theme.textTheme.titleSmall?.copyWith(
+                                color: textColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: (tileHeight * 0.16).clamp(12.0, 18.0), // Larger base font
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.left,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  // Flexible spacer for balance
                   const Spacer(),
-                  // Responsive circular progress indicator
-                  SizedBox(
-                    width: tileHeight * 0.25,
-                    height: tileHeight * 0.25,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 2.0,
-                      valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                      backgroundColor: progressColor.withOpacity(0.2),
+                  // Compact time remaining display
+                  Flexible(
+                    flex: 1,
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        _formatTimerText(timer.formattedRemainingTime),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: textColor.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                          fontSize: (tileHeight * 0.13).clamp(10.0, 14.0),
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: tileHeight * 0.1), // Responsive spacing
-              // Substance name with flexible sizing
-              Expanded(
-                flex: 2,
-                child: Text(
-                  timer.substanceName ?? 'Unbekannt',
-                  style: theme.textTheme.titleSmall?.copyWith(
-                    color: textColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: (tileHeight * 0.14).clamp(12.0, 16.0), // Responsive font
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              // Flexible spacer
-              const Spacer(),
-              // Time remaining with responsive font
-              Text(
-                _formatTimerText(timer.formattedRemainingTime),
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: textColor.withOpacity(0.8),
-                  fontWeight: FontWeight.w500,
-                  fontSize: (tileHeight * 0.12).clamp(10.0, 14.0), // Responsive font
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              SizedBox(height: tileHeight * 0.02),
-              // Progress percentage with responsive font
-              Text(
-                '${(progress * 100).toInt()}% fertig',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: textColor.withOpacity(0.6),
-                  fontSize: (tileHeight * 0.1).clamp(8.0, 12.0), // Responsive font
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     ).animate(
