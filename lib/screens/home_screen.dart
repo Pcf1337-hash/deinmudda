@@ -8,6 +8,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
 import '../utils/service_locator.dart';
+import '../utils/multi_timer_performance_helper.dart';
 import '../use_cases/entry_use_cases.dart';
 import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
@@ -144,16 +145,56 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   /// Starts a periodic timer to automatically refresh timer states and clean up expired timers.
   /// This ensures expired timers are automatically hidden from the main timer area.
+  /// 
+  /// Performance optimization: Uses adaptive refresh intervals based on number of active timers.
   void _startPeriodicTimerRefresh() {
     // Cancel any existing timer first
     _timerRefreshTimer?.cancel();
     
-    // Set up periodic refresh every 30 seconds to check for expired timers
-    _timerRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    // Get current active timer count for adaptive timing
+    final activeCount = _timerService.activeTimers.length;
+    
+    // Use performance helper to determine optimal refresh interval
+    final perfAnalysis = MultiTimerPerformanceHelper.analyzeTimerPerformance(_timerService.activeTimers);
+    final refreshInterval = perfAnalysis['refreshInterval'] as Duration;
+    
+    if (kDebugMode) {
+      print('⏰ HomeScreen: Configurando refresh para $activeCount timers (${refreshInterval.inSeconds}s)');
+    }
+    
+    // Set up periodic refresh with adaptive timing
+    _timerRefreshTimer = Timer.periodic(refreshInterval, (timer) {
       if (mounted) {
-        _timerService.refreshActiveTimers();
-        if (kDebugMode) {
-          print('🔄 HomeScreen: Automatische Timer-Aktualisierung ausgeführt');
+        final currentActiveCount = _timerService.activeTimers.length;
+        
+        // Only refresh if we have active timers to avoid unnecessary work
+        if (currentActiveCount > 0) {
+          _timerService.refreshActiveTimers();
+          
+          if (kDebugMode) {
+            print('🔄 HomeScreen: Timer-Aktualisierung für $currentActiveCount Timer ausgeführt');
+          }
+          
+          // Re-evaluate refresh interval if timer count changed significantly
+          if ((currentActiveCount - activeCount).abs() > 2) {
+            if (kDebugMode) {
+              print('📊 HomeScreen: Timer-Anzahl geändert ($activeCount -> $currentActiveCount), starte Refresh neu');
+            }
+            timer.cancel();
+            _startPeriodicTimerRefresh(); // Restart with new optimal interval
+          }
+        } else {
+          // No active timers, reduce refresh frequency
+          if (refreshInterval.inSeconds < 60) {
+            timer.cancel();
+            _timerRefreshTimer = Timer.periodic(const Duration(minutes: 1), (t) {
+              if (mounted && _timerService.activeTimers.isNotEmpty) {
+                // Restart normal refresh when timers become active again
+                t.cancel();
+                _startPeriodicTimerRefresh();
+              }
+            });
+          }
         }
       } else {
         // Cancel timer if widget is no longer mounted
@@ -162,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     });
     
     if (kDebugMode) {
-      print('⏰ HomeScreen: Automatische Timer-Aktualisierung gestartet (alle 30 Sekunden)');
+      print('⏰ HomeScreen: Automatische Timer-Aktualisierung gestartet (${refreshInterval.inSeconds}s Intervall für $activeCount Timer)');
     }
   }
 

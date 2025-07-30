@@ -27,7 +27,8 @@ class TimerService extends ChangeNotifier implements ITimerService {
   bool _pendingNotification = false;
   
   // Performance optimization: limit maximum concurrent timers
-  static const int _maxConcurrentTimers = 10;
+  // Increased limit to support more simultaneous timers without issues
+  static const int _maxConcurrentTimers = 15;
 
   // Timer persistence keys
   static const String _activeTimerCountKey = 'active_timer_count';
@@ -120,9 +121,14 @@ class TimerService extends ChangeNotifier implements ITimerService {
 
   // Set up individual timer for entry-specific management
   // RACE CONDITION FIX: Added async handling and disposal checks
+  // MEMORY OPTIMIZATION: Improved cleanup and disposal safety
   void _setupIndividualTimer(Entry entry) {
+    if (_isDisposed) return;
+    
+    // Clean up any existing timer for this entry to prevent duplicates
     if (_individualTimers.containsKey(entry.id)) {
       _individualTimers[entry.id]?.cancel();
+      _individualTimers.remove(entry.id);
     }
     
     if (entry.timerEndTime == null) return;
@@ -132,15 +138,34 @@ class TimerService extends ChangeNotifier implements ITimerService {
     
     if (remaining.inMilliseconds > 0) {
       _individualTimers[entry.id] = Timer(remaining, () async {
-        // CRITICAL FIX: Check if service is still active before processing
-        if (!_isDisposed && _activeTimers.containsKey(entry.id)) {
-          await _handleTimerExpired(entry);
+        // CRITICAL FIX: Multiple safety checks before processing
+        if (!_isDisposed && 
+            _activeTimers.containsKey(entry.id) && 
+            _individualTimers.containsKey(entry.id)) {
+          
+          try {
+            await _handleTimerExpired(entry);
+          } catch (e) {
+            ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Verarbeiten des abgelaufenen Timers: $e');
+          }
         }
-        // Safe cleanup - only remove if still exists
-        if (_individualTimers.containsKey(entry.id)) {
+        
+        // Safe cleanup - only remove if still exists and not disposed
+        if (!_isDisposed && _individualTimers.containsKey(entry.id)) {
           _individualTimers.remove(entry.id);
         }
       });
+      
+      ErrorHandler.logTimer('SETUP', 'Individueller Timer für ${entry.substanceName} eingerichtet (${remaining.inMinutes}min verbleibend)');
+    } else {
+      // Timer already expired, handle immediately
+      if (!_isDisposed) {
+        WidgetsBinding.instance.addPostFrameCallback((_) async {
+          if (!_isDisposed) {
+            await _handleTimerExpired(entry);
+          }
+        });
+      }
     }
   }
 
@@ -268,32 +293,48 @@ class TimerService extends ChangeNotifier implements ITimerService {
   }
 
   // Helper method to remove the oldest timer when limit is reached
+  // PERFORMANCE OPTIMIZATION: Improved efficiency and safety
   void _removeOldestTimer() {
-    if (_activeTimers.isEmpty) return;
+    if (_activeTimers.isEmpty || _isDisposed) return;
     
-    Entry? oldestEntry;
-    DateTime? oldestTime;
-    
-    for (final entry in _activeTimers.values) {
-      if (entry.timerStartTime != null) {
-        if (oldestTime == null || entry.timerStartTime!.isBefore(oldestTime)) {
-          oldestTime = entry.timerStartTime;
-          oldestEntry = entry;
+    try {
+      Entry? oldestEntry;
+      DateTime? oldestTime;
+      
+      for (final entry in _activeTimers.values) {
+        if (entry.timerStartTime != null) {
+          if (oldestTime == null || entry.timerStartTime!.isBefore(oldestTime)) {
+            oldestTime = entry.timerStartTime;
+            oldestEntry = entry;
+          }
         }
       }
-    }
-    
-    if (oldestEntry != null) {
-      _stopTimerById(oldestEntry.id);
-      ErrorHandler.logTimer('CLEANUP', 'Ältester Timer entfernt: ${oldestEntry.substanceName}');
+      
+      if (oldestEntry != null) {
+        // Stop timer safely and asynchronously
+        _stopTimerById(oldestEntry.id).catchError((e) {
+          ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Entfernen des ältesten Timers: $e');
+        });
+        ErrorHandler.logTimer('CLEANUP', 'Ältester Timer zur Entfernung markiert: ${oldestEntry.substanceName}');
+      }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Finden des ältesten Timers: $e');
     }
   }
 
   // Helper method to stop timer by ID
+  // CONCURRENCY IMPROVEMENT: Better async handling for multiple timer operations
   Future<void> _stopTimerById(String entryId) async {
-    final entry = _activeTimers[entryId];
-    if (entry != null) {
-      await stopTimerForEntry(entry);
+    if (_isDisposed) return;
+    
+    try {
+      final entry = _activeTimers[entryId];
+      if (entry != null) {
+        await stopTimerForEntry(entry);
+        ErrorHandler.logTimer('STOP', 'Timer für Entry $entryId erfolgreich gestoppt');
+      }
+    } catch (e) {
+      ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Stoppen des Timers $entryId: $e');
     }
   }
 
@@ -791,32 +832,46 @@ class TimerService extends ChangeNotifier implements ITimerService {
   }
 
   // Dispose timer service with improved cleanup
+  // CONCURRENCY IMPROVEMENT: Enhanced safety for multiple timer disposal
   @override
   void dispose() {
     if (_isDisposed) return;
     _isDisposed = true;
     
     try {
-      ErrorHandler.logDispose('TIMER_SERVICE', 'TimerService dispose gestartet (optimiert ohne polling)');
+      ErrorHandler.logDispose('TIMER_SERVICE', 'TimerService dispose gestartet - bereinige ${_activeTimers.length} Timer');
       
-      // PERFORMANCE OPTIMIZATION: Removed _timerCheckTimer (no longer used)
+      // Cancel debounce timer first to prevent any pending notifications
       _notificationDebounceTimer?.cancel();
       _notificationDebounceTimer = null;
+      _pendingNotification = false;
       
-      // Cancel all individual timers
+      // MEMORY OPTIMIZATION: Cancel and clear all individual timers safely
+      final timerCount = _individualTimers.length;
       for (final timer in _individualTimers.values) {
-        timer.cancel();
+        try {
+          timer.cancel();
+        } catch (e) {
+          ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Abbrechen eines individuellen Timers: $e');
+        }
       }
       _individualTimers.clear();
       
+      // Clear active timers map
       _activeTimers.clear();
       
-      // Clear timer preferences
-      _clearTimerPrefs();
+      // Clear timer preferences asynchronously to avoid blocking disposal
+      Future.microtask(() async {
+        try {
+          await _clearTimerPrefs();
+        } catch (e) {
+          ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Löschen der Timer-Einstellungen: $e');
+        }
+      });
       
       _isInitialized = false;
       
-      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService dispose abgeschlossen - event-driven system cleaned up');
+      ErrorHandler.logSuccess('TIMER_SERVICE', 'TimerService dispose abgeschlossen - $timerCount Timer bereinigt');
     } catch (e) {
       ErrorHandler.logError('TIMER_SERVICE', 'Fehler beim Dispose des TimerService: $e');
     }
