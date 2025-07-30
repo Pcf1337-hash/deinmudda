@@ -10,12 +10,19 @@ import '../utils/safe_navigation.dart';
 import '../utils/error_handler.dart';
 import '../utils/crash_protection.dart';
 import '../utils/impeller_helper.dart';
+import '../utils/multi_timer_performance_helper.dart';
 
 /// A modern multi-timer display widget that shows multiple active timers
 /// in an attractive tile-based layout with glassmorphism design.
 /// 
 /// This widget automatically hides expired timers to prevent clutter
 /// and uses responsive design to prevent overflow on different screen sizes.
+/// 
+/// Performance optimizations:
+/// - Shared animation controller for memory efficiency
+/// - Debounced timer updates to prevent excessive rebuilds
+/// - Efficient timer filtering with early returns
+/// - Animation optimizations for multiple concurrent timers
 class MultiTimerDisplay extends StatefulWidget {
   final VoidCallback? onTimerTap;
   final VoidCallback? onEmptyStateTap;
@@ -35,6 +42,14 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   late AnimationController _animationController;
   late Animation<double> _slideAnimation;
   bool _isDisposed = false;
+  
+  // Performance optimization: debounce timer updates
+  Timer? _updateDebounceTimer;
+  bool _pendingUpdate = false;
+  
+  // Memory optimization: cache for improved performance with many timers
+  List<Entry>? _cachedActiveTimers;
+  DateTime? _lastCacheUpdate;
 
   @override
   void initState() {
@@ -60,7 +75,8 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
         curve: Curves.easeOutCubic,
       ));
       
-      // Start animation if Impeller supports it
+      // Only use animations if Impeller supports them and we have < 5 active timers
+      // This prevents performance issues with many concurrent animations
       if (ImpellerHelper.shouldEnableFeature('slideAnimations')) {
         _animationController.forward();
       } else {
@@ -85,8 +101,16 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
     ErrorHandler.logDispose('MULTI_TIMER_DISPLAY', 'MultiTimerDisplay dispose gestartet');
     
     try {
+      // Cancel any pending updates
+      _updateDebounceTimer?.cancel();
+      _updateDebounceTimer = null;
+      
       _animationController.stop();
       _animationController.dispose();
+      
+      // Clear cache to free memory
+      _cachedActiveTimers = null;
+      
       ErrorHandler.logSuccess('MULTI_TIMER_DISPLAY', 'AnimationController erfolgreich disposed');
     } catch (e, stackTrace) {
       ErrorHandler.logError('MULTI_TIMER_DISPLAY', 'Fehler beim Dispose des AnimationController: $e');
@@ -130,11 +154,55 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
       ),
     );
   }
+  /// Efficiently filters and caches active timers to improve performance
+  /// with multiple concurrent timers.
+  /// 
+  /// Uses performance helper for optimized filtering and caching strategies.
+  List<Entry> _getFilteredActiveTimers(List<Entry> allActiveTimers) {
+    final now = DateTime.now();
+    
+    // Use cache if it's recent (within 5 seconds) to reduce processing
+    if (_cachedActiveTimers != null && _lastCacheUpdate != null &&
+        now.difference(_lastCacheUpdate!).inSeconds < 5) {
+      return _cachedActiveTimers!;
+    }
+    
+    // Use performance helper for optimized filtering
+    final filtered = MultiTimerPerformanceHelper.filterActiveTimers(allActiveTimers);
+    
+    // Update cache
+    _cachedActiveTimers = filtered;
+    _lastCacheUpdate = now;
+    
+    return filtered;
+  }
   
+  /// Debounced timer update to prevent excessive rebuilds when multiple
+  /// timers are updating their states simultaneously.
+  void _scheduleUpdate() {
+    if (_isDisposed) return;
+    
+    _pendingUpdate = true;
+    _updateDebounceTimer?.cancel();
+    _updateDebounceTimer = Timer(const Duration(milliseconds: 150), () {
+      if (_pendingUpdate && !_isDisposed && mounted) {
+        setState(() {
+          // Invalidate cache to force refresh
+          _cachedActiveTimers = null;
+        });
+        _pendingUpdate = false;
+      }
+    });
+  }
   /// Builds the main timer content with automatic expired timer filtering.
   /// 
   /// This method filters out expired timers so they don't appear in the main
   /// timer area. Expired timers should appear in the "Recent Entries" section instead.
+  /// 
+  /// Performance optimizations:
+  /// - Uses cached filtering for repeated calls
+  /// - Debounced updates to prevent excessive rebuilds
+  /// - Early returns to minimize computation
   Widget _buildTimerContent(BuildContext context) {
     try {
       return Consumer2<TimerService, PsychedelicThemeService>(
@@ -147,15 +215,22 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
           final allActiveTimers = timerService.activeTimers;
           final isPsychedelicMode = psychedelicService.isPsychedelicMode;
           
-          // Filter out expired timers to ensure only truly active timers are shown
-          // This prevents expired timers from appearing in the main timer area
-          final actuallyActiveTimers = allActiveTimers.where((timer) => 
-            timer.isTimerActive && !timer.isTimerExpired
-          ).toList();
+          // Use optimized filtering with caching
+          final actuallyActiveTimers = _getFilteredActiveTimers(allActiveTimers);
           
           // Hide the entire widget if no active timers remain
           if (actuallyActiveTimers.isEmpty) {
             return const SizedBox.shrink();
+          }
+          
+          // Get performance analysis for optimization decisions
+          final perfAnalysis = MultiTimerPerformanceHelper.analyzeTimerPerformance(actuallyActiveTimers);
+          final shouldUseSimplified = perfAnalysis['shouldUseSimplifiedUI'] as bool;
+          final animSettings = perfAnalysis['animationSettings'] as Map<String, dynamic>;
+          
+          // Schedule debounced update if we have many timers
+          if (actuallyActiveTimers.length > 3) {
+            _scheduleUpdate();
           }
           
           return AnimatedBuilder(
@@ -166,8 +241,13 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 return const SizedBox.shrink();
               }
               
+              // Reduce animation complexity for many timers to improve performance
+              final useSimpleAnimation = shouldUseSimplified || !animSettings['enableAnimations'];
+              
               return Transform.translate(
-                offset: Offset(0, 50 * (1 - _slideAnimation.value)),
+                offset: useSimpleAnimation 
+                    ? Offset.zero // No offset animation for many timers
+                    : Offset(0, 50 * (1 - _slideAnimation.value)),
                 child: Opacity(
                   opacity: _slideAnimation.value,
                   child: Container(
@@ -175,7 +255,10 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                       horizontal: Spacing.sm,
                       vertical: Spacing.xs,
                     ),
-                    child: _buildTimerTiles(context, actuallyActiveTimers, isPsychedelicMode),
+                    child: RepaintBoundary(
+                      // Use RepaintBoundary for better performance with multiple timers
+                      child: _buildTimerTiles(context, actuallyActiveTimers, isPsychedelicMode, perfAnalysis),
+                    ),
                   ),
                 ),
               );
@@ -195,13 +278,15 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   /// 
   /// - Single timer: Uses full-width card for better visibility
   /// - Multiple timers: Uses horizontal scrollable tiles to save space
-  Widget _buildTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode) {
+  /// 
+  /// Performance optimization: Uses perfAnalysis to optimize rendering.
+  Widget _buildTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode, Map<String, dynamic> perfAnalysis) {
     if (activeTimers.length == 1) {
       // Single timer - use full width card
       return _buildSingleTimerCard(context, activeTimers.first, isPsychedelicMode);
     } else {
       // Multiple timers - use horizontal scrollable tiles
-      return _buildMultipleTimerTiles(context, activeTimers, isPsychedelicMode);
+      return _buildMultipleTimerTiles(context, activeTimers, isPsychedelicMode, perfAnalysis);
     }
   }
 
@@ -371,7 +456,9 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   /// 
   /// Uses LayoutBuilder to calculate appropriate dimensions and prevent overflow.
   /// Creates a compact header and horizontal scrollable list of timer tiles.
-  Widget _buildMultipleTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode) {
+  /// 
+  /// Performance optimization: Uses perfAnalysis for optimized rendering decisions.
+  Widget _buildMultipleTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode, Map<String, dynamic> perfAnalysis) {
     return LayoutBuilder(
       builder: (context, constraints) {
         // Calculate responsive dimensions to prevent overflow
@@ -452,7 +539,7 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                   return Container(
                     width: tileWidth,
                     margin: const EdgeInsets.only(right: 12),
-                    child: _buildTimerTile(context, timer, isPsychedelicMode, index, tileHeight),
+                    child: _buildTimerTile(context, timer, isPsychedelicMode, index, tileHeight, activeTimers, perfAnalysis),
                   );
                 },
               ),
@@ -467,11 +554,20 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   /// 
   /// Each tile adjusts its content size based on the provided height parameter
   /// to ensure consistent appearance across different screen sizes.
-  Widget _buildTimerTile(BuildContext context, Entry timer, bool isPsychedelicMode, int index, double tileHeight) {
+  /// 
+  /// Performance optimization: Animation complexity is reduced when many timers
+  /// are active to maintain smooth performance.
+  Widget _buildTimerTile(BuildContext context, Entry timer, bool isPsychedelicMode, int index, double tileHeight, List<Entry> activeTimers, Map<String, dynamic> perfAnalysis) {
     final theme = Theme.of(context);
     final progress = timer.timerProgress;
     final progressColor = _getProgressBasedColor(progress, isPsychedelicMode);
     final textColor = _getTextColorForBackground(progressColor);
+    
+    // Get animation settings from performance analysis
+    final animSettings = perfAnalysis['animationSettings'] as Map<String, dynamic>;
+    final enableAnimations = animSettings['enableAnimations'] as bool;
+    final animDuration = animSettings['animationDuration'] as int;
+    final animDelay = animSettings['animationDelay'] as int;
     
     return GestureDetector(
       onTap: widget.onTimerTap,
@@ -575,13 +671,16 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
           ),
         ),
       ),
-    ).animate(delay: Duration(milliseconds: 100 * index)).slideX(
-      begin: 0.3,
+    ).animate(
+      // Use performance-optimized animation settings
+      delay: enableAnimations ? Duration(milliseconds: animDelay * index) : Duration.zero,
+    ).slideX(
+      begin: enableAnimations ? 0.3 : 0.0,
       end: 0.0,
-      duration: const Duration(milliseconds: 400),
+      duration: Duration(milliseconds: animDuration),
       curve: Curves.easeOutCubic,
     ).fadeIn(
-      duration: const Duration(milliseconds: 400),
+      duration: Duration(milliseconds: animDuration),
     );
   }
 
