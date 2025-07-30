@@ -534,8 +534,8 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 itemCount: activeTimers.length,
                 itemBuilder: (context, index) {
                   final timer = activeTimers[index];
-                  // Calculate responsive tile width based on screen size
-                  final double tileWidth = (constraints.maxWidth * 0.4).clamp(140.0, 180.0);
+                  // Calculate responsive tile width based on screen size - made narrower per user feedback
+                  final double tileWidth = (constraints.maxWidth * 0.3).clamp(110.0, 150.0);
                   
                   return Container(
                     width: tileWidth,

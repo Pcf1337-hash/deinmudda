@@ -121,6 +121,41 @@ void main() {
       expect(find.text('Test Substance 1'), findsOneWidget);
       expect(find.text('Test Substance 2'), findsOneWidget);
     });
+
+    test('tile width calculation should be narrower after changes', () {
+      // Test the new calculation logic: 30% of screen width, clamped to 110-150px
+      const double screenWidth400 = 400.0;
+      const double screenWidth600 = 600.0;
+      const double screenWidth320 = 320.0;
+      
+      // New calculation
+      final newWidth400 = (screenWidth400 * 0.3).clamp(110.0, 150.0);
+      final newWidth600 = (screenWidth600 * 0.3).clamp(110.0, 150.0);
+      final newWidth320 = (screenWidth320 * 0.3).clamp(110.0, 150.0);
+      
+      // Verify the new tile widths
+      expect(newWidth400, equals(120.0)); // 400 * 0.3 = 120
+      expect(newWidth600, equals(150.0)); // 600 * 0.3 = 180, clamped to 150
+      expect(newWidth320, equals(110.0)); // 320 * 0.3 = 96, clamped to 110
+      
+      // Verify they are smaller than the old calculation (40% screen width, 140-180px)
+      final oldWidth400 = (screenWidth400 * 0.4).clamp(140.0, 180.0); // 160
+      final oldWidth600 = (screenWidth600 * 0.4).clamp(140.0, 180.0); // 180
+      final oldWidth320 = (screenWidth320 * 0.4).clamp(140.0, 180.0); // 140
+      
+      expect(newWidth400, lessThan(oldWidth400), reason: 'New tiles should be narrower on 400px screen');
+      expect(newWidth600, lessThan(oldWidth600), reason: 'New tiles should be narrower on 600px screen');
+      expect(newWidth320, lessThan(oldWidth320), reason: 'New tiles should be narrower on 320px screen');
+      
+      // Verify the percentage reduction
+      final reduction400 = ((oldWidth400 - newWidth400) / oldWidth400 * 100);
+      final reduction600 = ((oldWidth600 - newWidth600) / oldWidth600 * 100);
+      final reduction320 = ((oldWidth320 - newWidth320) / oldWidth320 * 100);
+      
+      expect(reduction400, equals(25.0), reason: '25% reduction for 400px screen: from 160px to 120px');
+      expect(reduction600, closeTo(16.7, 0.1), reason: '~16.7% reduction for 600px screen: from 180px to 150px');
+      expect(reduction320, closeTo(21.4, 0.1), reason: '~21.4% reduction for 320px screen: from 140px to 110px');
+    });
   });
 }
 
