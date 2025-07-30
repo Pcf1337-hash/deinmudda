@@ -52,7 +52,7 @@ void _showVisualErrorFallback(FlutterErrorDetails details) {
 
 void main() async {
   // Ensure Flutter is initialized
-  WidgetsFlutterBinding.ensureInitialized();
+  WidgetsBinding.instance.ensureInitialized();
   
   ErrorHandler.logStartup('MAIN', 'App-Initialisierung gestartet');
   
