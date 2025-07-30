@@ -13,6 +13,9 @@ import '../utils/impeller_helper.dart';
 
 /// A modern multi-timer display widget that shows multiple active timers
 /// in an attractive tile-based layout with glassmorphism design.
+/// 
+/// This widget automatically hides expired timers to prevent clutter
+/// and uses responsive design to prevent overflow on different screen sizes.
 class MultiTimerDisplay extends StatefulWidget {
   final VoidCallback? onTimerTap;
   final VoidCallback? onEmptyStateTap;
@@ -128,6 +131,10 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
     );
   }
   
+  /// Builds the main timer content with automatic expired timer filtering.
+  /// 
+  /// This method filters out expired timers so they don't appear in the main
+  /// timer area. Expired timers should appear in the "Recent Entries" section instead.
   Widget _buildTimerContent(BuildContext context) {
     try {
       return Consumer2<TimerService, PsychedelicThemeService>(
@@ -137,10 +144,17 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
             return const SizedBox.shrink();
           }
           
-          final activeTimers = timerService.activeTimers;
+          final allActiveTimers = timerService.activeTimers;
           final isPsychedelicMode = psychedelicService.isPsychedelicMode;
           
-          if (activeTimers.isEmpty) {
+          // Filter out expired timers to ensure only truly active timers are shown
+          // This prevents expired timers from appearing in the main timer area
+          final actuallyActiveTimers = allActiveTimers.where((timer) => 
+            timer.isTimerActive && !timer.isTimerExpired
+          ).toList();
+          
+          // Hide the entire widget if no active timers remain
+          if (actuallyActiveTimers.isEmpty) {
             return const SizedBox.shrink();
           }
           
@@ -161,7 +175,7 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                       horizontal: Spacing.sm,
                       vertical: Spacing.xs,
                     ),
-                    child: _buildTimerTiles(context, activeTimers, isPsychedelicMode),
+                    child: _buildTimerTiles(context, actuallyActiveTimers, isPsychedelicMode),
                   ),
                 ),
               );
@@ -177,6 +191,10 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
     }
   }
 
+  /// Determines the layout based on number of active timers.
+  /// 
+  /// - Single timer: Uses full-width card for better visibility
+  /// - Multiple timers: Uses horizontal scrollable tiles to save space
   Widget _buildTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode) {
     if (activeTimers.length == 1) {
       // Single timer - use full width card
@@ -187,211 +205,269 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
     }
   }
 
+  /// Builds a responsive single timer card that adapts to screen size.
+  /// 
+  /// Uses LayoutBuilder to calculate appropriate dimensions and prevent overflow.
+  /// Implements Material Design 3 principles with psychedelic theme support.
   Widget _buildSingleTimerCard(BuildContext context, Entry timer, bool isPsychedelicMode) {
     final theme = Theme.of(context);
     final progress = timer.timerProgress;
     final progressColor = _getProgressBasedColor(progress, isPsychedelicMode);
     final textColor = _getTextColorForBackground(progressColor);
     
-    return GestureDetector(
-      onTap: widget.onTimerTap,
-      child: Container(
-        width: double.infinity,
-        height: 80,
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              progressColor.withOpacity(0.15),
-              progressColor.withOpacity(0.05),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: progressColor.withOpacity(0.3),
-            width: 1.5,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: progressColor.withOpacity(0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
-            ),
-            if (isPsychedelicMode) ...[
-              BoxShadow(
-                color: progressColor.withOpacity(0.1),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Responsive height calculation to prevent overflow
+        // Base height scales with available space but stays within bounds
+        final double cardHeight = (constraints.maxWidth * 0.15).clamp(60.0, 90.0);
+        
+        return GestureDetector(
+          onTap: widget.onTimerTap,
+          child: Container(
+            width: double.infinity,
+            height: cardHeight,
+            decoration: BoxDecoration(
+              // Material Design 3 inspired gradient with psychedelic theme support
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  progressColor.withOpacity(0.12), // MD3 surface tint opacity
+                  progressColor.withOpacity(0.04),
+                ],
               ),
-            ],
-          ],
-        ),
-        child: Stack(
-          children: [
-            // Progress background
-            Container(
-              height: 80,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                  colors: [
-                    progressColor.withOpacity(0.3),
-                    progressColor.withOpacity(0.1),
-                  ],
-                  stops: [0.0, progress],
+              borderRadius: BorderRadius.circular(16), // MD3 large container radius
+              border: Border.all(
+                color: progressColor.withOpacity(0.25),
+                width: 1.0, // Thinner border for MD3 aesthetic
+              ),
+              boxShadow: [
+                // MD3 elevation shadow style
+                BoxShadow(
+                  color: progressColor.withOpacity(0.15),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
                 ),
-              ),
+                if (isPsychedelicMode) ...[
+                  // Additional psychedelic glow effect
+                  BoxShadow(
+                    color: progressColor.withOpacity(0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ],
             ),
-            // Content
-            Padding(
-              padding: const EdgeInsets.all(16.0),
+            child: Stack(
+              children: [
+                // Subtle progress background indicator
+                Container(
+                  height: cardHeight,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    gradient: LinearGradient(
+                      begin: Alignment.centerLeft,
+                      end: Alignment.centerRight,
+                      colors: [
+                        progressColor.withOpacity(0.2),
+                        progressColor.withOpacity(0.05),
+                      ],
+                      stops: [0.0, progress], // Progress-based gradient stop
+                    ),
+                  ),
+                ),
+                // Main content with flexible padding
+                Padding(
+                  padding: EdgeInsets.all(cardHeight * 0.15), // Responsive padding
+                  child: Row(
+                    children: [
+                      // Timer icon with responsive sizing
+                      Container(
+                        padding: EdgeInsets.all(cardHeight * 0.08),
+                        decoration: BoxDecoration(
+                          color: progressColor.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Icon(
+                          Icons.timer_rounded,
+                          color: progressColor,
+                          size: (cardHeight * 0.25).clamp(16.0, 24.0), // Responsive icon size
+                        ),
+                      ),
+                      SizedBox(width: cardHeight * 0.2), // Responsive spacing
+                      // Flexible content area prevents overflow
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Substance name with overflow protection
+                            Flexible(
+                              child: Text(
+                                timer.substanceName ?? 'Unbekannte Substanz',
+                                style: theme.textTheme.titleMedium?.copyWith(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: (cardHeight * 0.2).clamp(14.0, 18.0), // Responsive font
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(height: cardHeight * 0.05),
+                            // Timer status with responsive font size
+                            Flexible(
+                              child: Text(
+                                _formatTimerText(timer.formattedRemainingTime),
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: textColor.withOpacity(0.8),
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: (cardHeight * 0.16).clamp(12.0, 16.0), // Responsive font
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Responsive progress indicator
+                      SizedBox(
+                        width: cardHeight * 0.5,
+                        height: cardHeight * 0.5,
+                        child: Stack(
+                          children: [
+                            CircularProgressIndicator(
+                              value: progress,
+                              strokeWidth: 2.5,
+                              valueColor: AlwaysStoppedAnimation<Color>(progressColor),
+                              backgroundColor: progressColor.withOpacity(0.2),
+                            ),
+                            Center(
+                              child: Text(
+                                '${(progress * 100).toInt()}%',
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: textColor,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: (cardHeight * 0.12).clamp(8.0, 12.0), // Responsive font
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Builds responsive multiple timer tiles layout.
+  /// 
+  /// Uses LayoutBuilder to calculate appropriate dimensions and prevent overflow.
+  /// Creates a compact header and horizontal scrollable list of timer tiles.
+  Widget _buildMultipleTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Calculate responsive dimensions to prevent overflow
+        final double maxContainerHeight = constraints.maxHeight * 0.3; // Max 30% of available height
+        final double headerHeight = 40; // Fixed header height
+        final double tileHeight = (maxContainerHeight - headerHeight).clamp(80.0, 120.0);
+        final double totalHeight = headerHeight + tileHeight;
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min, // Use minimum space needed
+          children: [
+            // Compact header with timer count
+            Container(
+              height: headerHeight,
+              padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
               child: Row(
                 children: [
-                  // Icon
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: progressColor.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(
-                      Icons.timer_rounded,
-                      color: progressColor,
-                      size: 20,
-                    ),
+                  Icon(
+                    Icons.timer_rounded,
+                    color: DesignTokens.accentCyan,
+                    size: 16, // Smaller icon for compact header
                   ),
-                  const SizedBox(width: 16),
-                  // Content
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          timer.substanceName ?? 'Unbekannte Substanz',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: textColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          _formatTimerText(timer.formattedRemainingTime),
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: textColor.withOpacity(0.8),
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
+                    child: Text(
+                      '${activeTimers.length} aktive Timer',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        color: DesignTokens.accentCyan,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14, // Fixed readable size
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  // Progress indicator
-                  SizedBox(
-                    width: 40,
-                    height: 40,
-                    child: Stack(
-                      children: [
-                        CircularProgressIndicator(
-                          value: progress,
-                          strokeWidth: 3,
-                          valueColor: AlwaysStoppedAnimation<Color>(progressColor),
-                          backgroundColor: progressColor.withOpacity(0.2),
+                  // Compact "View All" button
+                  GestureDetector(
+                    onTap: widget.onTimerTap,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: DesignTokens.accentCyan.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: DesignTokens.accentCyan.withOpacity(0.3),
                         ),
-                        Center(
-                          child: Text(
-                            '${(progress * 100).toInt()}%',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: textColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 10,
-                            ),
-                          ),
+                      ),
+                      child: Text(
+                        'Alle',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: DesignTokens.accentCyan,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 12,
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
+            // Responsive horizontal scrollable timer tiles
+            Container(
+              height: tileHeight,
+              constraints: BoxConstraints(
+                maxHeight: tileHeight,
+                minHeight: 80, // Minimum usable height
+              ),
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 4),
+                itemCount: activeTimers.length,
+                itemBuilder: (context, index) {
+                  final timer = activeTimers[index];
+                  // Calculate responsive tile width based on screen size
+                  final double tileWidth = (constraints.maxWidth * 0.4).clamp(140.0, 180.0);
+                  
+                  return Container(
+                    width: tileWidth,
+                    margin: const EdgeInsets.only(right: 12),
+                    child: _buildTimerTile(context, timer, isPsychedelicMode, index, tileHeight),
+                  );
+                },
+              ),
+            ),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _buildMultipleTimerTiles(BuildContext context, List<Entry> activeTimers, bool isPsychedelicMode) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Header with timer count
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
-          child: Row(
-            children: [
-              Icon(
-                Icons.timer_rounded,
-                color: DesignTokens.accentCyan,
-                size: 18,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                '${activeTimers.length} aktive Timer',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: DesignTokens.accentCyan,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const Spacer(),
-              GestureDetector(
-                onTap: widget.onTimerTap,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: DesignTokens.accentCyan.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: DesignTokens.accentCyan.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Text(
-                    'Alle anzeigen',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: DesignTokens.accentCyan,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Horizontal scrollable timer tiles
-        SizedBox(
-          height: 120,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            itemCount: activeTimers.length,
-            itemBuilder: (context, index) {
-              final timer = activeTimers[index];
-              return Container(
-                width: 160,
-                margin: const EdgeInsets.only(right: 12),
-                child: _buildTimerTile(context, timer, isPsychedelicMode, index),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildTimerTile(BuildContext context, Entry timer, bool isPsychedelicMode, int index) {
+  /// Builds individual timer tile with responsive design.
+  /// 
+  /// Each tile adjusts its content size based on the provided height parameter
+  /// to ensure consistent appearance across different screen sizes.
+  Widget _buildTimerTile(BuildContext context, Entry timer, bool isPsychedelicMode, int index, double tileHeight) {
     final theme = Theme.of(context);
     final progress = timer.timerProgress;
     final progressColor = _getProgressBasedColor(progress, isPsychedelicMode);
@@ -400,89 +476,99 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
     return GestureDetector(
       onTap: widget.onTimerTap,
       child: Container(
+        height: tileHeight,
         decoration: BoxDecoration(
+          // Material Design 3 inspired styling with psychedelic support
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              progressColor.withOpacity(0.15),
-              progressColor.withOpacity(0.05),
+              progressColor.withOpacity(0.12), // MD3 surface tint
+              progressColor.withOpacity(0.04),
             ],
           ),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(12), // MD3 medium container radius
           border: Border.all(
-            color: progressColor.withOpacity(0.3),
+            color: progressColor.withOpacity(0.25),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: progressColor.withOpacity(0.15),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: progressColor.withOpacity(0.12),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(12.0),
+          padding: EdgeInsets.all(tileHeight * 0.1), // Responsive padding
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with icon and progress
+              // Header with icon and progress - responsive layout
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(6),
+                    padding: EdgeInsets.all(tileHeight * 0.05),
                     decoration: BoxDecoration(
-                      color: progressColor.withOpacity(0.2),
+                      color: progressColor.withOpacity(0.15),
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Icon(
                       Icons.timer_rounded,
                       color: progressColor,
-                      size: 16,
+                      size: (tileHeight * 0.15).clamp(12.0, 16.0), // Responsive icon size
                     ),
                   ),
                   const Spacer(),
+                  // Responsive circular progress indicator
                   SizedBox(
-                    width: 28,
-                    height: 28,
+                    width: tileHeight * 0.25,
+                    height: tileHeight * 0.25,
                     child: CircularProgressIndicator(
                       value: progress,
-                      strokeWidth: 2.5,
+                      strokeWidth: 2.0,
                       valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                       backgroundColor: progressColor.withOpacity(0.2),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
-              // Substance name
-              Text(
-                timer.substanceName ?? 'Unbekannt',
-                style: theme.textTheme.titleSmall?.copyWith(
-                  color: textColor,
-                  fontWeight: FontWeight.w600,
+              SizedBox(height: tileHeight * 0.1), // Responsive spacing
+              // Substance name with flexible sizing
+              Expanded(
+                flex: 2,
+                child: Text(
+                  timer.substanceName ?? 'Unbekannt',
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: (tileHeight * 0.14).clamp(12.0, 16.0), // Responsive font
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
+              // Flexible spacer
               const Spacer(),
-              // Time remaining
+              // Time remaining with responsive font
               Text(
                 _formatTimerText(timer.formattedRemainingTime),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: textColor.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
+                  fontSize: (tileHeight * 0.12).clamp(10.0, 14.0), // Responsive font
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 4),
-              // Progress percentage
+              SizedBox(height: tileHeight * 0.02),
+              // Progress percentage with responsive font
               Text(
-                '${(progress * 100).toInt()}% abgeschlossen',
+                '${(progress * 100).toInt()}% fertig',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: textColor.withOpacity(0.6),
+                  fontSize: (tileHeight * 0.1).clamp(8.0, 12.0), // Responsive font
                 ),
               ),
             ],
@@ -533,6 +619,10 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
   }
 
   // Helper method to format timer text for better display
+  /// Formats timer text to be more compact and readable.
+  /// 
+  /// Converts long German text like "2 Stunden 30 Minuten" to "2h 30m"
+  /// and handles special cases like expired timers.
   String _formatTimerText(String originalText) {
     // Handle "abgelaufen" case specifically
     if (originalText.toLowerCase().contains('abgelaufen') || 

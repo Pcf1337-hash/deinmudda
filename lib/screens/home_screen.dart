@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/foundation.dart';
@@ -47,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   bool _isScrolled = false;
   bool _isQuickEntryEditMode = false;
   bool _animationsInitialized = false; // Track if animations have been played
+  
+  // Timer for periodic refresh to handle expired timers automatically
+  Timer? _timerRefreshTimer;
 
   // Use Cases (injected via ServiceLocator)
   late final GetEntriesUseCase _getEntriesUseCase;
@@ -133,8 +137,33 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       if (mounted) {
         _loadEntries();
         _loadQuickButtons();
+        _startPeriodicTimerRefresh(); // Start automatic timer cleanup
       }
     });
+  }
+
+  /// Starts a periodic timer to automatically refresh timer states and clean up expired timers.
+  /// This ensures expired timers are automatically hidden from the main timer area.
+  void _startPeriodicTimerRefresh() {
+    // Cancel any existing timer first
+    _timerRefreshTimer?.cancel();
+    
+    // Set up periodic refresh every 30 seconds to check for expired timers
+    _timerRefreshTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+      if (mounted) {
+        _timerService.refreshActiveTimers();
+        if (kDebugMode) {
+          print('🔄 HomeScreen: Automatische Timer-Aktualisierung ausgeführt');
+        }
+      } else {
+        // Cancel timer if widget is no longer mounted
+        timer.cancel();
+      }
+    });
+    
+    if (kDebugMode) {
+      print('⏰ HomeScreen: Automatische Timer-Aktualisierung gestartet (alle 30 Sekunden)');
+    }
   }
 
   void _refreshData() {
@@ -173,6 +202,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
     
     try {
+      // Clean up timer refresh timer
+      _timerRefreshTimer?.cancel();
+      _timerRefreshTimer = null;
+      
       _scrollController.removeListener(_onScroll);
       _scrollController.dispose();
     } catch (e) {
@@ -531,15 +564,22 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       // Multi Timer Display (shows all active timers in attractive tiles)
+                      // Wrapped with constraints to prevent overflow and ensure responsive behavior
                       LayoutErrorBoundary(
                         debugLabel: 'Multi Timer Display',
                         child: RepaintBoundary( // Isolate timer display rendering for better performance
-                          child: MultiTimerDisplay(
-                            onTimerTap: () => _navigateToTimerDashboard(),
-                            onEmptyStateTap: () => _navigateToTimerDashboard(),
-                          ).animate().fadeIn(
-                            duration: DesignTokens.animationMedium,
-                            delay: const Duration(milliseconds: 200),
+                          child: ConstrainedBox(
+                            constraints: const BoxConstraints(
+                              minHeight: 0, // Allow widget to shrink completely when no timers
+                              maxHeight: 200, // Prevent excessive height that could cause overflow
+                            ),
+                            child: MultiTimerDisplay(
+                              onTimerTap: () => _navigateToTimerDashboard(),
+                              onEmptyStateTap: () => _navigateToTimerDashboard(),
+                            ).animate().fadeIn(
+                              duration: DesignTokens.animationMedium,
+                              delay: const Duration(milliseconds: 200),
+                            ),
                           ),
                         ),
                       ),
