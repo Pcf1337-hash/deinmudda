@@ -333,7 +333,7 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: Colors.grey.withOpacity(0.3),
-                    style: BorderStyle.dashed,
+                    style: BorderStyle.solid,
                   ),
                 ),
                 child: Text(
