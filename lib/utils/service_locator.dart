@@ -18,6 +18,7 @@ import '../services/quick_button_service.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../services/dosage_calculator_service.dart'; // refactored by ArchitekturAgent
 import '../services/analytics_service.dart'; // refactored by ArchitekturAgent
+import '../services/xtc_entry_service.dart';
 import '../repositories/entry_repository.dart';
 import '../repositories/substance_repository.dart';
 import '../use_cases/entry_use_cases.dart';
@@ -120,6 +121,15 @@ class ServiceLocator {
       // Initialize analytics service (depends on database) - refactored by ArchitekturAgent
       final analyticsService = AnalyticsService();
       _services[AnalyticsService] = analyticsService;
+
+      // Initialize XTC entry service (depends on entry and quick button services)
+      final xtcEntryService = XtcEntryService(
+        entryService: entryService,
+        quickButtonService: quickButtonService,
+        createEntryUseCase: _services[CreateEntryUseCase] as CreateEntryUseCase,
+        createEntryWithTimerUseCase: _services[CreateEntryWithTimerUseCase] as CreateEntryWithTimerUseCase,
+      );
+      _services[XtcEntryService] = xtcEntryService;
 
       // Initialize use cases (depend on repositories and services)
       _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);
