@@ -64,7 +64,10 @@ class Entry {
   // Helper getters for icon and color
   
   /// Gets the MaterialIcon representation of the stored icon code point.
-  IconData? get icon => iconCodePoint != null ? IconData(iconCodePoint!, fontFamily: 'MaterialIcons') : null;
+  /// Uses a static method to ensure tree-shake compatibility.
+  static IconData? getIconFromCodePoint(int? iconCodePoint) {
+    return iconCodePoint != null ? IconData(iconCodePoint, fontFamily: 'MaterialIcons') : null;
+  }
   
   /// Gets the Color representation of the stored color value.
   Color? get color => colorValue != null ? Color(colorValue!) : null;

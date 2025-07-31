@@ -184,8 +184,9 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       }
       
       // Load existing icon and color if available, otherwise use substance defaults
-      if (config.icon != null) {
-        _selectedIcon = config.icon;
+      final existingIcon = QuickButtonConfig.getIconFromCodePoint(config.iconCodePoint);
+      if (existingIcon != null) {
+        _selectedIcon = existingIcon;
         _isIconManuallySelected = true; // Existing config has custom icon
       } else if (_selectedSubstance != null) {
         _selectedIcon = AppIconGenerator.getSubstanceIconFromSubstance(_selectedSubstance!);

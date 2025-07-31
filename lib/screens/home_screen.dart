@@ -363,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
         dateTime: DateTime.now(),
         notes: 'Erstellt über Quick Entry',
         // Inherit color and icon from quick button
-        icon: config.icon,
+        icon: QuickButtonConfig.getIconFromCodePoint(config.iconCodePoint),
         color: config.color,
       );
 
