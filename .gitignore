@@ -45,6 +45,11 @@ app.*.map.json
 # Gradle build artifacts
 /android/.gradle/
 
+# Android keystores (security - don't commit in production)
+*.keystore
+*.jks
+!android/app/debug.keystore
+
 # Flutter installation
 flutter/
 

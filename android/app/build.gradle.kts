@@ -6,8 +6,8 @@ plugins {
 
 android {
     namespace = "com.konsumtracker.konsum_tracker_pro"
-    compileSdk = 35  // AKTUALISIERT auf SDK 35
-    ndkVersion = "27.0.12077973"
+    compileSdk = 34  // Downgraded from 35 for better compatibility
+    ndkVersion = "25.1.8937393"  // More stable NDK version
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.konsumtracker.konsum_tracker_pro"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 34  // Downgraded from 35 for better compatibility
         versionCode = 1
         versionName = "1.0.0"
         
@@ -37,21 +37,33 @@ android {
         multiDexEnabled = true
     }
 
+    // App signing configuration
+    signingConfigs {
+        named("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         named("release") {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            // Reduced optimization to prevent APK corruption
+            isMinifyEnabled = false  // Disabled minification
+            isShrinkResources = false  // Disabled resource shrinking
+            isDebuggable = false
+            // Simplified proguard setup
             proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"), // Use optimized proguard
+                getDefaultProguardFile("proguard-android.txt"),  // Use basic proguard instead of optimize
                 "proguard-rules.pro"
             )
-            // Enable R8 full mode for better optimization
-            proguardFile("proguard-rules.pro")
         }
         named("debug") {
             isMinifyEnabled = false
             isShrinkResources = false
             isDebuggable = true
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 }
@@ -64,9 +76,6 @@ dependencies {
     // Core library desugaring
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
     
-    // MultiDex support
+    // MultiDex support - simplified
     implementation("androidx.multidex:multidex:2.0.1")
-    
-    // Google Play Core for App Bundle and deferred components
-    implementation("com.google.android.play:core:1.10.3")
 }

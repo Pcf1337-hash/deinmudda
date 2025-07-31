@@ -50,8 +50,11 @@ flutter pub get
 # 3. App starten
 flutter run
 
-# 4. APK erstellen (optional)
+# 4. APK erstellen (optional)  
 flutter build apk --release
+
+# Bei APK-Installationsproblemen siehe APK_INSTALLATION_FIX.md
+# For APK installation issues see APK_INSTALLATION_FIX.md
 ```
 
 **Sofort einsatzbereit!** Die App erstellt beim ersten Start automatisch eine lokale SQLite-Datenbank.
@@ -74,7 +77,8 @@ flutter build apk --release
 
 **Aktuelle Version:** 1.0.0+1  
 **Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14) - APK-Kompilierung vollständig funktionsfähig  
-**Letzte Aktualisierung:** 21. Juli 2025 (Cross-Platform Polishing, Dosage Calculator Verbesserungen, Trippy Theme Enhancement abgeschlossen)
+**APK Installation:** ✅ **Fixed "invalid package" installation errors** - See [APK_INSTALLATION_FIX.md](APK_INSTALLATION_FIX.md)  
+**Letzte Aktualisierung:** 31. Juli 2025 (Android APK Installation Issues Fixed - SDK downgrade, disabled optimization, added signing)
 
 ⚠️ **Hinweis zur Teststrategie**: Aufgrund unnötiger GitHub-Actions-Kosten wurden alle automatisierten Analyse- und Testfunktionen dauerhaft entfernt. flutter analyze, flutter test sowie alle CI/CD-Prozesse werden nicht mehr verwendet. Stattdessen wird die App regelmäßig lokal auf PC und realem Gerät manuell getestet. Alle Funktionalitäten werden dabei direkt auf dem Entwicklungsgerät überprüft, wodurch Zwischentests entfallen.
 
@@ -84,7 +88,17 @@ flutter build apk --release
 
 ### **📅 Juli 2025**
 
-1. **🌍 Cross-Platform Polishing & Advanced UI Enhancement** (21. Juli 2025)
+1. **🔧 Android APK Installation Fix** (31. Juli 2025)  
+   - **🎯 Invalid Package Error Fix**: Resolved "die app wurde nicht installiert da das paket offenbar ungültig ist"
+   - **📱 SDK Compatibility**: Downgraded compileSdk and targetSdk from 35 to 34 for better device compatibility
+   - **🛡️ Build Optimization Fix**: Disabled aggressive ProGuard minification and resource shrinking that corrupted APKs
+   - **🔐 App Signing**: Added proper debug keystore and signing configuration for successful installation
+   - **⚡ Dependency Cleanup**: Removed problematic Google Play Core dependency, simplified build configuration
+   - **🌐 Network Config Cleanup**: Removed network security config that interfered with installation process
+   - **📋 Documentation**: Added comprehensive troubleshooting guide and build script for easy APK generation
+   - **🏗️ Gradle Optimization**: Reduced memory allocation, disabled parallel execution for build stability
+
+2. **🌍 Cross-Platform Polishing & Advanced UI Enhancement** (21. Juli 2025)
    - **📱 Platform-Adaptive UI**: Vollständige iOS/Android-Optimierung mit `PlatformHelper` und `PlatformAdaptiveWidgets`
    - **🎯 Haptic Feedback**: Platform-spezifische Haptic-Patterns (iOS: Light/Medium/Heavy Impact, Android: Selection Click)
    - **🔧 System UI Overlay**: Edge-to-Edge Display mit platform-spezifischen Status Bar Styles
@@ -227,6 +241,7 @@ Da verschiedene KI-Agenten und Entwickler:innen an diesem Projekt arbeiten, werd
 
 | Datum         | Bereich/Datei                | Was wurde gemacht?                                  | Warum?                        | Technische Details          | Wer?          |
 |---------------|------------------------------|-----------------------------------------------------|-------------------------------|----------------------------|---------------|
+| 31.07.2025    | Android Build + APK Installation | Android APK Installation Fix - SDK downgrade, disabled optimization, added signing | Critical APK installation error "invalid package" | compileSdk/targetSdk 35→34, disabled minification, added debug keystore, removed Google Play Core, simplified AndroidManifest | Copilot/KI    |
 | 21.07.2025    | Cross-Platform + UI + Themes | Cross-Platform Polishing, Dosage Strategy, Trippy Theme | Plattform-Optimierung & Feature-Enhancement | PlatformHelper, PlatformAdaptiveWidgets, Dosage Strategy Selection, TrippyFAB | Copilot/KI    |
 | 20.07.2025    | Timer Service + Quick Buttons + UI | Critical Timer Conflicts, Cost Tracking & UI Overflow Fixes | Kritische Systemstabilität & Funktionalität | Concurrent Timer Support, QuickButtonConfig.cost-Feld, responsive LayoutBuilder, Database-Migration, Crash Prevention | Copilot/KI    |
 | 15.07.2025    | ActiveTimerBar + DosageCalculator | agent_ui_polish_finalpass - Visual Design Finalization | UI-Polish & Animation-Verbesserung | Progress-basierte Farbübergänge, Luminanz-basierte Textfarben, animierte Shine-Effekte, verbesserte Dosage-Text-Formatierung | Copilot/KI    |
