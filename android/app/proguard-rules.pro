@@ -1,26 +1,7 @@
 # Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.kts.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# Simplified ProGuard rules to prevent APK corruption
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
-
-# Flutter specific rules
+# Basic Flutter rules
 -keep class io.flutter.app.** { *; }
 -keep class io.flutter.plugin.**  { *; }
 -keep class io.flutter.util.**  { *; }
@@ -38,46 +19,10 @@
   public static final android.os.Parcelable$Creator *;
 }
 
-# SQLite/sqflite specific rules
--keep class org.sqlite.** { *; }
--keep class org.sqlite.database.** { *; }
--keep class net.sqlcipher.** { *; }
--keep class net.sqlcipher.database.** { *; }
-
-# Keep database models and their constructors
--keep class * extends java.lang.Object {
-    public <init>(...);
-}
-
-# Keep reflection for database operations
+# Keep reflection and serialization safe
 -keepattributes *Annotation*
 -keepattributes Signature
--keepattributes InnerClasses
 
-# Keep JSON serialization classes
--keep class com.google.gson.** { *; }
--keep class com.google.gson.reflect.TypeToken { *; }
--keep class * extends com.google.gson.reflect.TypeToken
-
-# Keep database field names for reflection
--keepclassmembers class * {
-    @com.google.gson.annotations.SerializedName <fields>;
-}
-
-# Keep model classes for database operations
--keepclassmembers class * {
-    public <init>();
-    public <init>(android.content.Context);
-    public void set*(***);
-    public *** get*();
-    public *** is*();
-}
-
-# Google Play Core library keep rules
--keep class com.google.android.play.core.** { *; }
--keep interface com.google.android.play.core.** { *; }
-
-# Keep specific Play Core classes referenced by Flutter
--keep class com.google.android.play.core.splitcompat.SplitCompatApplication { *; }
--keep class com.google.android.play.core.splitinstall.** { *; }
--keep class com.google.android.play.core.tasks.** { *; }
+# Keep SQLite/Database classes
+-keep class org.sqlite.** { *; }
+-keep class org.sqlite.database.** { *; }
