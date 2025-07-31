@@ -534,12 +534,13 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
                 itemCount: activeTimers.length,
                 itemBuilder: (context, index) {
                   final timer = activeTimers[index];
-                  // Calculate responsive tile width based on screen size - made narrower per user feedback
-                  final double tileWidth = (constraints.maxWidth * 0.3).clamp(110.0, 150.0);
+                  // Calculate responsive tile width for optimal side-by-side display
+                  // Reduced from 30% to 25% to fit more timers horizontally
+                  final double tileWidth = (constraints.maxWidth * 0.25).clamp(95.0, 130.0);
                   
                   return Container(
                     width: tileWidth,
-                    margin: const EdgeInsets.only(right: 12),
+                    margin: const EdgeInsets.only(right: 8), // Reduced margin for tighter layout
                     child: _buildTimerTile(context, timer, isPsychedelicMode, index, tileHeight, activeTimers, perfAnalysis),
                   );
                 },
@@ -598,75 +599,79 @@ class _MultiTimerDisplayState extends State<MultiTimerDisplay>
           ],
         ),
         child: Padding(
-          padding: EdgeInsets.all(tileHeight * 0.1), // Responsive padding
+          padding: EdgeInsets.all(tileHeight * 0.08), // Reduced padding for compact layout
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header with icon and progress - responsive layout
+              // Compact header with progress - optimized for narrow tiles
               Row(
                 children: [
+                  // Smaller icon for compact layout
                   Container(
-                    padding: EdgeInsets.all(tileHeight * 0.05),
+                    padding: EdgeInsets.all(tileHeight * 0.04), // Reduced padding
                     decoration: BoxDecoration(
                       color: progressColor.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(6),
+                      borderRadius: BorderRadius.circular(4), // Smaller radius
                     ),
                     child: Icon(
                       Icons.timer_rounded,
                       color: progressColor,
-                      size: (tileHeight * 0.15).clamp(12.0, 16.0), // Responsive icon size
+                      size: (tileHeight * 0.12).clamp(10.0, 14.0), // Smaller icon
                     ),
                   ),
                   const Spacer(),
-                  // Responsive circular progress indicator
+                  // Compact circular progress indicator
                   SizedBox(
-                    width: tileHeight * 0.25,
-                    height: tileHeight * 0.25,
+                    width: tileHeight * 0.2, // Smaller progress indicator
+                    height: tileHeight * 0.2,
                     child: CircularProgressIndicator(
                       value: progress,
-                      strokeWidth: 2.0,
+                      strokeWidth: 1.5, // Thinner stroke
                       valueColor: AlwaysStoppedAnimation<Color>(progressColor),
                       backgroundColor: progressColor.withOpacity(0.2),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: tileHeight * 0.1), // Responsive spacing
-              // Substance name with flexible sizing
+              SizedBox(height: tileHeight * 0.08), // Reduced spacing
+              // Substance name - optimized for narrow tiles
               Expanded(
-                flex: 2,
+                flex: 3, // Increased flex to give more space to substance name
                 child: Text(
                   timer.substanceName ?? 'Unbekannt',
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: textColor,
                     fontWeight: FontWeight.w600,
-                    fontSize: (tileHeight * 0.14).clamp(12.0, 16.0), // Responsive font
+                    fontSize: (tileHeight * 0.13).clamp(11.0, 15.0), // Slightly smaller but readable
                   ),
-                  maxLines: 2,
+                  maxLines: 2, // Allow 2 lines for longer names
                   overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center, // Center align for better presentation
                 ),
               ),
-              // Flexible spacer
-              const Spacer(),
-              // Time remaining with responsive font
+              // Compact spacing
+              SizedBox(height: tileHeight * 0.04),
+              // Time remaining - compact format
               Text(
                 _formatTimerText(timer.formattedRemainingTime),
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: textColor.withOpacity(0.8),
                   fontWeight: FontWeight.w500,
-                  fontSize: (tileHeight * 0.12).clamp(10.0, 14.0), // Responsive font
+                  fontSize: (tileHeight * 0.11).clamp(9.0, 13.0), // Compact font
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center, // Center align
               ),
-              SizedBox(height: tileHeight * 0.02),
-              // Progress percentage with responsive font
+              SizedBox(height: tileHeight * 0.01),
+              // Progress percentage - most compact
               Text(
-                '${(progress * 100).toInt()}% fertig',
+                '${(progress * 100).toInt()}%',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: textColor.withOpacity(0.6),
-                  fontSize: (tileHeight * 0.1).clamp(8.0, 12.0), // Responsive font
+                  fontSize: (tileHeight * 0.09).clamp(8.0, 11.0), // Very compact
                 ),
+                textAlign: TextAlign.center, // Center align
               ),
             ],
           ),

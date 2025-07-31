@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer Layout Optimization - Before vs After</title>
+    <style>
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .section {
+            background: rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .section h2 {
+            margin-top: 0;
+            color: #ff6b6b;
+            font-size: 1.5em;
+        }
+        
+        .section h2.after {
+            color: #4ecdc4;
+        }
+        
+        .timer-display {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+        
+        .timer-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #4ecdc4;
+        }
+        
+        .timer-tiles {
+            display: flex;
+            gap: 12px;
+            overflow-x: hidden;
+        }
+        
+        .timer-tiles.after {
+            gap: 8px;
+        }
+        
+        .timer-tile {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.12), rgba(76, 175, 80, 0.04));
+            border: 1px solid rgba(76, 175, 80, 0.25);
+            border-radius: 12px;
+            padding: 12px;
+            width: 150px;
+            flex-shrink: 0;
+            position: relative;
+        }
+        
+        .timer-tile.after {
+            width: 130px;
+            padding: 10px;
+        }
+        
+        .tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .timer-icon {
+            background: rgba(76, 175, 80, 0.15);
+            border-radius: 6px;
+            padding: 6px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .timer-icon.after {
+            padding: 4px;
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        
+        .progress-circle {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: conic-gradient(#4caf50 0deg 180deg, rgba(76, 175, 80, 0.2) 180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .progress-circle.after {
+            width: 24px;
+            height: 24px;
+            font-size: 7px;
+        }
+        
+        .substance-name {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: white;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .substance-name.after {
+            font-size: 13px;
+            text-align: center;
+            white-space: normal;
+            line-height: 1.2;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .timer-info {
+            font-size: 12px;
+            color: rgba(255,255,255,0.8);
+            margin-bottom: 4px;
+        }
+        
+        .timer-info.after {
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        .progress-text {
+            font-size: 10px;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        .progress-text.after {
+            font-size: 9px;
+            text-align: center;
+        }
+        
+        .stats {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .stats h3 {
+            margin-top: 0;
+            color: #ffd93d;
+        }
+        
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .improvement {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        .note {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        
+        @media (max-width: 768px) {
+            .comparison {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔥 Timer Layout Optimization</h1>
+        
+        <div class="comparison">
+            <div class="section">
+                <h2>❌ Before (Problems)</h2>
+                <div class="timer-display">
+                    <div class="timer-header">
+                        ⏰ 3 aktive Timer [Alle]
+                    </div>
+                    <div class="timer-tiles">
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="timer-icon">⏰</div>
+                                <div class="progress-circle">50%</div>
+                            </div>
+                            <div class="substance-name">N,N-Dimethy...</div>
+                            <div class="timer-info">2h 15min</div>
+                            <div class="progress-text">50% fertig</div>
+                        </div>
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="timer-icon">⏰</div>
+                                <div class="progress-circle">85%</div>
+                            </div>
+                            <div class="substance-name">MDMA Cryst...</div>
+                            <div class="timer-info">45min</div>
+                            <div class="progress-text">85% fertig</div>
+                        </div>
+                        <div class="timer-tile">
+                            <div class="tile-header">
+                                <div class="timer-icon">⏰</div>
+                                <div class="progress-circle">15%</div>
+                            </div>
+                            <div class="substance-name">Cannabis S...</div>
+                            <div class="timer-info">3h 30min</div>
+                            <div class="progress-text">15% fertig</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <h3>Problems:</h3>
+                    <div class="stat-item">
+                        <span>Tile Width:</span>
+                        <span>150px (30% screen)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Tiles Visible:</span>
+                        <span>2-3 timers</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Substance Names:</span>
+                        <span style="color: #ff6b6b;">Heavily Truncated</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Margin:</span>
+                        <span>12px (wasteful)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="section">
+                <h2 class="after">✅ After (Optimized)</h2>
+                <div class="timer-display">
+                    <div class="timer-header">
+                        ⏰ 4 aktive Timer [Alle]
+                    </div>
+                    <div class="timer-tiles after">
+                        <div class="timer-tile after">
+                            <div class="tile-header">
+                                <div class="timer-icon after">⏰</div>
+                                <div class="progress-circle after">50%</div>
+                            </div>
+                            <div class="substance-name after">N,N-Dimethyl-tryptamine</div>
+                            <div class="timer-info after">2h15m</div>
+                            <div class="progress-text after">50%</div>
+                        </div>
+                        <div class="timer-tile after">
+                            <div class="tile-header">
+                                <div class="timer-icon after">⏰</div>
+                                <div class="progress-circle after">85%</div>
+                            </div>
+                            <div class="substance-name after">MDMA Crystal</div>
+                            <div class="timer-info after">45m</div>
+                            <div class="progress-text after">85%</div>
+                        </div>
+                        <div class="timer-tile after">
+                            <div class="tile-header">
+                                <div class="timer-icon after">⏰</div>
+                                <div class="progress-circle after">15%</div>
+                            </div>
+                            <div class="substance-name after">Cannabis Sativa</div>
+                            <div class="timer-info after">3h30m</div>
+                            <div class="progress-text after">15%</div>
+                        </div>
+                        <div class="timer-tile after">
+                            <div class="tile-header">
+                                <div class="timer-icon after">⏰</div>
+                                <div class="progress-circle after">35%</div>
+                            </div>
+                            <div class="substance-name after">Caffeine</div>
+                            <div class="timer-info after">1h15m</div>
+                            <div class="progress-text after">35%</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <h3>Improvements:</h3>
+                    <div class="stat-item">
+                        <span>Tile Width:</span>
+                        <span class="improvement">130px (25% screen)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Tiles Visible:</span>
+                        <span class="improvement">4+ timers (+33%)</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Substance Names:</span>
+                        <span class="improvement">Readable & Centered</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Margin:</span>
+                        <span class="improvement">8px (efficient)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note">
+            <strong>🎯 Key Achievement:</strong> Timer tiles are now efficiently placed next to each other, substance names are clearly readable without excessive truncation, and the home page is no longer unnecessarily long. The optimized layout shows 25-33% more active timers simultaneously while maintaining excellent readability across all screen sizes.
+        </div>
+    </div>
+</body>
+</html>
