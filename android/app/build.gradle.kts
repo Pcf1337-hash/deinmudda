@@ -6,7 +6,7 @@ plugins {
 
 android {
     namespace = "com.konsumtracker.konsum_tracker_pro"
-    compileSdk = 35
+    compileSdk = 34
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.konsumtracker.konsum_tracker_pro"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0.0"
         
@@ -45,6 +45,13 @@ android {
             keyAlias = "androiddebugkey"
             keyPassword = "android"
         }
+        // You can add a proper release signing config here if needed:
+        // create("release") {
+        //     storeFile = file("release.keystore")
+        //     storePassword = System.getenv("KEYSTORE_PASSWORD")
+        //     keyAlias = System.getenv("KEY_ALIAS")
+        //     keyPassword = System.getenv("KEY_PASSWORD")
+        // }
     }
 
     buildTypes {
@@ -53,6 +60,8 @@ android {
             isMinifyEnabled = false  // Disabled minification
             isShrinkResources = false  // Disabled resource shrinking
             isDebuggable = false
+            // Use debug signing for release build to prevent installation issues
+            signingConfig = signingConfigs.getByName("debug")
             // Simplified proguard setup
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),  // Use basic proguard instead of optimize
