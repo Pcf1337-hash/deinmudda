@@ -28,6 +28,12 @@ class QuickButtonService implements IQuickButtonService {
     }
   }
 
+  // Alternative method name for createQuickButton
+  @override
+  Future<String> saveQuickButton(QuickButtonConfig config) async {
+    return await createQuickButton(config);
+  }
+
   // Read - Get all quick buttons
   Future<List<QuickButtonConfig>> getAllQuickButtons() async {
     try {

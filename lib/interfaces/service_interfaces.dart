@@ -145,6 +145,7 @@ abstract class IAuthService extends ChangeNotifier {
 /// Interface for Quick Button Service operations
 abstract class IQuickButtonService {
   Future<String> createQuickButton(QuickButtonConfig config);
+  Future<String> saveQuickButton(QuickButtonConfig config); // Alternative method name for createQuickButton
   Future<List<QuickButtonConfig>> getAllQuickButtons();
   Future<QuickButtonConfig?> getQuickButtonById(String id);
   Future<void> updateQuickButton(QuickButtonConfig config);
