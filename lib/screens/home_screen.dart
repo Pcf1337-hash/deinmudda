@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
+import '../models/xtc_entry.dart';
 import '../utils/service_locator.dart';
 import '../utils/multi_timer_performance_helper.dart';
 import '../use_cases/entry_use_cases.dart';
@@ -14,6 +15,7 @@ import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../services/timer_service.dart';
+import '../services/xtc_entry_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
@@ -354,6 +356,14 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   Future<void> _handleQuickEntry(QuickButtonConfig config) async {
     try {
+      // Check if this is an XTC entry (using virtual substance ID pattern)
+      if (config.substanceId.startsWith('xtc_virtual_')) {
+        // Handle XTC entries through XtcEntryService
+        await _handleXtcQuickEntry(config);
+        return;
+      }
+
+      // Handle regular entries
       final entry = Entry.create(
         substanceId: config.substanceId,
         substanceName: config.substanceName,
@@ -408,6 +418,65 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ),
         );
       }
+    }
+  }
+
+  /// Handles XTC quick entry by recreating the XTC entry from the quick button config
+  Future<void> _handleXtcQuickEntry(QuickButtonConfig config) async {
+    try {
+      // Get XtcEntryService from ServiceLocator
+      final xtcEntryService = ServiceLocator.get<XtcEntryService>();
+      
+      // For XTC quick entries, we need to look up the existing entry based on the virtual substance ID
+      // and recreate a similar XTC entry for the current time
+      // Since we don't have full XTC details in QuickButtonConfig, we'll create a simple one
+      
+      // Extract the original XTC entry ID from the virtual substance ID
+      final xtcEntryIdMatch = RegExp(r'xtc_virtual_(.+)').firstMatch(config.substanceId);
+      if (xtcEntryIdMatch == null) {
+        throw Exception('Invalid XTC virtual substance ID format');
+      }
+      
+      // Create a new XTC entry based on the quick button config
+      // We'll use default values for XTC-specific fields since they're not stored in QuickButtonConfig
+      final xtcEntry = XtcEntry.create(
+        substanceName: config.substanceName,
+        form: XtcForm.rechteck, // Default form
+        hasBruchrillen: false, // Default value
+        content: XtcContent.mdma, // Default content
+        size: XtcSize.full, // Default size
+        dosageMg: config.dosage, // Use dosage from quick button
+        color: config.color ?? Colors.pink, // Use color from quick button or default
+        weightGrams: null, // Not stored in quick button
+        dateTime: DateTime.now(), // Current time
+        notes: 'Erstellt über Quick Entry', // Standard quick entry note
+      );
+      
+      // Save the XTC entry with timer if needed (XTC default is 4 hours)
+      await xtcEntryService.saveXtcEntry(xtcEntry, startTimer: true);
+      
+      if (mounted) {
+        _safeShowSnackBar(
+          SnackBar(
+            content: Text('${config.substanceName} (${config.formattedDosage}) XTC-Eintrag hinzugefügt - Timer gestartet'),
+            backgroundColor: DesignTokens.successGreen,
+          ),
+        );
+        
+        // Refresh the home screen to show the new entry
+        _refreshData();
+      }
+    } catch (e) {
+      if (mounted) {
+        _safeShowSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Hinzufügen des XTC-Eintrags: $e'),
+            backgroundColor: DesignTokens.errorRed,
+          ),
+        );
+      }
+      // Re-throw for debugging
+      rethrow;
     }
   }
 
