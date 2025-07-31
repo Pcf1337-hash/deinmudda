@@ -15,25 +15,29 @@ isMinifyEnabled = false  // Was: true
 isShrinkResources = false  // Was: true
 ```
 
-### 2. **SDK Version Compatibility (FIXED)**
+### 2. **SDK Version Compatibility (FIXED ✅)**
 **Problem**: SDK 35 is very new and may have compatibility issues
-**Solution**: ✅ Downgraded to SDK 34
+**Solution**: ✅ Downgraded to SDK 34 in both build.gradle.kts and gradle.properties
 ```kotlin
 compileSdk = 34  // Was: 35
 targetSdk = 34   // Was: 35
 ```
 
-### 3. **Missing App Signing (FIXED)**
+### 3. **Missing App Signing (FIXED ✅)**
 **Problem**: APK not properly signed for installation
-**Solution**: ✅ Added debug keystore and signing configuration
+**Solution**: ✅ Added debug keystore and signing configuration for both debug and release builds
 
 ### 4. **Complex Dependencies (FIXED)**
 **Problem**: Google Play Core and other dependencies may conflict
 **Solution**: ✅ Removed unnecessary dependencies, kept only essential ones
 
-### 5. **Network Security Config (FIXED)**
+### 5. **Network Security Config (FIXED ✅)**
 **Problem**: Network security config may interfere with installation
 **Solution**: ✅ Removed network security configuration
+
+### 6. **Android AutoVerify Issues (FIXED ✅)**
+**Problem**: android:autoVerify="true" attribute can cause installation verification failures
+**Solution**: ✅ Removed android:autoVerify attribute from AndroidManifest.xml intent-filter
 
 ## Installation Steps
 
