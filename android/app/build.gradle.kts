@@ -6,8 +6,8 @@ plugins {
 
 android {
     namespace = "com.konsumtracker.konsum_tracker_pro"
-    compileSdk = 34  // Downgraded from 35 for better compatibility
-    ndkVersion = "25.1.8937393"  // More stable NDK version
+    compileSdk = 35
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -29,7 +29,7 @@ android {
     defaultConfig {
         applicationId = "com.konsumtracker.konsum_tracker_pro"
         minSdk = 21
-        targetSdk = 34  // Downgraded from 35 for better compatibility
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
         
