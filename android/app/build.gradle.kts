@@ -66,4 +66,7 @@ dependencies {
     
     // MultiDex support
     implementation("androidx.multidex:multidex:2.0.1")
+    
+    // Google Play Core for App Bundle and deferred components
+    implementation("com.google.android.play:core:1.10.3")
 }
