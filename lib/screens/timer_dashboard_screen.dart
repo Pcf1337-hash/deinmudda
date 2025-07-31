@@ -9,6 +9,7 @@ import '../interfaces/service_interfaces.dart';
 import '../utils/service_locator.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/countdown_timer_widget.dart';
+import '../widgets/compact_timer_widget.dart';
 import '../widgets/trippy_fab.dart';
 import '../widgets/header_bar.dart';
 import '../widgets/consistent_fab.dart';
@@ -154,41 +155,141 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
       return _buildEmptyState(context, isDark);
     }
 
+    final totalTimers = _activeEntries.length + _customTimers.length;
+    
     return RefreshIndicator(
       onRefresh: _loadActiveTimers,
       child: LayoutBuilder(
         builder: (context, constraints) {
-          return ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              if (_activeEntries.isNotEmpty) ...[
-                _buildSectionHeader('Substanz-Timer', Icons.medication_rounded),
-                const SizedBox(height: 16),
-                ..._activeEntries.map((entry) => Container(
-                  constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth - 32, // Account for padding
-                  ),
-                  child: _buildEntryTimer(entry, isDark),
-                )),
-              ],
-              
-              if (_customTimers.isNotEmpty) ...[
-                if (_activeEntries.isNotEmpty) const SizedBox(height: 24),
-                _buildSectionHeader('Benutzerdefinierte Timer', Icons.timer_rounded),
-                const SizedBox(height: 16),
-                ..._customTimers.map((timer) => Container(
-                  constraints: BoxConstraints(
-                    maxWidth: constraints.maxWidth - 32, // Account for padding
-                  ),
-                  child: _buildCustomTimer(timer, isDark),
-                )),
-              ],
-              
-              const SizedBox(height: 100), // Bottom padding for FAB
-            ],
-          );
+          // Use elegant horizontal layout for multiple timers, compact vertical for single/few timers
+          if (totalTimers > 2) {
+            return _buildHorizontalTimersLayout(context, constraints, isDark, psychedelicService);
+          } else {
+            return _buildCompactVerticalLayout(context, constraints, isDark, psychedelicService);
+          }
         },
       ),
+    );
+  }
+
+  /// Builds an elegant horizontal scrolling layout for multiple timers
+  Widget _buildHorizontalTimersLayout(BuildContext context, bool isDark, BoxConstraints constraints, PsychedelicThemeService psychedelicService) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Compact header
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Icon(Icons.dashboard_rounded, color: DesignTokens.accentCyan, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Aktive Timer (${_activeEntries.length + _customTimers.length})',
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: DesignTokens.accentCyan,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+        
+        // Horizontal scrolling timer cards
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                if (_activeEntries.isNotEmpty) ...[
+                  _buildHorizontalTimerSection(
+                    'Substanz-Timer', 
+                    Icons.medication_rounded,
+                    _activeEntries.map((entry) => _buildCompactEntryTimer(entry, isDark)).toList(),
+                    constraints,
+                  ),
+                ],
+                
+                if (_customTimers.isNotEmpty) ...[
+                  const SizedBox(height: 16),
+                  _buildHorizontalTimerSection(
+                    'Benutzerdefinierte Timer', 
+                    Icons.timer_rounded,
+                    _customTimers.map((timer) => _buildCompactCustomTimer(timer, isDark)).toList(),
+                    constraints,
+                  ),
+                ],
+                
+                const SizedBox(height: 100), // Bottom padding for FAB
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds a compact vertical layout for few timers
+  Widget _buildCompactVerticalLayout(BuildContext context, BoxConstraints constraints, bool isDark, PsychedelicThemeService psychedelicService) {
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (_activeEntries.isNotEmpty) ...[
+          _buildSectionHeader('Substanz-Timer', Icons.medication_rounded),
+          const SizedBox(height: 12),
+          ..._activeEntries.map((entry) => _buildCompactEntryTimer(entry, isDark)),
+        ],
+        
+        if (_customTimers.isNotEmpty) ...[
+          if (_activeEntries.isNotEmpty) const SizedBox(height: 20),
+          _buildSectionHeader('Benutzerdefinierte Timer', Icons.timer_rounded),
+          const SizedBox(height: 12),
+          ..._customTimers.map((timer) => _buildCompactCustomTimer(timer, isDark)),
+        ],
+        
+        const SizedBox(height: 100), // Bottom padding for FAB
+      ],
+    );
+  }
+
+  /// Builds a horizontal scrolling section for timers
+  Widget _buildHorizontalTimerSection(String title, IconData icon, List<Widget> timers, BoxConstraints constraints) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Icon(icon, color: DesignTokens.accentCyan, size: 16),
+              const SizedBox(width: 6),
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: DesignTokens.accentCyan,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 120, // Fixed height for horizontal cards
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: timers.length,
+            itemBuilder: (context, index) {
+              return Container(
+                width: constraints.maxWidth * 0.7, // 70% of screen width
+                margin: const EdgeInsets.only(right: 12),
+                child: timers[index],
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -209,6 +310,38 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
     );
   }
 
+  Widget _buildCompactEntryTimer(Entry entry, bool isDark) {
+    return CompactTimer.createEffectTimer(
+      substanceName: entry.substanceName,
+      startTime: entry.timerStartTime!,
+      effectDuration: entry.timerEndTime!.difference(entry.timerStartTime!),
+      onComplete: () => _loadActiveTimers(),
+      onStop: () => _stopTimer(entry),
+    );
+  }
+
+  Widget _buildCompactCustomTimer(Map<String, dynamic> timer, bool isDark) {
+    return CompactTimer.createCustomTimer(
+      title: timer['title'] as String,
+      endTime: timer['endTime'] as DateTime,
+      accentColor: Color(timer['color'] as int),
+      onComplete: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Timer "${timer['title']}" ist abgelaufen!'),
+            backgroundColor: Color(timer['color'] as int),
+          ),
+        );
+      },
+      onStop: () {
+        safeSetState(() {
+          _customTimers.remove(timer);
+        });
+      },
+    );
+  }
+
+  // Keep the original timer builders for fallback/comparison if needed
   Widget _buildEntryTimer(Entry entry, bool isDark) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
