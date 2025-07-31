@@ -163,7 +163,7 @@ class _TimerDashboardScreenState extends State<TimerDashboardScreen> with SafeSt
         builder: (context, constraints) {
           // Use elegant horizontal layout for multiple timers, compact vertical for single/few timers
           if (totalTimers > 2) {
-            return _buildHorizontalTimersLayout(context, constraints, isDark, psychedelicService);
+            return _buildHorizontalTimersLayout(context, isDark, constraints, psychedelicService);
           } else {
             return _buildCompactVerticalLayout(context, constraints, isDark, psychedelicService);
           }
