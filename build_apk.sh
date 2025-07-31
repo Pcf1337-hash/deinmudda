@@ -5,8 +5,8 @@
 
 echo "🔧 Building Android APK for Konsum Tracker Pro..."
 echo "📋 Configuration:"
-echo "   - Compile SDK: 34"
-echo "   - Target SDK: 34"
+echo "   - Compile SDK: 35"
+echo "   - Target SDK: 35"
 echo "   - Minification: Disabled (to prevent APK corruption)"
 echo "   - Resource Shrinking: Disabled"
 echo "   - Signing: Debug keystore included"

@@ -39,8 +39,9 @@ static const Map<int, IconData> _iconCodePointMap = {
 };
 
 static IconData? getIconFromCodePoint(int? iconCodePoint) {
-  if (iconCodePoint == null) return null;
-  return _iconCodePointMap[iconCodePoint] ?? Icons.science_rounded;
+  if (iconCodePoint == null || iconCodePoint == 0) return null;
+  // Only return constant IconData from our mapping, never fallback to avoid tree-shaking issues
+  return _iconCodePointMap[iconCodePoint];
 }
 ```
 
@@ -74,7 +75,7 @@ The fix includes mappings for commonly used Material Design icons in the app:
 - Action icons (add, warning, error, etc.)
 - UI icons (science, psychology, etc.)
 
-For unknown codePoints, the method falls back to `Icons.science_rounded` to maintain functionality.
+For unknown codePoints, the method now returns `null` instead of a fallback icon to ensure complete tree-shaking compatibility. Existing code handles this gracefully with null-coalescing operators that provide appropriate fallbacks via `AppIconGenerator`.
 
 ## Backward Compatibility
 
