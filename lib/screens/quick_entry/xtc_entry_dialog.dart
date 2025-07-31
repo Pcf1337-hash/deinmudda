@@ -58,10 +58,10 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
   }
 
   void _initializeServices() {
-    _createEntryUseCase = ServiceLocator.instance.get<CreateEntryUseCase>();
-    _createEntryWithTimerUseCase = ServiceLocator.instance.get<CreateEntryWithTimerUseCase>();
-    _timerService = ServiceLocator.instance.get<ITimerService>();
-    _xtcEntryService = ServiceLocator.instance.get<XtcEntryService>();
+    _createEntryUseCase = ServiceLocator.get<CreateEntryUseCase>();
+    _createEntryWithTimerUseCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
+    _timerService = ServiceLocator.get<ITimerService>();
+    _xtcEntryService = ServiceLocator.get<XtcEntryService>();
   }
 
   @override

@@ -122,15 +122,6 @@ class ServiceLocator {
       final analyticsService = AnalyticsService();
       _services[AnalyticsService] = analyticsService;
 
-      // Initialize XTC entry service (depends on entry and quick button services)
-      final xtcEntryService = XtcEntryService(
-        entryService: entryService,
-        quickButtonService: quickButtonService,
-        createEntryUseCase: _services[CreateEntryUseCase] as CreateEntryUseCase,
-        createEntryWithTimerUseCase: _services[CreateEntryWithTimerUseCase] as CreateEntryWithTimerUseCase,
-      );
-      _services[XtcEntryService] = xtcEntryService;
-
       // Initialize use cases (depend on repositories and services)
       _services[CreateEntryUseCase] = CreateEntryUseCase(entryRepository, substanceRepository);
       _services[CreateEntryWithTimerUseCase] = CreateEntryWithTimerUseCase(
@@ -147,6 +138,15 @@ class ServiceLocator {
       _services[DeleteSubstanceUseCase] = DeleteSubstanceUseCase(substanceRepository, entryRepository);
       _services[GetSubstancesUseCase] = GetSubstancesUseCase(substanceRepository);
       _services[SubstanceStatisticsUseCase] = SubstanceStatisticsUseCase(substanceRepository, entryRepository);
+
+      // Initialize XTC entry service (depends on entry, quick button services and use cases)
+      final xtcEntryService = XtcEntryService(
+        entryService: entryService,
+        quickButtonService: quickButtonService,
+        createEntryUseCase: _services[CreateEntryUseCase] as CreateEntryUseCase,
+        createEntryWithTimerUseCase: _services[CreateEntryWithTimerUseCase] as CreateEntryWithTimerUseCase,
+      );
+      _services[XtcEntryService] = xtcEntryService;
 
       _isInitialized = true;
       

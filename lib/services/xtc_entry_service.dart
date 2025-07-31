@@ -72,7 +72,6 @@ class XtcEntryService {
       const duration = Duration(hours: 4);
       await _createEntryWithTimerUseCase.execute(
         substanceId: virtualSubstanceId,
-        substanceName: xtcEntry.substanceName,
         dosage: xtcEntry.dosageMg ?? 0.0,
         unit: 'mg',
         dateTime: xtcEntry.dateTime,
