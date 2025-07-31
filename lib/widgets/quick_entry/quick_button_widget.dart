@@ -121,7 +121,7 @@ class _QuickButtonWidgetState extends State<QuickButtonWidget>
     final isDark = theme.brightness == Brightness.dark;
     
     // Use stored icon/color if available, otherwise fall back to generated ones
-    final substanceIcon = widget.config.icon ?? AppIconGenerator.getSubstanceIcon(widget.config.substanceName);
+    final substanceIcon = QuickButtonConfig.getIconFromCodePoint(widget.config.iconCodePoint) ?? AppIconGenerator.getSubstanceIcon(widget.config.substanceName);
     final substanceColor = widget.config.color ?? AppIconGenerator.getSubstanceColor(widget.config.substanceName);
 
     return AnimatedBuilder(
