@@ -73,10 +73,10 @@ class QuickButtonConfig {
   /// Gets the MaterialIcon representation of the stored icon code point.
   /// Uses constant IconData instances to ensure tree-shake compatibility.
   static IconData? getIconFromCodePoint(int? iconCodePoint) {
-    if (iconCodePoint == null) return null;
+    if (iconCodePoint == null || iconCodePoint == 0) return null;
     
-    // Return constant IconData from our mapping, or fallback to science icon
-    return _iconCodePointMap[iconCodePoint] ?? Icons.science_rounded;
+    // Only return constant IconData from our mapping, never fallback to avoid tree-shaking issues
+    return _iconCodePointMap[iconCodePoint];
   }
   
   /// Gets the Color representation of the stored color value.

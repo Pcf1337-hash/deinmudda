@@ -26,14 +26,18 @@ void main() {
         expect(scienceIcon, isA<IconData>());
       });
 
-      test('getIconFromCodePoint returns fallback icon for unknown codePoints', () {
-        // Test with a codePoint not in our mapping
-        final unknownIcon = QuickButtonConfig.getIconFromCodePoint(0x999999);
-        expect(unknownIcon, equals(Icons.science_rounded));
-        expect(unknownIcon, isA<IconData>());
+      test('getIconFromCodePoint returns null for zero input', () {
+        final result = QuickButtonConfig.getIconFromCodePoint(0);
+        expect(result, isNull);
       });
 
-      test('getIconFromCodePoint always returns constant IconData instances', () {
+      test('getIconFromCodePoint returns null for unknown codePoints', () {
+        // Test with a codePoint not in our mapping - should return null for tree-shake safety
+        final unknownIcon = QuickButtonConfig.getIconFromCodePoint(0x999999);
+        expect(unknownIcon, isNull);
+      });
+
+      test('QuickButtonConfig.getIconFromCodePoint always returns constant IconData instances for valid codePoints', () {
         // Test that the returned IconData instances are compile-time constants
         // This ensures tree shaking compatibility
         final icon1 = QuickButtonConfig.getIconFromCodePoint(0xe3ab);
@@ -82,14 +86,18 @@ void main() {
         expect(medicationIcon, isA<IconData>());
       });
 
-      test('Entry.getIconFromCodePoint returns fallback icon for unknown codePoints', () {
-        // Test with a codePoint not in our mapping
-        final unknownIcon = Entry.getIconFromCodePoint(0x888888);
-        expect(unknownIcon, equals(Icons.science_rounded));
-        expect(unknownIcon, isA<IconData>());
+      test('Entry.getIconFromCodePoint returns null for zero input', () {
+        final result = Entry.getIconFromCodePoint(0);
+        expect(result, isNull);
       });
 
-      test('Entry.getIconFromCodePoint always returns constant IconData instances', () {
+      test('Entry.getIconFromCodePoint returns null for unknown codePoints', () {
+        // Test with a codePoint not in our mapping - should return null for tree-shake safety
+        final unknownIcon = Entry.getIconFromCodePoint(0x888888);
+        expect(unknownIcon, isNull);
+      });
+
+      test('Entry.getIconFromCodePoint always returns constant IconData instances for valid codePoints', () {
         // Test that the returned IconData instances are compile-time constants
         final icon1 = Entry.getIconFromCodePoint(0xe3b0);
         final icon2 = Entry.getIconFromCodePoint(0xe3b0);
@@ -128,6 +136,19 @@ void main() {
         
         // Both should return the same constant instance
         expect(identical(quickButtonIcon, entryIcon), isTrue);
+      }
+    });
+
+    test('unknown codePoints return null (tree-shake safety)', () {
+      // Test that unknown codePoints return null instead of fallback icons
+      final unknownCodePoints = [0x999999, 0x888888, 0x123456];
+      
+      for (final codePoint in unknownCodePoints) {
+        final quickButtonIcon = QuickButtonConfig.getIconFromCodePoint(codePoint);
+        final entryIcon = Entry.getIconFromCodePoint(codePoint);
+        
+        expect(quickButtonIcon, isNull);
+        expect(entryIcon, isNull);
       }
     });
 
