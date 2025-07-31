@@ -72,3 +72,12 @@
     public *** get*();
     public *** is*();
 }
+
+# Google Play Core library keep rules
+-keep class com.google.android.play.core.** { *; }
+-keep interface com.google.android.play.core.** { *; }
+
+# Keep specific Play Core classes referenced by Flutter
+-keep class com.google.android.play.core.splitcompat.SplitCompatApplication { *; }
+-keep class com.google.android.play.core.splitinstall.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
