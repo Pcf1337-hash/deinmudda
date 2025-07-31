@@ -38,10 +38,45 @@ class QuickButtonConfig {
 
   // Helper getters for visual customization
   
+  /// Static mapping of common icon codePoints to constant IconData instances.
+  /// This ensures tree-shake compatibility by only using constant icons.
+  static const Map<int, IconData> _iconCodePointMap = {
+    // Material Icons commonly used in the app
+    0xe047: Icons.add_rounded,
+    0xe3ab: Icons.local_cafe_rounded,
+    0xe1a3: Icons.flash_on_rounded,
+    0xe30c: Icons.emoji_food_beverage_rounded,
+    0xe0e8: Icons.local_bar_rounded,
+    0xe3b3: Icons.wine_bar_rounded,
+    0xe546: Icons.sports_bar_rounded,
+    0xe32a: Icons.smoking_rooms_rounded,
+    0xe26a: Icons.local_florist_rounded,
+    0xe3b0: Icons.medication_rounded,
+    0xe2bd: Icons.healing_rounded,
+    0xe2d6: Icons.health_and_safety_rounded,
+    0xe1e4: Icons.fitness_center_rounded,
+    0xe798: Icons.water_drop_rounded,
+    0xe3f4: Icons.science_rounded,
+    0xe3ca: Icons.psychology_rounded,
+    0xe3e5: Icons.bedtime_rounded,
+    0xe52f: Icons.wb_sunny_rounded,
+    0xe3c8: Icons.nightlight_rounded,
+    0xe86d: Icons.bolt_rounded,
+    0xe3b4: Icons.medical_services_rounded,
+    0xe86c: Icons.check_circle_rounded,
+    0xe002: Icons.warning_rounded,
+    0xe000: Icons.error_rounded,
+    0xe19c: Icons.dangerous_rounded,
+    0xe887: Icons.help_rounded,
+  };
+  
   /// Gets the MaterialIcon representation of the stored icon code point.
-  /// Uses a static method to ensure tree-shake compatibility.
+  /// Uses constant IconData instances to ensure tree-shake compatibility.
   static IconData? getIconFromCodePoint(int? iconCodePoint) {
-    return iconCodePoint != null ? IconData(iconCodePoint, fontFamily: 'MaterialIcons') : null;
+    if (iconCodePoint == null) return null;
+    
+    // Return constant IconData from our mapping, or fallback to science icon
+    return _iconCodePointMap[iconCodePoint] ?? Icons.science_rounded;
   }
   
   /// Gets the Color representation of the stored color value.
