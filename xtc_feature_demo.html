@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XTC Entry Feature Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .demo-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .demo-title {
+            text-align: center;
+            color: white;
+            font-size: 2em;
+            margin-bottom: 30px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .demo-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .section-title {
+            color: white;
+            font-size: 1.4em;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .mock-phone {
+            background: #333;
+            border-radius: 25px;
+            padding: 20px;
+            max-width: 350px;
+            margin: 0 auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .mock-screen {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            min-height: 600px;
+        }
+
+        .mock-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        .mock-form {
+            padding: 20px;
+        }
+
+        .mock-field {
+            margin-bottom: 20px;
+        }
+
+        .mock-label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+            display: block;
+        }
+
+        .mock-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .mock-dropdown {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        .mock-size-selector {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .mock-size-option {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mock-size-option.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .mock-size-shape {
+            width: 30px;
+            height: 30px;
+            margin: 0 auto 8px;
+            border: 2px solid #667eea;
+        }
+
+        .shape-full { border-radius: 50%; }
+        .shape-half { 
+            border-radius: 50%; 
+            background: linear-gradient(90deg, rgba(102, 126, 234, 0.2) 50%, transparent 50%);
+        }
+        .shape-quarter { 
+            border-radius: 50%;
+            background: linear-gradient(45deg, rgba(102, 126, 234, 0.2) 25%, transparent 25%);
+        }
+        .shape-eighth {
+            border-radius: 50%;
+            background: linear-gradient(22.5deg, rgba(102, 126, 234, 0.2) 12.5%, transparent 12.5%);
+        }
+
+        .mock-color-picker {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .mock-color-square {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            background: #ff69b4;
+            border: 2px solid #ccc;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
+        }
+
+        .mock-switch {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .switch {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            background: #ccc;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .switch.on {
+            background: #667eea;
+        }
+
+        .switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+
+        .switch.on::after {
+            transform: translateX(26px);
+        }
+
+        .mock-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .mock-button {
+            flex: 1;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .mock-button.secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .mock-button.primary {
+            background: #ff69b4;
+            color: white;
+        }
+
+        .features-list {
+            color: white;
+            line-height: 1.8;
+        }
+
+        .features-list li {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-icon {
+            width: 20px;
+            height: 20px;
+            background: #4CAF50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .implementation-notes {
+            grid-column: 1 / -1;
+            text-align: center;
+        }
+
+        .implementation-notes h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .implementation-notes p {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            .demo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="demo-title">🎯 XTC Substance Entry Feature - Implementation Demo</h1>
+        
+        <div class="demo-grid">
+            <div class="demo-section">
+                <h2 class="section-title">
+                    📱 XTC Entry Form UI
+                </h2>
+                <div class="mock-phone">
+                    <div class="mock-screen">
+                        <div class="mock-header">
+                            💊 XTC Eintrag
+                        </div>
+                        <div class="mock-form">
+                            <div class="mock-field">
+                                <label class="mock-label">Substanz Name</label>
+                                <input class="mock-input" value="Pink Superman" placeholder="z.B. Pink Superman, Blue Tesla">
+                            </div>
+                            
+                            <div class="mock-field">
+                                <label class="mock-label">Form</label>
+                                <select class="mock-dropdown">
+                                    <option>Rechteck</option>
+                                    <option>Stern</option>
+                                    <option>Kreis</option>
+                                    <option>Dreieck</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mock-field">
+                                <div class="mock-switch">
+                                    <span class="mock-label">Bruchrillen</span>
+                                    <div class="switch on"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mock-field">
+                                <label class="mock-label">Inhalt</label>
+                                <select class="mock-dropdown">
+                                    <option>MDMA</option>
+                                    <option>MDA</option>
+                                    <option>Amph.</option>
+                                </select>
+                            </div>
+                            
+                            <div class="mock-field">
+                                <label class="mock-label">Größe</label>
+                                <div class="mock-size-selector">
+                                    <div class="mock-size-option selected">
+                                        <div class="mock-size-shape shape-full"></div>
+                                        <div>1</div>
+                                    </div>
+                                    <div class="mock-size-option">
+                                        <div class="mock-size-shape shape-half"></div>
+                                        <div>½</div>
+                                    </div>
+                                    <div class="mock-size-option">
+                                        <div class="mock-size-shape shape-quarter"></div>
+                                        <div>¼</div>
+                                    </div>
+                                    <div class="mock-size-option">
+                                        <div class="mock-size-shape shape-eighth"></div>
+                                        <div>⅛</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="mock-field">
+                                <label class="mock-label">Menge (mg)</label>
+                                <input class="mock-input" value="120" placeholder="z.B. 120">
+                            </div>
+                            
+                            <div class="mock-field">
+                                <label class="mock-label">Farbe</label>
+                                <div class="mock-color-picker">
+                                    <div class="mock-color-square">🎨</div>
+                                    <span>Tippen für Farbauswahl</span>
+                                </div>
+                            </div>
+                            
+                            <div class="mock-buttons">
+                                <button class="mock-button secondary">Abbrechen</button>
+                                <button class="mock-button primary">Speichern</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="demo-section">
+                <h2 class="section-title">
+                    ✨ Implementierte Features
+                </h2>
+                <ul class="features-list">
+                    <li>
+                        <span class="check-icon">✓</span>
+                        XTC-spezifisches Datenmodell mit allen geforderten Feldern
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Custom Color Picker mit Vorschau und runder Palette
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Geometrische Größenauswahl (1, ½, ¼, ⅛)
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Form-Dropdown (Rechteck, Stern, Kreis, etc.)
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Inhalt-Auswahl (MDMA, MDA, Amph.)
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Bruchrillen-Schalter
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Dosierung in mg mit "Unbekannt"-Option
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Optionales Gewichtsfeld
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Timer-Integration (4h Standard für XTC)
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Quick Button Erstellung mit Substanzname
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Keine Anzeige im Substanz-Manager (spezielle Behandlung)
+                    </li>
+                    <li>
+                        <span class="check-icon">✓</span>
+                        Integration in bestehende Entry-Systeme
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="demo-section implementation-notes">
+            <h3>🔧 Technische Implementierung</h3>
+            <p>
+                Die XTC-Feature wurde vollständig in das bestehende Flutter-App integriert. Es wurde ein separates 
+                <strong>XtcEntry</strong>-Modell erstellt mit allen geforderten Feldern, ein spezieller 
+                <strong>XtcEntryService</strong> für die Datenverwaltung, und Custom-Widgets für Color Picker und 
+                Größenauswahl. Das Feature ist über die normale "Eintrag hinzufügen"-Funktion und 
+                Quick Button-Konfiguration zugänglich, erscheint aber nicht im Substanz-Manager. 
+                Die Einträge werden als spezielle Entry-Objekte mit XTC-Metadaten in den Notizen gespeichert.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Add some interactive behavior to the demo
+        document.querySelectorAll('.mock-size-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.mock-size-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        document.querySelectorAll('.switch').forEach(switchEl => {
+            switchEl.addEventListener('click', () => {
+                switchEl.classList.toggle('on');
+            });
+        });
+
+        document.querySelector('.mock-color-square').addEventListener('click', () => {
+            const colors = ['#ff69b4', '#4169e1', '#32cd32', '#ff4500', '#9400d3', '#00bfff', '#ffd700', '#dc143c'];
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            document.querySelector('.mock-color-square').style.background = randomColor;
+        });
+    </script>
+</body>
+</html>

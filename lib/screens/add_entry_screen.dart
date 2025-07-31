@@ -17,6 +17,7 @@ import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 // removed unused import: ../utils/validation_helper.dart // cleaned by BereinigungsAgent
 import '../utils/performance_helper.dart';
+import 'quick_entry/xtc_entry_dialog.dart';
 
 class AddEntryScreen extends StatefulWidget {
   const AddEntryScreen({super.key});
@@ -231,6 +232,19 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
     }
   }
 
+  Future<void> _showXtcEntryDialog() async {
+    final result = await showDialog<dynamic>(
+      context: context,
+      builder: (context) => const XtcEntryDialog(),
+    );
+    
+    if (result != null) {
+      // XTC entry was successfully created
+      // Navigate back to the main screen
+      Navigator.of(context).pop(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -415,6 +429,21 @@ class _AddEntryScreenState extends State<AddEntryScreen> {
                     const DropdownMenuItem<Substance>(
                       value: null,
                       child: Text('Neue Substanz eingeben'),
+                    ),
+                    // Special XTC option (not a real substance)
+                    DropdownMenuItem<Substance>(
+                      value: null, // Keep null but handle specially
+                      child: Row(
+                        children: [
+                          Icon(Icons.medication_rounded, size: 16, color: Colors.pink),
+                          const SizedBox(width: 8),
+                          const Text('XTC (Ecstasy)'),
+                        ],
+                      ),
+                      onTap: () {
+                        // Handle XTC selection specially
+                        Future.delayed(Duration.zero, () => _showXtcEntryDialog());
+                      },
                     ),
                     ..._substances.map((substance) => DropdownMenuItem<Substance>(
                       value: substance,

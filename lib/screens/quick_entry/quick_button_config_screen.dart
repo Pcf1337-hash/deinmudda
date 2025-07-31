@@ -18,6 +18,7 @@ import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
 import '../../utils/app_icon_generator.dart';
+import 'xtc_entry_dialog.dart';
 
 class QuickButtonConfigScreen extends StatefulWidget {
   final QuickButtonConfig? existingConfig;
@@ -395,6 +396,19 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
     }
   }
 
+  Future<void> _showXtcEntryDialog() async {
+    final result = await showDialog<dynamic>(
+      context: context,
+      builder: (context) => const XtcEntryDialog(),
+    );
+    
+    if (result != null) {
+      // XTC entry was successfully created, now create a quick button from it
+      // Navigate back to the quick button management screen
+      Navigator.of(context).pop(true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -539,10 +553,27 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
               border: InputBorder.none,
               prefixIcon: Icon(Icons.science_rounded),
             ),
-            items: _substances.map((substance) => DropdownMenuItem<Substance>(
-              value: substance,
-              child: Text(substance.name),
-            )).toList(),
+            items: [
+              // Special XTC option
+              DropdownMenuItem<Substance>(
+                value: null, // Keep null but handle specially
+                child: Row(
+                  children: [
+                    Icon(Icons.medication_rounded, size: 16, color: Colors.pink),
+                    const SizedBox(width: 8),
+                    const Text('XTC (Ecstasy) - Spezialform'),
+                  ],
+                ),
+                onTap: () {
+                  // Handle XTC selection specially
+                  Future.delayed(Duration.zero, () => _showXtcEntryDialog());
+                },
+              ),
+              ..._substances.map((substance) => DropdownMenuItem<Substance>(
+                value: substance,
+                child: Text(substance.name),
+              )).toList(),
+            ],
             onChanged: (substance) {
               setState(() {
                 _selectedSubstance = substance;
