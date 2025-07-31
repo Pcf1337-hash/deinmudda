@@ -6,6 +6,7 @@ import '../../services/timer_service.dart';
 import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import 'quick_button_widget.dart';
+import '../xtc_quick_button.dart';
 import '../../screens/quick_entry/quick_button_config_screen.dart';
 import '../../utils/crash_protection.dart';
 
@@ -16,6 +17,7 @@ class QuickEntryBar extends StatefulWidget {
   final VoidCallback? onEditMode;
   final bool isEditing;
   final Function(List<QuickButtonConfig>)? onReorder;
+  final VoidCallback? onXTCEntryCreated;
 
   const QuickEntryBar({
     super.key,
@@ -25,6 +27,7 @@ class QuickEntryBar extends StatefulWidget {
     this.onEditMode,
     this.isEditing = false,
     this.onReorder,
+    this.onXTCEntryCreated,
   });
 
   @override
@@ -227,6 +230,24 @@ class _QuickEntryBarState extends State<QuickEntryBar> with SafeStateMixin {
             ),
           ),
         ),
+        
+        // XTC Quick Button - specialized entry for Ecstasy substances
+        if (widget.quickButtons.isNotEmpty) 
+          Padding(
+            padding: const EdgeInsets.only(left: Spacing.sm),
+            child: Container(
+              height: 100,
+              child: Center(
+                child: SizedBox(
+                  width: 90, // Fixed width to match regular quick buttons
+                  child: CompactXTCQuickButton(
+                    onEntryCreated: widget.onXTCEntryCreated,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        
         // Add button with improved alignment and consistent height
         Container(
           height: 100, // Match the height of the scrollable container

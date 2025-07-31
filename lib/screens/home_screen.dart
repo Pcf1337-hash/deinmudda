@@ -411,6 +411,18 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
   }
 
+  /// Handles XTC entry creation and refreshes the home screen
+  Future<void> _handleXTCEntryCreated() async {
+    if (mounted) {
+      // Refresh the home screen to show the new XTC entry
+      _refreshData();
+      
+      if (kDebugMode) {
+        print('🎉 XTC Eintrag wurde erstellt, aktualisiere Home Screen');
+      }
+    }
+  }
+
 
   Future<void> _navigateToQuickButtonConfig() async {
     final result = await Navigator.of(context).push(
@@ -676,6 +688,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                                           },
                                           isEditing: _isQuickEntryEditMode,
                                           onReorder: _reorderQuickButtons,
+                                          onXTCEntryCreated: _handleXTCEntryCreated,
                                         ),
                                       ),
                               );
