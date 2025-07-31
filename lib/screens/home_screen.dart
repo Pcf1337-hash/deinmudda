@@ -1312,11 +1312,17 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
             color: color,
           ),
           Spacing.verticalSpaceSm,
-          Text(
-            value,
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              fontWeight: FontWeight.w700,
-              color: color,
+          // Wrap value text with FittedBox to prevent line wrapping and ensure consistent heights
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              value,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                fontWeight: FontWeight.w700,
+                color: color,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
             ),
           ),
           Text(
@@ -1444,11 +1450,17 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
                     color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: color,
+                // Wrap value text with FittedBox to prevent line wrapping
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: color,
+                    ),
+                    maxLines: 1,
                   ),
                 ),
               ],

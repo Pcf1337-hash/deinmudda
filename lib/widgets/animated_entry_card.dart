@@ -161,11 +161,15 @@ class _AnimatedEntryCardState extends State<AnimatedEntryCard>
                         ),
                       ),
                       if (widget.entry.cost > 0)
-                        Text(
-                          '${widget.entry.cost.toStringAsFixed(2).replaceAll('.', ',')}€',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: DesignTokens.accentEmerald,
-                            fontWeight: FontWeight.w500,
+                        FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(
+                            '${widget.entry.cost.toStringAsFixed(2).replaceAll('.', ',')}€',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: DesignTokens.accentEmerald,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            maxLines: 1,
                           ),
                         ),
                     ],
@@ -421,13 +425,17 @@ class _AnimatedEntryCardState extends State<AnimatedEntryCard>
           ),
           Spacing.horizontalSpaceXs,
           Expanded(
-            child: Text(
-              text,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: color,
-                fontWeight: FontWeight.w500,
+            child: FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: color,
+                  fontWeight: FontWeight.w500,
+                ),
+                maxLines: 1,
               ),
-              overflow: TextOverflow.ellipsis,
             ),
           ),
         ],
