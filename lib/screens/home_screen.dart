@@ -30,6 +30,7 @@ import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
 import 'quick_entry/quick_button_config_screen.dart';
 import 'quick_entry/quick_entry_management_screen.dart';
+import 'quick_entry/xtc_entry_dialog.dart';
 import 'calendar/day_detail_screen.dart';
 import 'advanced_search_screen.dart';
 import 'calendar/pattern_analysis_screen.dart';
@@ -421,44 +422,19 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
     }
   }
 
-  /// Handles XTC quick entry by recreating the XTC entry from the quick button config
+  /// Handles XTC quick entry by showing the XTC entry dialog
   Future<void> _handleXtcQuickEntry(QuickButtonConfig config) async {
     try {
-      // Get XtcEntryService from ServiceLocator
-      final xtcEntryService = ServiceLocator.get<XtcEntryService>();
-      
-      // For XTC quick entries, we need to look up the existing entry based on the virtual substance ID
-      // and recreate a similar XTC entry for the current time
-      // Since we don't have full XTC details in QuickButtonConfig, we'll create a simple one
-      
-      // Extract the original XTC entry ID from the virtual substance ID
-      final xtcEntryIdMatch = RegExp(r'xtc_virtual_(.+)').firstMatch(config.substanceId);
-      if (xtcEntryIdMatch == null) {
-        throw Exception('Invalid XTC virtual substance ID format');
-      }
-      
-      // Create a new XTC entry based on the quick button config
-      // We'll use default values for XTC-specific fields since they're not stored in QuickButtonConfig
-      final xtcEntry = XtcEntry.create(
-        substanceName: config.substanceName,
-        form: XtcForm.rechteck, // Default form
-        hasBruchrillen: false, // Default value
-        content: XtcContent.mdma, // Default content
-        size: XtcSize.full, // Default size
-        dosageMg: config.dosage, // Use dosage from quick button
-        color: config.color ?? Colors.pink, // Use color from quick button or default
-        weightGrams: null, // Not stored in quick button
-        dateTime: DateTime.now(), // Current time
-        notes: 'Erstellt über Quick Entry', // Standard quick entry note
+      // Show XTC entry dialog for proper entry creation
+      final result = await showDialog<dynamic>(
+        context: context,
+        builder: (context) => const XtcEntryDialog(),
       );
       
-      // Save the XTC entry with timer if needed (XTC default is 4 hours)
-      await xtcEntryService.saveXtcEntry(xtcEntry, startTimer: true);
-      
-      if (mounted) {
+      if (result != null && mounted) {
         _safeShowSnackBar(
           SnackBar(
-            content: Text('${config.substanceName} (${config.formattedDosage}) XTC-Eintrag hinzugefügt - Timer gestartet'),
+            content: Text('XTC-Eintrag erfolgreich erstellt'),
             backgroundColor: DesignTokens.successGreen,
           ),
         );
@@ -470,7 +446,7 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
       if (mounted) {
         _safeShowSnackBar(
           SnackBar(
-            content: Text('Fehler beim Hinzufügen des XTC-Eintrags: $e'),
+            content: Text('Fehler beim Öffnen des XTC-Dialogs: $e'),
             backgroundColor: DesignTokens.errorRed,
           ),
         );
