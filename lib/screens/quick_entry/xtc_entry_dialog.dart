@@ -58,10 +58,20 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
   }
 
   void _initializeServices() {
-    _createEntryUseCase = ServiceLocator.get<CreateEntryUseCase>();
-    _createEntryWithTimerUseCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
-    _timerService = ServiceLocator.get<ITimerService>();
-    _xtcEntryService = ServiceLocator.get<XtcEntryService>();
+    try {
+      _createEntryUseCase = ServiceLocator.get<CreateEntryUseCase>();
+      _createEntryWithTimerUseCase = ServiceLocator.get<CreateEntryWithTimerUseCase>();
+      _timerService = ServiceLocator.get<ITimerService>();
+      _xtcEntryService = ServiceLocator.get<XtcEntryService>();
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Fehler beim Initialisieren der Services: $e';
+      });
+      // Debug information
+      print('🚨 XtcEntryDialog service initialization failed: $e');
+      print(ServiceLocator.getRegistrationInfo());
+      rethrow;
+    }
   }
 
   @override

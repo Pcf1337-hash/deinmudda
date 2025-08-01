@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
+import '../models/xtc_entry.dart';
 import '../utils/service_locator.dart';
 import '../utils/multi_timer_performance_helper.dart';
 import '../use_cases/entry_use_cases.dart';
@@ -14,6 +15,7 @@ import '../use_cases/substance_use_cases.dart';
 import '../interfaces/service_interfaces.dart';
 import '../services/psychedelic_theme_service.dart';
 import '../services/timer_service.dart';
+import '../services/xtc_entry_service.dart';
 import '../widgets/animated_entry_card.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/pulsating_widgets.dart';
@@ -28,6 +30,7 @@ import 'edit_entry_screen.dart';
 import 'add_entry_screen.dart';
 import 'quick_entry/quick_button_config_screen.dart';
 import 'quick_entry/quick_entry_management_screen.dart';
+import 'quick_entry/xtc_entry_dialog.dart';
 import 'calendar/day_detail_screen.dart';
 import 'advanced_search_screen.dart';
 import 'calendar/pattern_analysis_screen.dart';
@@ -354,6 +357,14 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
 
   Future<void> _handleQuickEntry(QuickButtonConfig config) async {
     try {
+      // Check if this is an XTC entry (using virtual substance ID pattern)
+      if (config.substanceId.startsWith('xtc_virtual_')) {
+        // Handle XTC entries through XtcEntryService
+        await _handleXtcQuickEntry(config);
+        return;
+      }
+
+      // Handle regular entries
       final entry = Entry.create(
         substanceId: config.substanceId,
         substanceName: config.substanceName,
@@ -408,6 +419,40 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
           ),
         );
       }
+    }
+  }
+
+  /// Handles XTC quick entry by showing the XTC entry dialog
+  Future<void> _handleXtcQuickEntry(QuickButtonConfig config) async {
+    try {
+      // Show XTC entry dialog for proper entry creation
+      final result = await showDialog<dynamic>(
+        context: context,
+        builder: (context) => const XtcEntryDialog(),
+      );
+      
+      if (result != null && mounted) {
+        _safeShowSnackBar(
+          SnackBar(
+            content: Text('XTC-Eintrag erfolgreich erstellt'),
+            backgroundColor: DesignTokens.successGreen,
+          ),
+        );
+        
+        // Refresh the home screen to show the new entry
+        _refreshData();
+      }
+    } catch (e) {
+      if (mounted) {
+        _safeShowSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Öffnen des XTC-Dialogs: $e'),
+            backgroundColor: DesignTokens.errorRed,
+          ),
+        );
+      }
+      // Re-throw for debugging
+      rethrow;
     }
   }
 

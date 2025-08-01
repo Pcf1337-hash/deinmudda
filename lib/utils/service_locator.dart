@@ -140,13 +140,34 @@ class ServiceLocator {
       _services[SubstanceStatisticsUseCase] = SubstanceStatisticsUseCase(substanceRepository, entryRepository);
 
       // Initialize XTC entry service (depends on entry, quick button services and use cases)
-      final xtcEntryService = XtcEntryService(
-        entryService: entryService,
-        quickButtonService: quickButtonService,
-        createEntryUseCase: _services[CreateEntryUseCase] as CreateEntryUseCase,
-        createEntryWithTimerUseCase: _services[CreateEntryWithTimerUseCase] as CreateEntryWithTimerUseCase,
-      );
-      _services[XtcEntryService] = xtcEntryService;
+      try {
+        final createEntryUseCase = _services[CreateEntryUseCase];
+        final createEntryWithTimerUseCase = _services[CreateEntryWithTimerUseCase];
+        
+        if (createEntryUseCase == null) {
+          throw StateError('CreateEntryUseCase not found in services during XtcEntryService initialization');
+        }
+        if (createEntryWithTimerUseCase == null) {
+          throw StateError('CreateEntryWithTimerUseCase not found in services during XtcEntryService initialization');
+        }
+        
+        final xtcEntryService = XtcEntryService(
+          entryService: entryService,
+          quickButtonService: quickButtonService,
+          createEntryUseCase: createEntryUseCase as CreateEntryUseCase,
+          createEntryWithTimerUseCase: createEntryWithTimerUseCase as CreateEntryWithTimerUseCase,
+        );
+        _services[XtcEntryService] = xtcEntryService;
+        
+        if (kDebugMode) {
+          print('✅ XtcEntryService registered successfully');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('🚨 Failed to register XtcEntryService: $e');
+        }
+        rethrow;
+      }
 
       _isInitialized = true;
       
@@ -176,6 +197,12 @@ class ServiceLocator {
     
     final service = _services[T];
     if (service == null) {
+      if (kDebugMode) {
+        print('🚨 Service of type $T not found. Available services:');
+        for (final type in _services.keys) {
+          print('  - $type');
+        }
+      }
       throw StateError('Service of type $T not found in ServiceLocator');
     }
     
@@ -195,6 +222,19 @@ class ServiceLocator {
   /// Returns true if a service of type [T] is currently registered.
   static bool isRegistered<T>() {
     return _services.containsKey(T);
+  }
+
+  /// Get information about registration status for debugging
+  static String getRegistrationInfo() {
+    final buffer = StringBuffer();
+    buffer.writeln('ServiceLocator Status:');
+    buffer.writeln('  Initialized: $_isInitialized');
+    buffer.writeln('  Services count: ${_services.length}');
+    buffer.writeln('  Registered services:');
+    for (final type in _services.keys) {
+      buffer.writeln('    - $type');
+    }
+    return buffer.toString();
   }
 
   /// Initialize ServiceLocator for testing with mock services.
