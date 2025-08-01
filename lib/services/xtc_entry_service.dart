@@ -2,7 +2,6 @@ import '../models/xtc_entry.dart';
 import '../interfaces/service_interfaces.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
-import '../use_cases/entry_use_cases.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
 
@@ -10,18 +9,15 @@ import 'package:uuid/uuid.dart';
 class XtcEntryService {
   final IEntryService _entryService;
   final IQuickButtonService _quickButtonService;
-  final CreateEntryUseCase _createEntryUseCase;
-  final CreateEntryWithTimerUseCase _createEntryWithTimerUseCase;
+  final ITimerService _timerService;
 
   XtcEntryService({
     required IEntryService entryService,
     required IQuickButtonService quickButtonService,
-    required CreateEntryUseCase createEntryUseCase,
-    required CreateEntryWithTimerUseCase createEntryWithTimerUseCase,
+    required ITimerService timerService,
   }) : _entryService = entryService,
        _quickButtonService = quickButtonService,
-       _createEntryUseCase = createEntryUseCase,
-       _createEntryWithTimerUseCase = createEntryWithTimerUseCase;
+       _timerService = timerService;
 
   /// Creates a regular Entry from an XtcEntry for storage in the main database
   Entry _convertToRegularEntry(XtcEntry xtcEntry) {
@@ -88,7 +84,7 @@ class XtcEntryService {
       await _entryService.createEntryWithTimer(
         entry,
         customDuration: duration,
-        timerService: _createEntryWithTimerUseCase,
+        timerService: _timerService,
       );
     } else {
       await _entryService.createEntry(entry);
