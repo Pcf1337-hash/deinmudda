@@ -78,3 +78,7 @@ experimental_test.*
 # Temporary tools and downloads
 gh_*/
 /tmp/
+
+# Downloads and temporary files
+flutter.tar.xz
+flutter/

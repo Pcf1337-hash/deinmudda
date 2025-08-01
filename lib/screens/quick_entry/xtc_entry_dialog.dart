@@ -178,7 +178,42 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
       insetPadding: const EdgeInsets.all(16),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 800),
-        child: GlassCard(
+        child: Container(
+          decoration: BoxDecoration(
+            // Use a more opaque background for XTC dialogs to improve readability
+            gradient: isDark 
+                ? const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0x40FFFFFF), // More opaque than standard glass
+                      Color(0x20FFFFFF),
+                      Color(0x10FFFFFF),
+                    ],
+                  )
+                : const LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      Color(0x50FFFFFF), // More opaque for light theme
+                      Color(0x30FFFFFF),
+                    ],
+                  ),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isDark 
+                  ? Colors.white.withOpacity(0.3)
+                  : Colors.white.withOpacity(0.5),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(isDark ? 0.5 : 0.2),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
