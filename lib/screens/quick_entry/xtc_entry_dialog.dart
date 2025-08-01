@@ -16,7 +16,12 @@ import '../../interfaces/service_interfaces.dart';
 import '../../services/xtc_entry_service.dart';
 
 class XtcEntryDialog extends StatefulWidget {
-  const XtcEntryDialog({super.key});
+  final bool isQuickEntry; // New parameter to determine if this is for quick entry creation
+  
+  const XtcEntryDialog({
+    super.key,
+    this.isQuickEntry = false,
+  });
 
   @override
   State<XtcEntryDialog> createState() => _XtcEntryDialogState();
@@ -34,7 +39,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
   
   // Form state
   XtcForm _selectedForm = XtcForm.rechteck;
-  bool _hasBruchrillen = false;
+  int _bruchrillienAnzahl = 0; // Changed from boolean to int (0-4)
   XtcContent _selectedContent = XtcContent.mdma;
   XtcSize _selectedSize = XtcSize.full;
   Color _selectedColor = Colors.pink;
@@ -109,13 +114,13 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
       final xtcEntry = XtcEntry.create(
         substanceName: _substanceNameController.text.trim(),
         form: _selectedForm,
-        hasBruchrillen: _hasBruchrillen,
+        bruchrillienAnzahl: _bruchrillienAnzahl,
         content: _selectedContent,
         size: _selectedSize,
         dosageMg: dosageMg,
         color: _selectedColor,
         weightGrams: weightGrams,
-        dateTime: _selectedDateTime,
+        dateTime: widget.isQuickEntry ? DateTime.now() : _selectedDateTime, // Use current time for quick entries
         notes: _notesController.text.trim().isEmpty ? null : _notesController.text.trim(),
       );
 
@@ -145,7 +150,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
     final buffer = StringBuffer();
     buffer.writeln('XTC-Eintrag:');
     buffer.writeln('Form: ${xtcEntry.form.displayName}');
-    buffer.writeln('Bruchrillen: ${xtcEntry.hasBruchrillen ? "Ja" : "Nein"}');
+    buffer.writeln('Bruchrillen: ${xtcEntry.bruchrillienAnzahl}');
     buffer.writeln('Inhalt: ${xtcEntry.content.displayName}');
     buffer.writeln('Größe: ${xtcEntry.size.displaySymbol}');
     if (xtcEntry.dosageMg != null) {
@@ -195,7 +200,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
                         const SizedBox(height: 24),
                         _buildFormSelector(context),
                         const SizedBox(height: 24),
-                        _buildBruchrilllenSwitch(context),
+                        _buildBruchrillienSelector(context),
                         const SizedBox(height: 24),
                         _buildContentSelector(context),
                         const SizedBox(height: 24),
@@ -211,8 +216,11 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
                         const SizedBox(height: 24),
                         _buildWeightField(context),
                         const SizedBox(height: 24),
-                        _buildDateTimeSection(context),
-                        const SizedBox(height: 24),
+                        // Only show date/time picker for regular entries, not quick entries
+                        if (!widget.isQuickEntry) ...[
+                          _buildDateTimeSection(context),
+                          const SizedBox(height: 24),
+                        ],
                         _buildTimerSwitch(context),
                         const SizedBox(height: 24),
                         _buildNotesField(context),
@@ -351,19 +359,32 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
     );
   }
 
-  Widget _buildBruchrilllenSwitch(BuildContext context) {
-    return Row(
+  Widget _buildBruchrillienSelector(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Bruchrillen',
+          'Bruchrillen (Anzahl)',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             fontWeight: FontWeight.w600,
           ),
         ),
-        const Spacer(),
-        Switch(
-          value: _hasBruchrillen,
-          onChanged: (value) => setState(() => _hasBruchrillen = value),
+        const SizedBox(height: 8),
+        DropdownButtonFormField<int>(
+          value: _bruchrillienAnzahl,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Anzahl der Bruchrillen',
+          ),
+          items: List.generate(5, (index) => DropdownMenuItem(
+            value: index,
+            child: Text(index == 0 ? 'Keine Bruchrillen' : '$index Bruchrille${index > 1 ? 'n' : ''}'),
+          )),
+          onChanged: (value) {
+            if (value != null) {
+              setState(() => _bruchrillienAnzahl = value);
+            }
+          },
         ),
       ],
     );

@@ -45,7 +45,7 @@ class XtcEntry {
   final String substanceName; // The actual substance name, not "XTC"
   final String? logo;
   final XtcForm form;
-  final bool hasBruchrillen; // Break lines/scoring
+  final int bruchrillienAnzahl; // Number of break lines/scoring (0-4)
   final XtcContent content;
   final XtcSize size;
   final double? dosageMg; // Dosage in mg, can be null for "Unbekannt"
@@ -68,7 +68,7 @@ class XtcEntry {
     required this.substanceName,
     this.logo,
     required this.form,
-    required this.hasBruchrillen,
+    required this.bruchrillienAnzahl,
     required this.content,
     required this.size,
     this.dosageMg,
@@ -89,7 +89,7 @@ class XtcEntry {
     required String substanceName,
     String? logo,
     required XtcForm form,
-    required bool hasBruchrillen,
+    required int bruchrillienAnzahl,
     required XtcContent content,
     required XtcSize size,
     double? dosageMg,
@@ -108,7 +108,7 @@ class XtcEntry {
       substanceName: substanceName,
       logo: logo,
       form: form,
-      hasBruchrillen: hasBruchrillen,
+      bruchrillienAnzahl: bruchrillienAnzahl,
       content: content,
       size: size,
       dosageMg: dosageMg,
@@ -144,7 +144,8 @@ class XtcEntry {
 
   /// Returns a display summary of the XTC entry.
   String get displaySummary {
-    return '$substanceName (${size.displaySymbol} ${form.displayName}, ${content.displayName})';
+    final bruchrillienText = bruchrillienAnzahl > 0 ? '$bruchrillienAnzahl Bruchrillen' : 'Keine Bruchrillen';
+    return '$substanceName (${size.displaySymbol} ${form.displayName}, ${content.displayName}, $bruchrillienText)';
   }
 
   /// Returns whether this entry has timer data.
@@ -163,7 +164,7 @@ class XtcEntry {
       'substanceName': substanceName,
       'logo': logo,
       'form': form.index,
-      'hasBruchrillen': hasBruchrillen,
+      'bruchrillienAnzahl': bruchrillienAnzahl,
       'content': content.index,
       'size': size.index,
       'dosageMg': dosageMg,
@@ -187,7 +188,7 @@ class XtcEntry {
       substanceName: json['substanceName'] as String,
       logo: json['logo'] as String?,
       form: XtcForm.values[json['form'] as int],
-      hasBruchrillen: json['hasBruchrillen'] as bool,
+      bruchrillienAnzahl: json['bruchrillienAnzahl'] as int? ?? (json['hasBruchrillen'] as bool? == true ? 1 : 0), // Migration fallback
       content: XtcContent.values[json['content'] as int],
       size: XtcSize.values[json['size'] as int],
       dosageMg: (json['dosageMg'] as num?)?.toDouble(),
@@ -211,7 +212,7 @@ class XtcEntry {
       'substanceName': substanceName,
       'logo': logo,
       'form': form.index,
-      'hasBruchrillen': hasBruchrillen ? 1 : 0,
+      'bruchrillienAnzahl': bruchrillienAnzahl,
       'content': content.index,
       'size': size.index,
       'dosageMg': dosageMg,
@@ -235,7 +236,7 @@ class XtcEntry {
       substanceName: map['substanceName'] as String,
       logo: map['logo'] as String?,
       form: XtcForm.values[map['form'] as int],
-      hasBruchrillen: (map['hasBruchrillen'] as int) == 1,
+      bruchrillienAnzahl: map['bruchrillienAnzahl'] as int? ?? ((map['hasBruchrillen'] as int?) == 1 ? 1 : 0), // Migration fallback
       content: XtcContent.values[map['content'] as int],
       size: XtcSize.values[map['size'] as int],
       dosageMg: (map['dosageMg'] as num?)?.toDouble(),
@@ -258,7 +259,7 @@ class XtcEntry {
     String? substanceName,
     String? logo,
     XtcForm? form,
-    bool? hasBruchrillen,
+    int? bruchrillienAnzahl,
     XtcContent? content,
     XtcSize? size,
     double? dosageMg,
@@ -278,7 +279,7 @@ class XtcEntry {
       substanceName: substanceName ?? this.substanceName,
       logo: logo ?? this.logo,
       form: form ?? this.form,
-      hasBruchrillen: hasBruchrillen ?? this.hasBruchrillen,
+      bruchrillienAnzahl: bruchrillienAnzahl ?? this.bruchrillienAnzahl,
       content: content ?? this.content,
       size: size ?? this.size,
       dosageMg: dosageMg ?? this.dosageMg,
