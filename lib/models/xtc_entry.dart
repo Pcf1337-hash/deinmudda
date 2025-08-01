@@ -188,7 +188,7 @@ class XtcEntry {
       substanceName: json['substanceName'] as String,
       logo: json['logo'] as String?,
       form: XtcForm.values[json['form'] as int],
-      bruchrillienAnzahl: json['bruchrillienAnzahl'] as int? ?? (json['hasBruchrillen'] as bool? == true ? 1 : 0), // Migration fallback
+      bruchrillienAnzahl: json['bruchrillienAnzahl'] as int? ?? ((json['hasBruchrillen'] as bool?) == true ? 1 : 0), // Migration fallback
       content: XtcContent.values[json['content'] as int],
       size: XtcSize.values[json['size'] as int],
       dosageMg: (json['dosageMg'] as num?)?.toDouble(),
