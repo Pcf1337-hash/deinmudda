@@ -397,15 +397,65 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
   }
 
   Future<void> _showXtcEntryDialog() async {
-    final result = await showDialog<dynamic>(
+    final result = await showDialog<XtcEntry>(
       context: context,
-      builder: (context) => const XtcEntryDialog(),
+      builder: (context) => const XtcEntryDialog(isQuickEntry: true),
     );
     
     if (result != null) {
       // XTC entry was successfully created, now create a quick button from it
+      await _createQuickButtonFromXtcEntry(result);
       // Navigate back to the quick button management screen
       Navigator.of(context).pop(true);
+    }
+  }
+
+  Future<void> _createQuickButtonFromXtcEntry(XtcEntry xtcEntry) async {
+    try {
+      // Calculate a reasonable dosage estimate if available
+      final dosage = xtcEntry.dosageMg ?? 100.0; // Default to 100mg if unknown
+      
+      // Get next position for the quick button
+      final existingButtons = await _quickButtonService.getAllQuickButtons();
+      final nextPosition = existingButtons.length;
+      
+      // Create a more descriptive button name including XTC details
+      final buttonName = '${xtcEntry.substanceName} (${xtcEntry.size.displaySymbol})';
+      
+      // Create a quick button config from the XTC entry
+      final config = QuickButtonConfig.create(
+        substanceId: 'xtc_${xtcEntry.id}', // Use a special ID for XTC entries
+        substanceName: buttonName, // Include size info in button name
+        dosage: dosage,
+        unit: 'mg',
+        cost: 0.0, // XTC entries don't have cost calculation
+        position: nextPosition,
+        icon: Icons.medication_rounded,
+        color: xtcEntry.color,
+      );
+      
+      // Save the quick button
+      await _quickButtonService.saveQuickButton(config);
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Quick Button für "${buttonName}" erstellt'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Fehler beim Erstellen des Quick Buttons: $e'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
     }
   }
 
@@ -554,7 +604,11 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
               prefixIcon: Icon(Icons.science_rounded),
             ),
             items: [
-              // Special XTC option
+              ..._substances.map((substance) => DropdownMenuItem<Substance>(
+                value: substance,
+                child: Text(substance.name),
+              )).toList(),
+              // Place XTC option at the end instead of first
               DropdownMenuItem<Substance>(
                 value: null, // Keep null but handle specially
                 child: Row(
@@ -569,10 +623,6 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                   Future.delayed(Duration.zero, () => _showXtcEntryDialog());
                 },
               ),
-              ..._substances.map((substance) => DropdownMenuItem<Substance>(
-                value: substance,
-                child: Text(substance.name),
-              )).toList(),
             ],
             onChanged: (substance) {
               setState(() {

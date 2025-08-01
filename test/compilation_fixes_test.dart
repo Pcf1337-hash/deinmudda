@@ -57,7 +57,7 @@ void main() {
       final entry = XtcEntry.create(
         substanceName: 'Test Entry',
         form: XtcForm.rechteck,
-        hasBruchrillen: true,
+        bruchrillienAnzahl: 2,
         content: XtcContent.mdma,
         size: XtcSize.full,
         dosageMg: 100.0,
@@ -67,6 +67,7 @@ void main() {
 
       expect(entry.substanceName, equals('Test Entry'));
       expect(entry.dosageMg, equals(100.0));
+      expect(entry.bruchrillienAnzahl, equals(2));
     });
   });
 }

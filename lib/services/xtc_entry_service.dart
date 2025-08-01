@@ -45,7 +45,7 @@ class XtcEntryService {
     final buffer = StringBuffer();
     buffer.writeln('XTC-Eintrag:');
     buffer.writeln('Form: ${xtcEntry.form.displayName}');
-    buffer.writeln('Bruchrillen: ${xtcEntry.hasBruchrillen ? "Ja" : "Nein"}');
+    buffer.writeln('Bruchrillen: ${xtcEntry.bruchrillienAnzahl}');
     buffer.writeln('Inhalt: ${xtcEntry.content.displayName}');
     buffer.writeln('Größe: ${xtcEntry.size.displaySymbol}');
     if (xtcEntry.dosageMg != null) {
@@ -123,13 +123,21 @@ class XtcEntryService {
     try {
       final lines = entry.notes!.split('\n');
       String? formStr, contentStr, sizeStr, dosageStr, colorStr, weightStr;
-      bool hasBruchrillen = false;
+      int bruchrillienAnzahl = 0; // Changed from boolean to int
       
       for (final line in lines) {
         if (line.startsWith('Form: ')) {
           formStr = line.substring(6);
         } else if (line.startsWith('Bruchrillen: ')) {
-          hasBruchrillen = line.substring(13) == 'Ja';
+          final bruchrillienStr = line.substring(13);
+          // Handle both old boolean format and new numeric format
+          if (bruchrillienStr == 'Ja' || bruchrillienStr == 'true') {
+            bruchrillienAnzahl = 1; // Migration: convert old boolean true to 1
+          } else if (bruchrillienStr == 'Nein' || bruchrillienStr == 'false') {
+            bruchrillienAnzahl = 0; // Migration: convert old boolean false to 0
+          } else {
+            bruchrillienAnzahl = int.tryParse(bruchrillienStr) ?? 0; // Parse numeric value
+          }
         } else if (line.startsWith('Inhalt: ')) {
           contentStr = line.substring(8);
         } else if (line.startsWith('Größe: ')) {
@@ -193,7 +201,7 @@ class XtcEntryService {
       return XtcEntry.create(
         substanceName: entry.substanceName,
         form: form,
-        hasBruchrillen: hasBruchrillen,
+        bruchrillienAnzahl: bruchrillienAnzahl,
         content: content,
         size: size,
         dosageMg: dosageMg,

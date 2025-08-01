@@ -10,7 +10,7 @@ void main() {
       final entry = XtcEntry.create(
         substanceName: 'Test Pill',
         form: XtcForm.rechteck,
-        hasBruchrillen: true,
+        bruchrillienAnzahl: 2,
         content: XtcContent.mdma,
         size: XtcSize.full,
         dosageMg: 120.0,
@@ -22,7 +22,7 @@ void main() {
 
       expect(entry.substanceName, equals('Test Pill'));
       expect(entry.form, equals(XtcForm.rechteck));
-      expect(entry.hasBruchrillen, isTrue);
+      expect(entry.bruchrillienAnzahl, equals(2));
       expect(entry.content, equals(XtcContent.mdma));
       expect(entry.size, equals(XtcSize.full));
       expect(entry.dosageMg, equals(120.0));
@@ -35,7 +35,7 @@ void main() {
       final original = XtcEntry.create(
         substanceName: 'Blue Tesla',
         form: XtcForm.stern,
-        hasBruchrillen: false,
+        bruchrillienAnzahl: 1,
         content: XtcContent.mdma,
         size: XtcSize.half,
         dosageMg: 80.0,
@@ -48,7 +48,7 @@ void main() {
 
       expect(restored.substanceName, equals(original.substanceName));
       expect(restored.form, equals(original.form));
-      expect(restored.hasBruchrillen, equals(original.hasBruchrillen));
+      expect(restored.bruchrillienAnzahl, equals(original.bruchrillienAnzahl));
       expect(restored.content, equals(original.content));
       expect(restored.size, equals(original.size));
       expect(restored.dosageMg, equals(original.dosageMg));
@@ -60,7 +60,7 @@ void main() {
       final entry = XtcEntry.create(
         substanceName: 'Unknown Dose',
         form: XtcForm.kreis,
-        hasBruchrillen: true,
+        bruchrillienAnzahl: 3,
         content: XtcContent.mda,
         size: XtcSize.quarter,
         dosageMg: null, // Unknown dosage
