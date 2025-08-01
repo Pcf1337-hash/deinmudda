@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XTC Quick Button Dialog - Fixes Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .before, .after {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .before h2 {
+            color: #ff6b6b;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .after h2 {
+            color: #51cf66;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dialog-mockup {
+            width: 300px;
+            height: 400px;
+            margin: 20px auto;
+            border-radius: 20px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            color: white;
+            font-size: 14px;
+        }
+        
+        .dialog-transparent {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.25), 
+                rgba(255, 255, 255, 0.12), 
+                rgba(255, 255, 255, 0.06));
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .dialog-opaque {
+            background: linear-gradient(135deg, 
+                rgba(255, 255, 255, 0.52), 
+                rgba(255, 255, 255, 0.44), 
+                rgba(255, 255, 255, 0.38));
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            color: #333;
+        }
+        
+        .dialog-header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            color: white;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .dialog-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .field-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .field-label {
+            font-weight: 600;
+            font-size: 12px;
+        }
+        
+        .field-input {
+            padding: 8px;
+            border-radius: 5px;
+            border: 1px solid rgba(128, 128, 128, 0.5);
+            background: rgba(255, 255, 255, 0.8);
+            color: #333;
+        }
+        
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid rgba(128, 128, 128, 0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .color-picker-before {
+            background: #ff69b4;
+        }
+        
+        .color-picker-after {
+            background: #ff69b4;
+            box-shadow: 0 0 8px rgba(255, 105, 180, 0.3);
+            animation: subtle-pulse 2s infinite;
+        }
+        
+        @keyframes subtle-pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin-top: auto;
+        }
+        
+        .button {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        
+        .button-cancel {
+            background: rgba(128, 128, 128, 0.3);
+            color: white;
+        }
+        
+        .button-save {
+            background: #ff69b4;
+            color: white;
+        }
+        
+        .issue-description {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+        
+        .problem-indicator {
+            display: inline-block;
+            background: #ff6b6b;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-left: 10px;
+        }
+        
+        .solution-indicator {
+            display: inline-block;
+            background: #51cf66;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-left: 10px;
+        }
+        
+        .features-list {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+        }
+        
+        .features-list h3 {
+            color: white;
+            margin-top: 0;
+        }
+        
+        .features-list ul {
+            color: rgba(255, 255, 255, 0.9);
+            line-height: 1.8;
+        }
+        
+        .features-list li {
+            margin-bottom: 8px;
+        }
+        
+        .status-fixed {
+            color: #51cf66;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎛️ XTC Quick Button Dialog - Fixes Demo</h1>
+        
+        <div class="comparison">
+            <div class="before">
+                <h2>❌ Vorher (Probleme)</h2>
+                <div class="issue-description">
+                    <strong>Problem 1:</strong> Dialog zu transparent - schlecht lesbar<br>
+                    <strong>Problem 2:</strong> Farbauswahl reagiert nicht<br>
+                    <strong>Problem 3:</strong> Fehler beim Speichern: "Substance not found"
+                </div>
+                
+                <div class="dialog-mockup dialog-transparent">
+                    <div class="dialog-header">
+                        🔬 XTC Quick Button
+                    </div>
+                    <div class="dialog-content">
+                        <div class="field-group">
+                            <div class="field-label">Substanz Name <span class="problem-indicator">Kaum lesbar</span></div>
+                            <input class="field-input" placeholder="z.B. Blue Tesla" style="opacity: 0.7;">
+                        </div>
+                        
+                        <div class="field-group">
+                            <div class="field-label">Farbe <span class="problem-indicator">Keine Reaktion</span></div>
+                            <div class="color-picker color-picker-before">🎨</div>
+                        </div>
+                        
+                        <div class="field-group">
+                            <div class="field-label">Menge (mg)</div>
+                            <input class="field-input" placeholder="120" style="opacity: 0.7;">
+                        </div>
+                        
+                        <div class="button-row">
+                            <button class="button button-cancel">Abbrechen</button>
+                            <button class="button button-save">Speichern ❌</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="after">
+                <h2>✅ Nachher (Behoben)</h2>
+                <div class="issue-description">
+                    <strong>Lösung 1:</strong> Erhöhte Transparenz (25% → 52%)<br>
+                    <strong>Lösung 2:</strong> Animationen + visuelle Rückmeldung<br>
+                    <strong>Lösung 3:</strong> Virtuelle Substanz-IDs unterstützt
+                </div>
+                
+                <div class="dialog-mockup dialog-opaque">
+                    <div class="dialog-header">
+                        🔬 XTC Quick Button
+                    </div>
+                    <div class="dialog-content">
+                        <div class="field-group">
+                            <div class="field-label">Substanz Name <span class="solution-indicator">Gut lesbar</span></div>
+                            <input class="field-input" placeholder="z.B. Blue Tesla">
+                        </div>
+                        
+                        <div class="field-group">
+                            <div class="field-label">Farbe <span class="solution-indicator">Interaktiv</span></div>
+                            <div class="color-picker color-picker-after">🎨</div>
+                        </div>
+                        
+                        <div class="field-group">
+                            <div class="field-label">Menge (mg)</div>
+                            <input class="field-input" placeholder="120">
+                        </div>
+                        
+                        <div class="button-row">
+                            <button class="button button-cancel">Abbrechen</button>
+                            <button class="button button-save">Speichern ✅</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features-list">
+            <h3>🔧 Implementierte Fixes</h3>
+            <ul>
+                <li><span class="status-fixed">✅ Dialog Transparenz:</span> Opacity von 25% auf 52% erhöht (Dark Mode), 31% auf 56% (Light Mode)</li>
+                <li><span class="status-fixed">✅ Farbauswahl:</span> Scale-Animation (1.0 → 0.95), Auswahlindikatoren, Checkmarks</li>
+                <li><span class="status-fixed">✅ Speicher-Validierung:</span> Virtuelle Substanz-IDs (`xtc_virtual_*`) werden unterstützt</li>
+                <li><span class="status-fixed">✅ Service Registration:</span> Fehlende TimerService-Abhängigkeit hinzugefügt</li>
+                <li><span class="status-fixed">✅ Tests:</span> Umfassende Testabdeckung für alle drei Fixes</li>
+            </ul>
+        </div>
+        
+        <div class="features-list">
+            <h3>🎯 Technische Details</h3>
+            <ul>
+                <li><strong>Transparenz-Fix:</strong> Gradient opacity values significantly increased while preserving glassmorphism</li>
+                <li><strong>Color Picker:</strong> AnimationController with 100ms scale feedback + 150ms tile transitions</li>
+                <li><strong>Validation Fix:</strong> Use cases now detect and bypass validation for `xtc_virtual_*` substance IDs</li>
+                <li><strong>Backward Compatibility:</strong> All existing functionality preserved, zero breaking changes</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
