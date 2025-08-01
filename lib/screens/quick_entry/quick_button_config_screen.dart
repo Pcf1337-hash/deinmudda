@@ -18,6 +18,7 @@ import '../../theme/design_tokens.dart';
 import '../../theme/spacing.dart';
 import '../../utils/validation_helper.dart';
 import '../../utils/app_icon_generator.dart';
+import '../../models/xtc_entry.dart';
 import 'xtc_entry_dialog.dart';
 
 class QuickButtonConfigScreen extends StatefulWidget {
