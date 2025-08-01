@@ -28,8 +28,39 @@ class CreateEntryUseCase {
     DateTime? dateTime,
     String? notes,
     double cost = 0.0,
+    String? substanceName, // Optional substance name for virtual substances
   }) async {
-    // Validate substance exists
+    // Handle virtual substance IDs (like XTC entries) differently
+    if (substanceId.startsWith('xtc_virtual_')) {
+      // For virtual substances, we don't validate against the substance repository
+      // Validate dosage (allow 0 for unknown dosage)
+      if (dosage < 0) {
+        throw ArgumentError('Dosage cannot be negative');
+      }
+
+      // Validate unit
+      if (unit.trim().isEmpty) {
+        throw ArgumentError('Unit cannot be empty');
+      }
+
+      // Create entry with provided substance name or default
+      final entry = Entry(
+        id: const Uuid().v4(),
+        substanceId: substanceId,
+        substanceName: substanceName ?? 'XTC Entry',
+        dosage: dosage,
+        unit: unit,
+        dateTime: dateTime ?? DateTime.now(),
+        cost: cost,
+        notes: notes,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      return await _entryRepository.createEntry(entry);
+    }
+
+    // Regular substance validation for non-virtual substances
     final substance = await _substanceRepository.getSubstanceById(substanceId);
     if (substance == null) {
       throw ArgumentError('Substance with id $substanceId not found');
@@ -84,8 +115,38 @@ class CreateEntryWithTimerUseCase {
     String? notes,
     double cost = 0.0,
     Duration? customDuration,
+    String? substanceName, // Optional substance name for virtual substances
   }) async {
-    // Validate substance exists
+    // Handle virtual substance IDs (like XTC entries) differently
+    if (substanceId.startsWith('xtc_virtual_')) {
+      // For virtual substances, we don't validate against the substance repository
+      // Validate dosage (allow 0 for unknown dosage)
+      if (dosage < 0) {
+        throw ArgumentError('Dosage cannot be negative');
+      }
+
+      // Create entry with provided substance name or default
+      final entry = Entry(
+        id: const Uuid().v4(),
+        substanceId: substanceId,
+        substanceName: substanceName ?? 'XTC Entry',
+        dosage: dosage,
+        unit: unit,
+        dateTime: dateTime ?? DateTime.now(),
+        cost: cost,
+        notes: notes,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
+      // Create entry in database
+      await _entryRepository.createEntry(entry);
+
+      // Start timer
+      return await _timerService.startTimer(entry, customDuration: customDuration);
+    }
+
+    // Regular substance validation for non-virtual substances
     final substance = await _substanceRepository.getSubstanceById(substanceId);
     if (substance == null) {
       throw ArgumentError('Substance with id $substanceId not found');

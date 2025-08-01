@@ -186,24 +186,24 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x40FFFFFF), // More opaque than standard glass
-                      Color(0x20FFFFFF),
-                      Color(0x10FFFFFF),
+                      Color(0x85FFFFFF), // Much more opaque for better readability
+                      Color(0x70FFFFFF),
+                      Color(0x60FFFFFF),
                     ],
                   )
                 : const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x50FFFFFF), // More opaque for light theme
-                      Color(0x30FFFFFF),
+                      Color(0x90FFFFFF), // Much more opaque for light theme
+                      Color(0x80FFFFFF),
                     ],
                   ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark 
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.white.withOpacity(0.5),
+                  ? Colors.white.withOpacity(0.6)  // Increased opacity for better visibility
+                  : Colors.white.withOpacity(0.8),  // Increased opacity for better visibility
               width: 1,
             ),
             boxShadow: [

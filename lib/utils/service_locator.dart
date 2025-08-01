@@ -154,6 +154,7 @@ class ServiceLocator {
         final xtcEntryService = XtcEntryService(
           entryService: entryService,
           quickButtonService: quickButtonService,
+          timerService: timerService,
           createEntryUseCase: createEntryUseCase as CreateEntryUseCase,
           createEntryWithTimerUseCase: createEntryWithTimerUseCase as CreateEntryWithTimerUseCase,
         );

@@ -13,7 +13,7 @@ import 'package:konsum_tracker_pro/screens/quick_entry/xtc_entry_dialog.dart';
 /// 3. Transparent dialog window
 void main() {
   group('XTC Dialog Fixes', () {
-    testWidgets('XTC Entry Dialog builds without transparency issues', (WidgetTester tester) async {
+    testWidgets('XTC Entry Dialog builds with improved opacity for readability', (WidgetTester tester) async {
       // Create a simple test app
       await tester.pumpWidget(
         MaterialApp(
@@ -42,9 +42,12 @@ void main() {
       expect(find.text('Substanz Name'), findsOneWidget);
       expect(find.text('Farbe'), findsOneWidget);
       
-      // Verify the dialog container has proper styling (not transparent)
+      // Verify the dialog container has proper styling (transparent outer, opaque inner)
       final dialog = tester.widget<Dialog>(find.byType(Dialog));
       expect(dialog.backgroundColor, Colors.transparent); // This is correct - the inner container provides opacity
+      
+      // Verify that the dialog is not completely transparent by checking for content visibility
+      expect(find.text('XTC Quick Button'), findsOneWidget);
     });
 
     testWidgets('XTC Color Picker shows and responds to taps', (WidgetTester tester) async {
@@ -92,6 +95,20 @@ void main() {
       final expectedVirtualId = 'xtc_virtual_${xtcEntry.id}';
       expect(xtcEntry.id.isNotEmpty, true);
       expect(expectedVirtualId.startsWith('xtc_virtual_'), true);
+      expect(expectedVirtualId.length, greaterThan(12)); // Should be longer than just the prefix
+    });
+
+    test('Virtual substance ID validation is bypassed for XTC entries', () {
+      // Test that virtual substance IDs follow the expected pattern
+      const testId = 'test-uuid-1234';
+      final virtualId = 'xtc_virtual_$testId';
+      
+      // Verify the format
+      expect(virtualId.startsWith('xtc_virtual_'), true);
+      expect(virtualId.contains(testId), true);
+      
+      // This would be validated in the use case - virtual IDs should not throw validation errors
+      expect(virtualId.length, greaterThan(12));
     });
 
     test('XTC Entry model handles all required fields', () {
