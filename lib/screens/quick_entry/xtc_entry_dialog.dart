@@ -196,6 +196,32 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
                           _buildErrorCard(context),
                           const SizedBox(height: 16),
                         ],
+                        // Info text for quick entries
+                        if (widget.isQuickEntry) ...[
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.info_outline, color: Colors.blue, size: 16),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Erstelle einen Quick Button für diese XTC-Sorte',
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.blue[700],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                         _buildSubstanceNameField(context),
                         const SizedBox(height: 24),
                         _buildFormSelector(context),
@@ -262,7 +288,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
           ),
           const SizedBox(width: 12),
           Text(
-            'XTC Eintrag',
+            widget.isQuickEntry ? 'XTC Quick Button' : 'XTC Eintrag',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
               color: Colors.white,
               fontWeight: FontWeight.bold,

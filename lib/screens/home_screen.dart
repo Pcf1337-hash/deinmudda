@@ -425,10 +425,10 @@ class _HomeScreenState extends State<HomeScreen> with SafeStateMixin {
   /// Handles XTC quick entry by showing the XTC entry dialog
   Future<void> _handleXtcQuickEntry(QuickButtonConfig config) async {
     try {
-      // Show XTC entry dialog for proper entry creation
+      // Show XTC entry dialog for proper entry creation (as quick entry)
       final result = await showDialog<dynamic>(
         context: context,
-        builder: (context) => const XtcEntryDialog(),
+        builder: (context) => const XtcEntryDialog(isQuickEntry: true),
       );
       
       if (result != null && mounted) {

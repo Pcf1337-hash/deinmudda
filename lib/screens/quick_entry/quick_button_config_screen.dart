@@ -419,10 +419,13 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       final existingButtons = await _quickButtonService.getAllQuickButtons();
       final nextPosition = existingButtons.length;
       
+      // Create a more descriptive button name including XTC details
+      final buttonName = '${xtcEntry.substanceName} (${xtcEntry.size.displaySymbol})';
+      
       // Create a quick button config from the XTC entry
       final config = QuickButtonConfig.create(
         substanceId: 'xtc_${xtcEntry.id}', // Use a special ID for XTC entries
-        substanceName: xtcEntry.substanceName,
+        substanceName: buttonName, // Include size info in button name
         dosage: dosage,
         unit: 'mg',
         cost: 0.0, // XTC entries don't have cost calculation
@@ -437,8 +440,9 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Quick Button für "${xtcEntry.substanceName}" erstellt'),
+            content: Text('Quick Button für "${buttonName}" erstellt'),
             backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
           ),
         );
       }
@@ -448,6 +452,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
           SnackBar(
             content: Text('Fehler beim Erstellen des Quick Buttons: $e'),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
           ),
         );
       }
