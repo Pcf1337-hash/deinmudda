@@ -2,25 +2,22 @@ import '../models/xtc_entry.dart';
 import '../interfaces/service_interfaces.dart';
 import '../models/entry.dart';
 import '../models/quick_button_config.dart';
-import '../use_cases/entry_use_cases.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 /// Service for managing XTC entries
 class XtcEntryService {
   final IEntryService _entryService;
   final IQuickButtonService _quickButtonService;
-  final CreateEntryUseCase _createEntryUseCase;
-  final CreateEntryWithTimerUseCase _createEntryWithTimerUseCase;
+  final ITimerService _timerService;
 
   XtcEntryService({
     required IEntryService entryService,
     required IQuickButtonService quickButtonService,
-    required CreateEntryUseCase createEntryUseCase,
-    required CreateEntryWithTimerUseCase createEntryWithTimerUseCase,
+    required ITimerService timerService,
   }) : _entryService = entryService,
        _quickButtonService = quickButtonService,
-       _createEntryUseCase = createEntryUseCase,
-       _createEntryWithTimerUseCase = createEntryWithTimerUseCase;
+       _timerService = timerService;
 
   /// Creates a regular Entry from an XtcEntry for storage in the main database
   Entry _convertToRegularEntry(XtcEntry xtcEntry) {
@@ -67,25 +64,30 @@ class XtcEntryService {
   Future<void> saveXtcEntry(XtcEntry xtcEntry, {bool startTimer = false}) async {
     final virtualSubstanceId = 'xtc_virtual_${xtcEntry.id}';
     
+    // Create a virtual substance entry to avoid validation issues
+    final entry = Entry(
+      id: const Uuid().v4(),
+      substanceId: virtualSubstanceId,
+      substanceName: xtcEntry.substanceName,
+      dosage: xtcEntry.dosageMg ?? 0.0,
+      unit: 'mg',
+      dateTime: xtcEntry.dateTime,
+      cost: 0.0,
+      notes: _buildXtcNotesString(xtcEntry),
+      createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
+    );
+
     if (startTimer) {
       // XTC typically lasts 3-6 hours, default to 4 hours
       const duration = Duration(hours: 4);
-      await _createEntryWithTimerUseCase.execute(
-        substanceId: virtualSubstanceId,
-        dosage: xtcEntry.dosageMg ?? 0.0,
-        unit: 'mg',
-        dateTime: xtcEntry.dateTime,
-        notes: _buildXtcNotesString(xtcEntry),
+      await _entryService.createEntryWithTimer(
+        entry,
         customDuration: duration,
+        timerService: _timerService,
       );
     } else {
-      await _createEntryUseCase.execute(
-        substanceId: virtualSubstanceId,
-        dosage: xtcEntry.dosageMg ?? 0.0,
-        unit: 'mg',
-        dateTime: xtcEntry.dateTime,
-        notes: _buildXtcNotesString(xtcEntry),
-      );
+      await _entryService.createEntry(entry);
     }
   }
 
