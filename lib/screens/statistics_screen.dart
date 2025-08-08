@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 // removed unused import: package:flutter/foundation.dart // cleaned by BereinigungsAgent
 import '../services/analytics_service.dart';
+import '../services/enhanced_analytics_service.dart';
 import '../utils/service_locator.dart'; // refactored by ArchitekturAgent
 import '../widgets/glass_card.dart';
 import '../widgets/header_bar.dart';
+import '../widgets/insight_card.dart';
 import '../widgets/charts/line_chart_widget.dart';
 import '../widgets/charts/bar_chart_widget.dart';
 import '../widgets/charts/pie_chart_widget.dart';
+import '../widgets/charts/heatmap_widget.dart';
+import '../widgets/charts/correlation_matrix_widget.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
@@ -23,13 +27,18 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final AnalyticsService _analyticsService = ServiceLocator.get<AnalyticsService>(); // refactored by ArchitekturAgent
+  late final EnhancedAnalyticsService _enhancedAnalyticsService = EnhancedAnalyticsService();
   
   TimePeriod _selectedPeriod = TimePeriod.thisWeek;
   Map<String, dynamic>? _comprehensiveStats;
+  Map<String, dynamic>? _enhancedStats;
   List<Map<String, dynamic>>? _consumptionTrends;
   List<Map<String, dynamic>>? _substanceStats;
   Map<String, dynamic>? _costAnalysis;
+  Map<String, dynamic>? _enhancedCostAnalysis;
   Map<String, dynamic>? _riskAnalysis;
+  Map<String, dynamic>? _patternAnalysis;
+  Map<String, dynamic>? _correlationAnalysis;
   
   bool _isLoading = true;
   bool _isDisposed = false;
@@ -60,23 +69,29 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       });
 
       try {
-        // Load all the pattern analysis data
+        // Load enhanced analytics data
         final results = await Future.wait([
-          _analyticsService.getComprehensiveStats(_selectedPeriod),
+          _enhancedAnalyticsService.getEnhancedComprehensiveStats(_selectedPeriod),
           _analyticsService.getConsumptionTrends(_selectedPeriod),
           _analyticsService.getSubstanceStats(_selectedPeriod),
-          _analyticsService.getCostAnalysis(_selectedPeriod),
+          _enhancedAnalyticsService.getEnhancedCostAnalysis(_selectedPeriod),
           _analyticsService.getRiskAnalysis(_selectedPeriod),
+          _enhancedAnalyticsService.getDetailedPatternAnalysis(),
+          _enhancedAnalyticsService.getSubstanceRelationshipAnalysis(),
         ]);
 
         if (_isDisposed) return;
 
         setState(() {
-          _comprehensiveStats = results[0] as Map<String, dynamic>;
+          _enhancedStats = results[0] as Map<String, dynamic>;
+          _comprehensiveStats = _enhancedStats!; // For backward compatibility
           _consumptionTrends = results[1] as List<Map<String, dynamic>>;
           _substanceStats = results[2] as List<Map<String, dynamic>>;
-          _costAnalysis = results[3] as Map<String, dynamic>;
+          _enhancedCostAnalysis = results[3] as Map<String, dynamic>;
+          _costAnalysis = _enhancedCostAnalysis!; // For backward compatibility
           _riskAnalysis = results[4] as Map<String, dynamic>;
+          _patternAnalysis = results[5] as Map<String, dynamic>;
+          _correlationAnalysis = results[6] as Map<String, dynamic>;
           _isLoading = false;
         });
       } catch (e) {
@@ -87,7 +102,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
           _isLoading = false;
         });
       }
-    }, tag: 'Statistics Loading');
+    }, tag: 'Enhanced Statistics Loading');
   }
   
   // Original method (replaced with the above)
@@ -382,8 +397,18 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       padding: Spacing.paddingMd,
       child: Column(
         children: [
-          _buildStatsGrid(context, isDark),
+          // Enhanced stats grid with comparisons
+          _buildEnhancedStatsGrid(context, isDark),
           Spacing.verticalSpaceLg,
+          
+          // Insights section
+          _buildInsightsSection(context, isDark),
+          Spacing.verticalSpaceLg,
+          
+          // Pattern analysis
+          _buildPatternAnalysisSection(context, isDark),
+          Spacing.verticalSpaceLg,
+          
           _buildRiskDistribution(context, isDark),
           Spacing.verticalSpaceLg,
           _buildTopSubstances(context, isDark),
@@ -402,6 +427,15 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         children: [
           _buildConsumptionTrends(context, isDark),
           Spacing.verticalSpaceLg,
+          
+          // Time pattern heatmap
+          _buildTimePatternHeatmap(context, isDark),
+          Spacing.verticalSpaceLg,
+          
+          // Substance correlations
+          _buildSubstanceCorrelations(context, isDark),
+          Spacing.verticalSpaceLg,
+          
           _buildSubstanceComparison(context, isDark),
           Spacing.verticalSpaceLg,
           _buildCategoryDistribution(context, isDark),
@@ -416,8 +450,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       padding: Spacing.paddingMd,
       child: Column(
         children: [
-          _buildCostOverview(context, isDark),
+          // Enhanced cost overview with predictions
+          _buildEnhancedCostOverview(context, isDark),
           Spacing.verticalSpaceLg,
+          
+          // Cost efficiency insights
+          _buildCostEfficiencySection(context, isDark),
+          Spacing.verticalSpaceLg,
+          
           _buildCostTrends(context, isDark),
           Spacing.verticalSpaceLg,
           _buildExpensiveSubstances(context, isDark),
@@ -830,5 +870,370 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       default:
         return category;
     }
+  }
+
+  // New enhanced methods
+
+  Widget _buildEnhancedStatsGrid(BuildContext context, bool isDark) {
+    final stats = _comprehensiveStats!;
+    final changes = _enhancedStats?['changes'] as Map<String, dynamic>? ?? {};
+    
+    // Determine if we should use animations based on device capabilities
+    final useAnimations = PerformanceHelper.shouldEnableAnimations();
+    
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisSpacing: Spacing.md,
+      mainAxisSpacing: Spacing.md,
+      childAspectRatio: 1.3,
+      children: [
+        _buildEnhancedStatCard(
+          context,
+          'Einträge',
+          stats['totalEntries'].toString(),
+          Icons.note_rounded,
+          DesignTokens.primaryIndigo,
+          changePercentage: changes['entryChange'],
+        ),
+        _buildEnhancedStatCard(
+          context,
+          'Substanzen',
+          stats['uniqueSubstances'].toString(),
+          Icons.science_rounded,
+          DesignTokens.accentCyan,
+          changePercentage: changes['substanceChange'],
+        ),
+        _buildEnhancedStatCard(
+          context,
+          'Gesamtkosten',
+          '${(stats['totalCost'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+          Icons.euro_rounded,
+          DesignTokens.accentEmerald,
+          changePercentage: changes['costChange'],
+        ),
+        _buildEnhancedStatCard(
+          context,
+          'Ø pro Tag',
+          '${(stats['avgEntriesPerDay'] as double).toStringAsFixed(1)} Einträge',
+          Icons.trending_up_rounded,
+          DesignTokens.warningYellow,
+        ),
+      ],
+    ).animate(target: useAnimations ? 1 : 0).fadeIn(
+      duration: useAnimations 
+          ? PerformanceHelper.getAnimationDuration(DesignTokens.animationMedium)
+          : Duration.zero,
+      delay: const Duration(milliseconds: 500),
+    );
+  }
+
+  Widget _buildEnhancedStatCard(
+    BuildContext context,
+    String title,
+    String value,
+    IconData icon,
+    Color color, {
+    double? changePercentage,
+  }) {
+    final theme = Theme.of(context);
+    
+    return GlassCard(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(
+                icon,
+                size: Spacing.iconMd,
+                color: color,
+              ),
+              if (changePercentage != null) ...[
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: changePercentage > 0 
+                        ? DesignTokens.errorRed.withOpacity(0.1)
+                        : changePercentage < 0 
+                            ? DesignTokens.successGreen.withOpacity(0.1)
+                            : DesignTokens.neutral500.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        changePercentage > 0 
+                            ? Icons.trending_up_rounded
+                            : changePercentage < 0 
+                                ? Icons.trending_down_rounded
+                                : Icons.trending_flat_rounded,
+                        size: 12,
+                        color: changePercentage > 0 
+                            ? DesignTokens.errorRed
+                            : changePercentage < 0 
+                                ? DesignTokens.successGreen
+                                : DesignTokens.neutral500,
+                      ),
+                      const SizedBox(width: 2),
+                      Text(
+                        '${changePercentage.abs().toStringAsFixed(1)}%',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: changePercentage > 0 
+                              ? DesignTokens.errorRed
+                              : changePercentage < 0 
+                                  ? DesignTokens.successGreen
+                                  : DesignTokens.neutral500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
+          Spacing.verticalSpaceSm,
+          Text(
+            value,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          Text(
+            title,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildInsightsSection(BuildContext context, bool isDark) {
+    final insights = _enhancedStats?['insights'] as List<dynamic>? ?? [];
+    
+    if (insights.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Wichtige Erkenntnisse',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Spacing.verticalSpaceMd,
+        ...insights.asMap().entries.map((entry) {
+          final index = entry.key;
+          final insight = entry.value as String;
+          
+          return Padding(
+            padding: EdgeInsets.only(bottom: index < insights.length - 1 ? Spacing.md : 0),
+            child: InsightCard(
+              title: 'Erkenntnis ${index + 1}',
+              insight: insight,
+              icon: _getInsightIcon(index),
+              iconColor: _getInsightColor(index),
+            ),
+          );
+        }).toList(),
+      ],
+    );
+  }
+
+  Widget _buildPatternAnalysisSection(BuildContext context, bool isDark) {
+    if (_patternAnalysis == null) return const SizedBox.shrink();
+    
+    final weekdayPatterns = _patternAnalysis!['weekdayPatterns'] as Map<String, dynamic>;
+    final timeOfDayPatterns = _patternAnalysis!['timeOfDayPatterns'] as Map<String, dynamic>;
+    final frequencyPatterns = _patternAnalysis!['frequencyPatterns'] as Map<String, dynamic>;
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Verhaltensmuster',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        Spacing.verticalSpaceMd,
+        
+        // Weekday pattern
+        PatternInsightCard(
+          patternType: 'Wochentag-Muster',
+          primaryMetric: weekdayPatterns['mostCommonWeekday'] as String? ?? 'Keine Daten',
+          secondaryMetric: '',
+          description: weekdayPatterns['weekdayInsight'] as String? ?? 'Keine Erkenntnisse verfügbar.',
+          icon: Icons.calendar_view_week_rounded,
+          color: DesignTokens.primaryIndigo,
+        ),
+        
+        Spacing.verticalSpaceMd,
+        
+        // Time of day pattern
+        PatternInsightCard(
+          patternType: 'Tageszeit-Muster',
+          primaryMetric: timeOfDayPatterns['mostCommonTimeOfDay'] as String? ?? 'Keine Daten',
+          secondaryMetric: '',
+          description: timeOfDayPatterns['timeOfDayInsight'] as String? ?? 'Keine Erkenntnisse verfügbar.',
+          icon: Icons.access_time_rounded,
+          color: DesignTokens.accentCyan,
+        ),
+        
+        Spacing.verticalSpaceMd,
+        
+        // Frequency pattern
+        PatternInsightCard(
+          patternType: 'Häufigkeits-Muster',
+          primaryMetric: '${(frequencyPatterns['averageFrequencyDays'] as double? ?? 0.0).toStringAsFixed(1)} Tage',
+          secondaryMetric: 'Durchschnittlicher Abstand',
+          description: frequencyPatterns['frequencyInsight'] as String? ?? 'Keine Erkenntnisse verfügbar.',
+          icon: Icons.repeat_rounded,
+          color: DesignTokens.accentEmerald,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTimePatternHeatmap(BuildContext context, bool isDark) {
+    if (_patternAnalysis == null) return const SizedBox.shrink();
+    
+    final timeOfDayPatterns = _patternAnalysis!['timeOfDayPatterns'] as Map<String, dynamic>;
+    
+    return GlassCard(
+      child: HeatmapWidget(
+        data: timeOfDayPatterns,
+        title: 'Konsum-Heatmap: Tageszeit',
+        xAxisLabel: 'Uhrzeit',
+        yAxisLabel: 'Wochentag',
+        height: 150,
+      ),
+    );
+  }
+
+  Widget _buildSubstanceCorrelations(BuildContext context, bool isDark) {
+    if (_correlationAnalysis == null) return const SizedBox.shrink();
+    
+    final correlations = _correlationAnalysis!['correlations'] as Map<String, dynamic>;
+    final correlationMatrix = correlations['correlationMatrix'] as List<dynamic>? ?? [];
+    
+    return GlassCard(
+      child: CorrelationMatrixWidget(
+        correlationData: correlationMatrix.cast<Map<String, dynamic>>(),
+        title: 'Substanz-Korrelationen',
+      ),
+    );
+  }
+
+  Widget _buildEnhancedCostOverview(BuildContext context, bool isDark) {
+    if (_enhancedCostAnalysis == null) return const SizedBox.shrink();
+    
+    final costAnalysis = _enhancedCostAnalysis!;
+    final predictions = costAnalysis['predictions'] as Map<String, dynamic>? ?? {};
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GridView.count(
+          crossAxisCount: 2,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisSpacing: Spacing.md,
+          mainAxisSpacing: Spacing.md,
+          childAspectRatio: 1.5,
+          children: [
+            _buildStatCard(
+              context,
+              'Gesamtkosten',
+              '${(costAnalysis['totalCost'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+              Icons.euro_rounded,
+              DesignTokens.accentEmerald,
+            ),
+            _buildStatCard(
+              context,
+              'Ø pro Eintrag',
+              '${(costAnalysis['avgCostPerEntry'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+              Icons.calculate_rounded,
+              DesignTokens.primaryIndigo,
+            ),
+          ],
+        ),
+        
+        if (predictions.isNotEmpty) ...[
+          Spacing.verticalSpaceLg,
+          
+          // Cost predictions
+          InsightCard(
+            title: 'Kosten-Prognose',
+            insight: 'Nächste Woche: ${(predictions['nextWeekPrediction'] as double? ?? 0.0).toStringAsFixed(2)}€\n'
+                     'Nächster Monat: ${(predictions['nextMonthPrediction'] as double? ?? 0.0).toStringAsFixed(2)}€\n'
+                     'Vertrauen: ${predictions['confidence'] as String? ?? 'Unbekannt'}',
+            icon: Icons.predictions_rounded,
+            iconColor: DesignTokens.warningYellow,
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildCostEfficiencySection(BuildContext context, bool isDark) {
+    if (_enhancedCostAnalysis == null) return const SizedBox.shrink();
+    
+    final costEfficiency = _enhancedCostAnalysis!['costEfficiency'] as Map<String, dynamic>? ?? {};
+    final insights = _enhancedCostAnalysis!['insights'] as List<dynamic>? ?? [];
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        PatternInsightCard(
+          patternType: 'Ausgaben-Effizienz',
+          primaryMetric: costEfficiency['efficiency'] as String? ?? 'Unbekannt',
+          secondaryMetric: 'Ø ${(costEfficiency['averageDailyCost'] as double? ?? 0.0).toStringAsFixed(2)}€/Tag',
+          description: insights.isNotEmpty 
+              ? insights.first as String 
+              : 'Ihre Ausgaben sind über die Zeit analysiert.',
+          icon: Icons.trending_up_rounded,
+          color: DesignTokens.accentEmerald,
+          progress: (costEfficiency['costVariability'] as double? ?? 0.0) / 100,
+        ),
+      ],
+    );
+  }
+
+  IconData _getInsightIcon(int index) {
+    const icons = [
+      Icons.lightbulb_rounded,
+      Icons.trending_up_rounded,
+      Icons.info_rounded,
+      Icons.warning_rounded,
+      Icons.check_circle_rounded,
+    ];
+    return icons[index % icons.length];
+  }
+
+  Color _getInsightColor(int index) {
+    const colors = [
+      DesignTokens.primaryIndigo,
+      DesignTokens.accentCyan,
+      DesignTokens.accentEmerald,
+      DesignTokens.warningYellow,
+      DesignTokens.accentPurple,
+    ];
+    return colors[index % colors.length];
   }
 }
