@@ -180,35 +180,35 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
         constraints: const BoxConstraints(maxWidth: 500, maxHeight: 800),
         child: Container(
           decoration: BoxDecoration(
-            // Use a more opaque background for XTC dialogs to improve readability
+            // Use a solid, non-transparent background for XTC dialogs to improve readability
             gradient: isDark 
                 ? const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x85FFFFFF), // Much more opaque for better readability
-                      Color(0x70FFFFFF),
-                      Color(0x60FFFFFF),
+                      Color(0xF0FFFFFF), // Much more opaque - almost solid white
+                      Color(0xE8FFFFFF), // Very opaque
+                      Color(0xE0FFFFFF), // Still very opaque
                     ],
                   )
                 : const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x90FFFFFF), // Much more opaque for light theme
-                      Color(0x80FFFFFF),
+                      Color(0xF8FFFFFF), // Nearly solid white for light theme
+                      Color(0xF0FFFFFF), // Very opaque
                     ],
                   ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark 
-                  ? Colors.white.withOpacity(0.6)  // Increased opacity for better visibility
-                  : Colors.white.withOpacity(0.8),  // Increased opacity for better visibility
+                  ? Colors.white.withOpacity(0.8)  // More opaque border for better visibility
+                  : Colors.white.withOpacity(0.9),  // Nearly solid border
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(isDark ? 0.5 : 0.2),
+                color: Colors.black.withOpacity(isDark ? 0.6 : 0.3), // Stronger shadow for better depth
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),

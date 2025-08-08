@@ -248,7 +248,7 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
         if (widget.existingConfig != null) {
           _selectedSubstance = substances.firstWhere(
             (s) => s.id == widget.existingConfig!.substanceId,
-            orElse: () => substances.first,
+            orElse: () => substances.isNotEmpty ? substances.first : null,
           );
           if (_selectedSubstance != null) {
             _unitController.text = _selectedSubstance!.defaultUnit;
@@ -257,6 +257,9 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
             // Set price in the price controller
             _priceController.text = _calculatedCost.toString().replaceAll('.', ',');
           }
+        } else {
+          // For new quick buttons, don't pre-select any substance (including XTC)
+          _selectedSubstance = null;
         }
         
         _isLoading = false;
@@ -609,9 +612,9 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                 value: substance,
                 child: Text(substance.name),
               )).toList(),
-              // Place XTC option at the end instead of first
+              // Place XTC option at the end and handle it specially
               DropdownMenuItem<Substance>(
-                value: null, // Keep null but handle specially
+                value: null, // Use null to indicate special XTC option
                 child: Row(
                   children: [
                     Icon(Icons.medication_rounded, size: 16, color: Colors.pink),
@@ -619,13 +622,15 @@ class _QuickButtonConfigScreenState extends State<QuickButtonConfigScreen> {
                     const Text('XTC (Ecstasy) - Spezialform'),
                   ],
                 ),
-                onTap: () {
-                  // Handle XTC selection specially
-                  Future.delayed(Duration.zero, () => _showXtcEntryDialog());
-                },
               ),
             ],
             onChanged: (substance) {
+              if (substance == null) {
+                // Handle XTC selection specially - show XTC dialog
+                Future.delayed(Duration.zero, () => _showXtcEntryDialog());
+                return; // Don't update selectedSubstance for XTC
+              }
+              
               setState(() {
                 _selectedSubstance = substance;
                 if (substance != null) {

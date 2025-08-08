@@ -96,21 +96,10 @@ class XtcSizeSelector extends StatelessWidget {
         );
         
       case XtcSize.half:
-        // Half circle
-        return ClipRect(
-          child: Align(
-            alignment: Alignment.centerLeft,
-            widthFactor: 0.5,
-            child: Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: shapeColor.withOpacity(0.2),
-                border: Border.all(color: shapeColor, width: strokeWidth),
-              ),
-            ),
-          ),
+        // Half circle - represents half of a whole pill
+        return CustomPaint(
+          size: const Size(40, 40),
+          painter: _HalfCirclePainter(shapeColor, strokeWidth),
         );
         
       case XtcSize.quarter:
@@ -128,6 +117,50 @@ class XtcSizeSelector extends StatelessWidget {
         );
     }
   }
+}
+
+/// Custom painter for half circle shape
+class _HalfCirclePainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+
+  _HalfCirclePainter(this.color, this.strokeWidth);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2 - strokeWidth / 2;
+
+    // Fill
+    final fillPaint = Paint()
+      ..color = color.withOpacity(0.2)
+      ..style = PaintingStyle.fill;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5708, // Start angle (-π/2 radians = top)
+      3.14159, // Sweep angle (π radians = 180 degrees = semicircle)
+      true,
+      fillPaint,
+    );
+
+    // Stroke
+    final strokePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = strokeWidth;
+
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: radius),
+      -1.5708,
+      3.14159,
+      true,
+      strokePaint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 /// Custom painter for quarter circle shape
