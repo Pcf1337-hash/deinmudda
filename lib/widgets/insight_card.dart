@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../glass_card.dart';
-import '../../theme/design_tokens.dart';
-import '../../theme/spacing.dart';
+import 'glass_card.dart';
+import '../theme/design_tokens.dart';
+import '../theme/spacing.dart';
 
 class InsightCard extends StatelessWidget {
   final String title;
