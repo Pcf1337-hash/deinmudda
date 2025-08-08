@@ -27,7 +27,6 @@ class InsightCard extends StatelessWidget {
     final theme = Theme.of(context);
     
     return GlassCard(
-      backgroundColor: backgroundColor,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
