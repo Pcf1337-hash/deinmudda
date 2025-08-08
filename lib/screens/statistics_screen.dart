@@ -1199,7 +1199,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             insight: 'Nächste Woche: ${(predictions['nextWeekPrediction'] as double? ?? 0.0).toStringAsFixed(2)}€\n'
                      'Nächster Monat: ${(predictions['nextMonthPrediction'] as double? ?? 0.0).toStringAsFixed(2)}€\n'
                      'Vertrauen: ${predictions['confidence'] as String? ?? 'Unbekannt'}',
-            icon: Icons.predictions_rounded,
+            icon: Icons.psychology_rounded,
             iconColor: DesignTokens.warningYellow,
           ),
         ],

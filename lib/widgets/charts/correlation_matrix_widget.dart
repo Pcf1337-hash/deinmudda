@@ -114,7 +114,7 @@ class _CorrelationMatrixWidgetState extends State<CorrelationMatrixWidget>
                   padding: Spacing.paddingMd,
                   decoration: BoxDecoration(
                     color: theme.cardColor.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(Spacing.borderRadiusMd),
+                    borderRadius: BorderRadius.circular(Spacing.md),
                     border: Border.all(
                       color: _getStrengthColor(strength).withOpacity(0.3),
                       width: 1.5,
@@ -196,7 +196,7 @@ class _CorrelationMatrixWidgetState extends State<CorrelationMatrixWidget>
                         ),
                         decoration: BoxDecoration(
                           color: _getStrengthColor(strength).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(Spacing.borderRadiusSm),
+                          borderRadius: BorderRadius.circular(Spacing.sm),
                         ),
                         child: Text(
                           '${(correlationValue * 100).toStringAsFixed(0)}%',
@@ -222,7 +222,7 @@ class _CorrelationMatrixWidgetState extends State<CorrelationMatrixWidget>
       padding: Spacing.paddingMd,
       decoration: BoxDecoration(
         color: theme.cardColor.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(Spacing.borderRadiusMd),
+        borderRadius: BorderRadius.circular(Spacing.md),
         border: Border.all(
           color: theme.dividerColor.withOpacity(0.2),
           width: 1,
