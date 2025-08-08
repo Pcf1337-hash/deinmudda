@@ -12,6 +12,9 @@ import '../widgets/charts/bar_chart_widget.dart';
 import '../widgets/charts/pie_chart_widget.dart';
 import '../widgets/charts/heatmap_widget.dart';
 import '../widgets/charts/correlation_matrix_widget.dart';
+import '../widgets/charts/trend_comparison_widget.dart';
+import '../widgets/charts/predictive_trend_widget.dart';
+import '../widgets/charts/budget_tracking_widget.dart';
 import '../theme/design_tokens.dart';
 import '../theme/spacing.dart';
 import '../utils/performance_helper.dart';
@@ -27,7 +30,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
   late final AnalyticsService _analyticsService = ServiceLocator.get<AnalyticsService>(); // refactored by ArchitekturAgent
-  late final EnhancedAnalyticsService _enhancedAnalyticsService = EnhancedAnalyticsService();
+  late final EnhancedAnalyticsService _enhancedAnalyticsService;
   
   TimePeriod _selectedPeriod = TimePeriod.thisWeek;
   Map<String, dynamic>? _comprehensiveStats;
@@ -47,6 +50,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   @override
   void initState() {
     super.initState();
+    _enhancedAnalyticsService = EnhancedAnalyticsService();
     _tabController = TabController(length: 3, vsync: this);
     _loadStatistics();
   }
@@ -425,6 +429,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       padding: Spacing.paddingMd,
       child: Column(
         children: [
+          // Trend comparison
+          _buildTrendComparison(context, isDark),
+          Spacing.verticalSpaceLg,
+          
+          // Predictive trend analysis
+          _buildPredictiveTrends(context, isDark),
+          Spacing.verticalSpaceLg,
+          
           _buildConsumptionTrends(context, isDark),
           Spacing.verticalSpaceLg,
           
@@ -452,6 +464,10 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         children: [
           // Enhanced cost overview with predictions
           _buildEnhancedCostOverview(context, isDark),
+          Spacing.verticalSpaceLg,
+          
+          // Budget tracking
+          _buildBudgetTracking(context, isDark),
           Spacing.verticalSpaceLg,
           
           // Cost efficiency insights
@@ -1235,5 +1251,87 @@ class _StatisticsScreenState extends State<StatisticsScreen>
       DesignTokens.accentPurple,
     ];
     return colors[index % colors.length];
+  }
+
+  Widget _buildTrendComparison(BuildContext context, bool isDark) {
+    if (_consumptionTrends == null || _consumptionTrends!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // Split data into current and previous periods
+    final totalData = _consumptionTrends!.length;
+    final midPoint = totalData ~/ 2;
+    
+    final currentPeriodData = _consumptionTrends!.take(midPoint).toList();
+    final previousPeriodData = _consumptionTrends!.skip(midPoint).toList();
+    
+    return TrendComparisonWidget(
+      currentPeriodData: currentPeriodData,
+      previousPeriodData: previousPeriodData,
+      title: 'Trend-Vergleich: ${_getPeriodDisplayName(_selectedPeriod)}',
+      currentPeriodLabel: 'Aktuelle Periode',
+      previousPeriodLabel: 'Vorherige Periode',
+      primaryColor: DesignTokens.primaryIndigo,
+      secondaryColor: DesignTokens.neutral400,
+    );
+  }
+
+  Widget _buildPredictiveTrends(BuildContext context, bool isDark) {
+    if (_consumptionTrends == null || _consumptionTrends!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    // Reverse the data to have chronological order for prediction
+    final historicalData = _consumptionTrends!.reversed.toList();
+    
+    return PredictiveTrendWidget(
+      historicalData: historicalData,
+      title: 'Vorhersage-Trends',
+      metric: 'Einträge',
+      forecastDays: _getForecastDays(),
+      trendColor: DesignTokens.accentCyan,
+    );
+  }
+
+  int _getForecastDays() {
+    switch (_selectedPeriod) {
+      case TimePeriod.today:
+        return 1;
+      case TimePeriod.thisWeek:
+        return 7;
+      case TimePeriod.thisMonth:
+      case TimePeriod.last30Days:
+        return 30;
+      case TimePeriod.thisYear:
+        return 90;
+      case TimePeriod.allTime:
+        return 30;
+    }
+  }
+
+  Widget _buildBudgetTracking(BuildContext context, bool isDark) {
+    if (_enhancedCostAnalysis == null) return const SizedBox.shrink();
+    
+    final costAnalysis = _enhancedCostAnalysis!;
+    final dailyCosts = costAnalysis['dailyCosts'] as List<dynamic>? ?? [];
+    final totalCost = costAnalysis['totalCost'] as double? ?? 0.0;
+    
+    // Calculate budget tracking metrics
+    final now = DateTime.now();
+    final daysInMonth = DateTime(now.year, now.month + 1, 0).day;
+    final daysElapsed = now.day;
+    
+    // Assume a monthly budget based on current spending patterns
+    // In a real app, this would come from user settings
+    final monthlyBudget = totalCost > 0 ? totalCost * 2 : 200.0; // Simple estimation
+    
+    return BudgetTrackingWidget(
+      monthlyBudget: monthlyBudget,
+      currentSpending: totalCost,
+      daysInMonth: daysInMonth,
+      daysElapsed: daysElapsed,
+      dailySpending: dailyCosts.cast<Map<String, dynamic>>(),
+      title: 'Budget-Tracking (${_getPeriodDisplayName(_selectedPeriod)})',
+    );
   }
 }
