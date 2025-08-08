@@ -40,7 +40,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
   // Form state
   XtcForm _selectedForm = XtcForm.rechteck;
   int _bruchrillienAnzahl = 0; // Changed from boolean to int (0-4)
-  XtcContent _selectedContent = XtcContent.mdma;
+  XtcContent? _selectedContent;
   XtcSize _selectedSize = XtcSize.full;
   Color _selectedColor = Colors.pink;
   DateTime _selectedDateTime = DateTime.now();
@@ -115,7 +115,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
         substanceName: _substanceNameController.text.trim(),
         form: _selectedForm,
         bruchrillienAnzahl: _bruchrillienAnzahl,
-        content: _selectedContent,
+        content: _selectedContent!,  // Safe to use ! here since validation passed
         size: _selectedSize,
         dosageMg: dosageMg,
         color: _selectedColor,
@@ -186,24 +186,24 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x85FFFFFF), // Much more opaque for better readability
-                      Color(0x70FFFFFF),
-                      Color(0x60FFFFFF),
+                      Color(0xC5FFFFFF), // Much more opaque for better readability
+                      Color(0xB0FFFFFF),
+                      Color(0xA0FFFFFF),
                     ],
                   )
                 : const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      Color(0x90FFFFFF), // Much more opaque for light theme
-                      Color(0x80FFFFFF),
+                      Color(0xF0FFFFFF), // Very opaque for light theme  
+                      Color(0xE0FFFFFF),
                     ],
                   ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isDark 
-                  ? Colors.white.withOpacity(0.6)  // Increased opacity for better visibility
-                  : Colors.white.withOpacity(0.8),  // Increased opacity for better visibility
+                  ? Colors.white.withOpacity(0.8)  // Increased opacity for better visibility
+                  : Colors.white.withOpacity(0.9),  // Increased opacity for better visibility
               width: 1,
             ),
             boxShadow: [
@@ -466,6 +466,7 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
           value: _selectedContent,
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
+            hintText: 'Bitte wählen Sie den Inhalt',
           ),
           items: XtcContent.values.map((content) => DropdownMenuItem(
             value: content,
@@ -475,6 +476,12 @@ class _XtcEntryDialogState extends State<XtcEntryDialog> with SingleTickerProvid
             if (content != null) {
               setState(() => _selectedContent = content);
             }
+          },
+          validator: (value) {
+            if (value == null) {
+              return 'Bitte wählen Sie einen Inhalt aus';
+            }
+            return null;
           },
         ),
       ],
