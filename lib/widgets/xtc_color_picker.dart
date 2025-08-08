@@ -5,6 +5,26 @@ import 'dart:math' as math;
 /// 
 /// Shows a square color preview that opens a circular color palette when tapped.
 /// The palette stays open while the user is touching and selecting colors.
+/// 
+/// Supports both controlled and uncontrolled modes:
+/// - **Uncontrolled mode**: Pass only `initialColor` and handle updates via `onColorChanged`
+/// - **Controlled mode**: Pass both `initialColor` and `selectedColor`, where `selectedColor` takes precedence
+/// 
+/// Example usage:
+/// ```dart
+/// // Uncontrolled mode
+/// XtcColorPicker(
+///   initialColor: Colors.red,
+///   onColorChanged: (color) => setState(() => _myColor = color),
+/// )
+/// 
+/// // Controlled mode  
+/// XtcColorPicker(
+///   initialColor: Colors.red,
+///   selectedColor: _currentColor,
+///   onColorChanged: (color) => setState(() => _currentColor = color),
+/// )
+/// ```
 class XtcColorPicker extends StatefulWidget {
   final Color initialColor;
   final Color? selectedColor;
