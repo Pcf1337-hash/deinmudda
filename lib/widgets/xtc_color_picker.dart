@@ -21,13 +21,34 @@ class XtcColorPicker extends StatefulWidget {
   State<XtcColorPicker> createState() => _XtcColorPickerState();
 }
 
-class _XtcColorPickerState extends State<XtcColorPicker> {
+class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProviderStateMixin {
   late Color _selectedColor;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
 
   @override
   void initState() {
     super.initState();
     _selectedColor = widget.initialColor;
+    
+    // Add animation controller for press feedback
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 100),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeInOut,
+    ));
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   void _selectColor(Color color) {
@@ -39,45 +60,71 @@ class _XtcColorPickerState extends State<XtcColorPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (details) {
-        _showColorOverlay(context);
-      },
-      child: Container(
-        width: widget.size,
-        height: widget.size,
-        decoration: BoxDecoration(
-          color: _selectedColor,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(
-            color: Colors.grey.withOpacity(0.5),
-            width: 2,
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(6),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: () {},
-              child: const Center(
-                child: Icon(
-                  Icons.palette,
-                  color: Colors.white,
-                  size: 20,
+    return AnimatedBuilder(
+      animation: _scaleAnimation,
+      builder: (context, child) {
+        return Transform.scale(
+          scale: _scaleAnimation.value,
+          child: GestureDetector(
+            onTapDown: (details) {
+              _animationController.forward();
+              _showColorOverlay(context);
+            },
+            onTapUp: (_) {
+              _animationController.reverse();
+            },
+            onTapCancel: () {
+              _animationController.reverse();
+            },
+            child: Container(
+              width: widget.size,
+              height: widget.size,
+              decoration: BoxDecoration(
+                color: _selectedColor,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: Colors.grey.withOpacity(0.5),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                  BoxShadow(
+                    color: _selectedColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(6),
+                child: Material(
+                  color: Colors.transparent,
+                  child: InkWell(
+                    onTap: () {},
+                    child: const Center(
+                      child: Icon(
+                        Icons.palette,
+                        color: Colors.white,
+                        size: 20,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black,
+                            blurRadius: 2,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 
@@ -250,6 +297,7 @@ class _ColorPaletteState extends State<ColorPalette> {
                   itemCount: _colors.length,
                   itemBuilder: (context, index) {
                     final color = _colors[index];
+                    final isSelected = _currentPreview == color;
                     return GestureDetector(
                       onTap: () {
                         setState(() {
@@ -263,22 +311,46 @@ class _ColorPaletteState extends State<ColorPalette> {
                           _currentPreview = color;
                         });
                       },
-                      child: Container(
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
                         decoration: BoxDecoration(
                           color: color,
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.grey.withOpacity(0.5),
-                            width: 1,
+                            color: isSelected 
+                                ? Colors.black.withOpacity(0.8) 
+                                : Colors.grey.withOpacity(0.5),
+                            width: isSelected ? 3 : 1,
                           ),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              blurRadius: 4,
+                              blurRadius: isSelected ? 8 : 4,
                               offset: const Offset(0, 2),
                             ),
+                            if (isSelected)
+                              BoxShadow(
+                                color: color.withOpacity(0.3),
+                                blurRadius: 12,
+                                offset: const Offset(0, 0),
+                              ),
                           ],
                         ),
+                        child: isSelected
+                            ? const Center(
+                                child: Icon(
+                                  Icons.check,
+                                  color: Colors.white,
+                                  size: 16,
+                                  shadows: [
+                                    Shadow(
+                                      color: Colors.black,
+                                      blurRadius: 2,
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : null,
                       ),
                     );
                   },
