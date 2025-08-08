@@ -428,6 +428,20 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildStatsGrid(BuildContext context, bool isDark) {
+    if (_comprehensiveStats == null) {
+      return Container(
+        height: 200,
+        child: Center(
+          child: Text(
+            'Keine Statistikdaten verfügbar',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final stats = _comprehensiveStats!;
     
     // Determine if we should use animations based on device capabilities
@@ -444,28 +458,28 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         _buildStatCard(
           context,
           'Einträge',
-          stats['totalEntries'].toString(),
+          (stats['totalEntries'] as num?)?.toString() ?? '0',
           Icons.note_rounded,
           DesignTokens.primaryIndigo,
         ),
         _buildStatCard(
           context,
           'Substanzen',
-          stats['uniqueSubstances'].toString(),
+          (stats['uniqueSubstances'] as num?)?.toString() ?? '0',
           Icons.science_rounded,
           DesignTokens.accentCyan,
         ),
         _buildStatCard(
           context,
           'Gesamtkosten',
-          '${(stats['totalCost'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+          '${((stats['totalCost'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2).replaceAll('.', ',')}€',
           Icons.euro_rounded,
           DesignTokens.accentEmerald,
         ),
         _buildStatCard(
           context,
           'Ø pro Tag',
-          '${(stats['avgEntriesPerDay'] as double).toStringAsFixed(1)} Einträge',
+          '${((stats['avgEntriesPerDay'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(1)} Einträge',
           Icons.trending_up_rounded,
           DesignTokens.warningYellow,
         ),
@@ -516,7 +530,24 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildRiskDistribution(BuildContext context, bool isDark) {
-    final riskData = _comprehensiveStats!['riskDistribution'] as Map<String, int>;
+    final riskData = _comprehensiveStats!['riskDistribution'] as Map<String, int>? ?? {};
+    
+    if (riskData.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Risikodaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = riskData.entries.map((entry) => {
       'label': _getRiskLevelDisplayName(entry.key),
       'value': entry.value,
@@ -540,10 +571,26 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildTopSubstances(BuildContext context, bool isDark) {
+    if (_substanceStats == null || _substanceStats!.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Substanzdaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final substanceStats = _substanceStats!.take(5).toList();
     final chartData = substanceStats.map((substance) => {
-      'label': substance['substanceName'],
-      'value': substance['usageCount'],
+      'label': substance['substanceName']?.toString() ?? 'Unbekannt',
+      'value': (substance['usageCount'] as num?)?.toDouble() ?? 0.0,
     }).toList();
 
     return GlassCard(
@@ -567,10 +614,27 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildTimePatterns(BuildContext context, bool isDark) {
-    final hourlyData = _comprehensiveStats!['hourlyDistribution'] as Map<int, int>;
+    final hourlyData = _comprehensiveStats!['hourlyDistribution'] as Map<int, int>? ?? {};
+    
+    if (hourlyData.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Zeitdaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = hourlyData.entries.map((entry) => {
       'label': '${entry.key}:00',
-      'value': entry.value,
+      'value': entry.value.toDouble(),
     }).toList();
 
     return GlassCard(
@@ -588,9 +652,25 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildConsumptionTrends(BuildContext context, bool isDark) {
+    if (_consumptionTrends == null || _consumptionTrends!.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Trenddaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = _consumptionTrends!.map((trend) => {
-      'label': trend['period'].toString(),
-      'value': trend['entryCount'],
+      'label': trend['period']?.toString() ?? '',
+      'value': (trend['entryCount'] as num?)?.toDouble() ?? 0.0,
     }).toList();
 
     return GlassCard(
@@ -608,9 +688,25 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildSubstanceComparison(BuildContext context, bool isDark) {
+    if (_substanceStats == null || _substanceStats!.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Vergleichsdaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = _substanceStats!.map((substance) => {
-      'label': substance['substanceName'],
-      'value': substance['totalDosage'],
+      'label': substance['substanceName']?.toString() ?? 'Unbekannt',
+      'value': (substance['totalDosage'] as num?)?.toDouble() ?? 0.0,
     }).toList();
 
     return GlassCard(
@@ -634,10 +730,27 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildCategoryDistribution(BuildContext context, bool isDark) {
-    final categoryData = _comprehensiveStats!['categoryDistribution'] as Map<String, int>;
+    final categoryData = _comprehensiveStats!['categoryDistribution'] as Map<String, int>? ?? {};
+    
+    if (categoryData.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kategoriedaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = categoryData.entries.map((entry) => {
       'label': _getCategoryDisplayName(entry.key),
-      'value': entry.value,
+      'value': entry.value.toDouble(),
     }).toList();
 
     return GlassCard(
@@ -660,6 +773,22 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildCostOverview(BuildContext context, bool isDark) {
+    if (_costAnalysis == null) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kostendaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final costAnalysis = _costAnalysis!;
     
     return GridView.count(
@@ -673,14 +802,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
         _buildStatCard(
           context,
           'Gesamtkosten',
-          '${(costAnalysis['totalCost'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+          '${((costAnalysis['totalCost'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2).replaceAll('.', ',')}€',
           Icons.euro_rounded,
           DesignTokens.accentEmerald,
         ),
         _buildStatCard(
           context,
           'Ø pro Eintrag',
-          '${(costAnalysis['avgCostPerEntry'] as double).toStringAsFixed(2).replaceAll('.', ',')}€',
+          '${((costAnalysis['avgCostPerEntry'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2).replaceAll('.', ',')}€',
           Icons.calculate_rounded,
           DesignTokens.primaryIndigo,
         ),
@@ -692,10 +821,43 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildCostTrends(BuildContext context, bool isDark) {
-    final costTrends = _costAnalysis!['costTrends'] as List<dynamic>;
+    if (_costAnalysis == null) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kostentrends verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    final costTrends = _costAnalysis!['costTrends'] as List<dynamic>? ?? [];
+    
+    if (costTrends.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kostentrends verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = costTrends.map((trend) => {
-      'label': trend['month'].toString(),
-      'value': (trend['monthlyCost'] as num).toDouble(),
+      'label': trend['month']?.toString() ?? '',
+      'value': (trend['monthlyCost'] as num?)?.toDouble() ?? 0.0,
     }).toList();
 
     return GlassCard(
@@ -713,10 +875,43 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _buildExpensiveSubstances(BuildContext context, bool isDark) {
-    final expensiveSubstances = _costAnalysis!['expensiveSubstances'] as List<dynamic>;
+    if (_costAnalysis == null) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kostendaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    final expensiveSubstances = _costAnalysis!['expensiveSubstances'] as List<dynamic>? ?? [];
+    
+    if (expensiveSubstances.isEmpty) {
+      return GlassCard(
+        child: Container(
+          height: 200,
+          child: Center(
+            child: Text(
+              'Keine Kostendaten verfügbar',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.7),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
     final chartData = expensiveSubstances.take(5).map((substance) => {
-      'label': substance['substanceName'],
-      'value': (substance['totalCost'] as num).toDouble(),
+      'label': substance['substanceName']?.toString() ?? 'Unbekannt',
+      'value': (substance['totalCost'] as num?)?.toDouble() ?? 0.0,
     }).toList();
 
     return GlassCard(
