@@ -7,12 +7,14 @@ import 'dart:math' as math;
 /// The palette stays open while the user is touching and selecting colors.
 class XtcColorPicker extends StatefulWidget {
   final Color initialColor;
+  final Color? selectedColor;
   final ValueChanged<Color> onColorChanged;
   final double size;
 
   const XtcColorPicker({
     super.key,
     required this.initialColor,
+    this.selectedColor,
     required this.onColorChanged,
     this.size = 60,
   });
@@ -29,7 +31,7 @@ class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _selectedColor = widget.initialColor;
+    _selectedColor = widget.selectedColor ?? widget.initialColor;
     
     // Add animation controller for press feedback
     _animationController = AnimationController(
@@ -51,10 +53,23 @@ class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProvid
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(XtcColorPicker oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.selectedColor != null && widget.selectedColor != oldWidget.selectedColor) {
+      _selectedColor = widget.selectedColor!;
+    }
+  }
+
+  Color get currentColor => widget.selectedColor ?? _selectedColor;
+
   void _selectColor(Color color) {
-    setState(() {
-      _selectedColor = color;
-    });
+    // Only update internal state if not in controlled mode
+    if (widget.selectedColor == null) {
+      setState(() {
+        _selectedColor = color;
+      });
+    }
     widget.onColorChanged(color);
   }
 
@@ -80,7 +95,7 @@ class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProvid
               width: widget.size,
               height: widget.size,
               decoration: BoxDecoration(
-                color: _selectedColor,
+                color: currentColor,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: Colors.grey.withOpacity(0.5),
@@ -93,7 +108,7 @@ class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProvid
                     offset: const Offset(0, 2),
                   ),
                   BoxShadow(
-                    color: _selectedColor.withOpacity(0.3),
+                    color: currentColor.withOpacity(0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 0),
                   ),
@@ -140,7 +155,7 @@ class _XtcColorPickerState extends State<XtcColorPicker> with SingleTickerProvid
             child: ColorPalette(
               onColorSelected: _selectColor,
               onDismiss: () => Navigator.of(context).pop(),
-              previewColor: _selectedColor,
+              previewColor: currentColor,
             ),
           ),
         );
