@@ -1,18 +1,21 @@
 <div align="center">
   <img src="assets/images/logo.png" alt="KTP Logo" width="120" height="120">
   
-  # 🏥 Konsum Tracker Pro (KTP)
+  # 🏥 Konsum Tracker Pro (KTP) & 🐕 Boxerhof Project
   
-  **Professionelle Substanz-Tracking App für medizinische/therapeutische Zwecke**
+  **Professionelle Substanz-Tracking App für medizinische/therapeutische Zwecke**  
+  **& Dokumentation des Boxernothilfe Boxerhofs**
   
-  *Sichere, lokale Dokumentation von Substanzen für verantwortungsvolle medizinische Anwendung*
+  *Sichere, lokale Dokumentation von Substanzen für verantwortungsvolle medizinische Anwendung*  
+  *& Unterstützung für den Boxerhof, wo alles am Laufen gehalten wird*
 
   [![Flutter](https://img.shields.io/badge/Flutter-3.16+-02569B?style=for-the-badge&logo=flutter)](https://flutter.dev)
   [![Dart](https://img.shields.io/badge/Dart-3.0+-0175C2?style=for-the-badge&logo=dart)](https://dart.dev)
   [![Android](https://img.shields.io/badge/Android-SDK%2035-3DDC84?style=for-the-badge&logo=android)](https://developer.android.com)
   [![iOS](https://img.shields.io/badge/iOS-12+-000000?style=for-the-badge&logo=ios)](https://developer.apple.com/ios)
+  [![Boxernothilfe](https://img.shields.io/badge/Unterstützt-Boxernothilfe_Boxerhof-FF6B6B?style=for-the-badge&logo=heart)](https://www.boxernothilfe.de)
   
-  [🚀 Schnellstart](#-schnellstart) • [📱 Features](#-hauptfunktionen) • [⚙️ Installation](#%EF%B8%8F-installation--setup) • [🔐 Sicherheit](#-sicherheit--datenschutz) • [📚 Dokumentation](#-dokumentation)
+  [🚀 Schnellstart](#-schnellstart) • [📱 KTP Features](#-hauptfunktionen) • [🐕 Boxerhof](#-boxernothilfe-boxerhof) • [⚙️ Installation](#%EF%B8%8F-installation--setup) • [🔐 Sicherheit](#-sicherheit--datenschutz) • [📚 Dokumentation](#-dokumentation) • [🤝 Unterstützung](#-mitwirken--support)
 </div>
 
 ---
@@ -21,13 +24,63 @@
 
 Konsum Tracker Pro ist eine sichere, lokale Flutter-App für die **medizinische und therapeutische Dokumentation** von Substanzen. Die App hilft Erwachsenen dabei, ihren Konsum verantwortungsvoll zu überwachen und zu analysieren.
 
-### ✨ Warum KTP?
+## 🐕 Boxernothilfe Boxerhof
+
+Parallel zur technischen Entwicklung unterstützt dieses Projekt den **Boxernothilfe Boxerhof**, eine Rettungsstation für Boxer-Hunde, wo mit viel Hingabe und Engagement alles am Laufen gehalten wird. Der Boxerhof ist ein Ort, an dem vernachlässigte und misshandelte Boxer eine zweite Chance bekommen.
+
+### 🏡 Über den Boxerhof
+- **🏠 Sichere Unterkunft** für Boxer in Not
+- **🩺 Medizinische Versorgung** und Rehabilitation
+- **❤️ Liebevolle Betreuung** durch engagierte Helfer
+- **🎯 Vermittlung** in verantwortungsvolle, liebevolle Familien
+- **👩‍💼 Tägliche Betreuung** - Wo alles professionell am Laufen gehalten wird
+
+*Die Arbeit des Boxerhofs zeigt, wie wichtig kontinuierliche Dokumentation und sorgfältige Überwachung für das Wohlbefinden von Lebewesen ist - ein Prinzip, das auch in der medizinischen Dokumentation von KTP zum Tragen kommt.*
+
+> 💝 **Unterstützung**: Weitere Informationen über den Boxerhof finden Sie unter [boxernothilfe.de](https://www.boxernothilfe.de/unser-boxerhof/)
+
+### 📸 Boxerhof Impressionen
+*Grafiken und weitere Informationen werden hier integriert, sobald sie verfügbar sind.*
+
+📋 **[Ausführliche Boxerhof-Dokumentation →](BOXERHOF.md)**
+
+<!-- Platzhalter für Boxerhof-Bilder -->
+<div align="center">
+  <p><em>🔄 Bilder werden geladen...</em></p>
+  <!-- 
+  Geplante Inhalte:
+  - Boxerhof Hauptgebäude
+  - Boxer in der Betreuung
+  - Tägliche Aktivitäten
+  - Team bei der Arbeit
+  -->
+</div>
+
+### ✨ Warum KTP & Boxerhof?
+
+Beide Projekte vereint das Prinzip der **sorgfältigen Dokumentation und verantwortungsvollen Betreuung**:
+
+#### 🏥 KTP (Konsum Tracker Pro)
 - 📊 **Therapeutische Dokumentation** - Präzise Aufzeichnung für medizinische Zwecke
 - 🔒 **100% Lokal & Privat** - Alle Daten bleiben auf Ihrem Gerät
 - ⏱️ **Intelligentes Timer-System** - Automatische Überwachung mit Benachrichtigungen
 - 🧮 **Gewichtsbasierte Dosisberechnung** - Sichere, personalisierte Empfehlungen
 - 📈 **Detaillierte Statistiken** - Muster erkennen und Verhalten analysieren
 - 🔐 **Biometrische Sicherheit** - Fingerprint/Face ID Schutz
+
+#### 🐕 Boxerhof
+- 🏠 **Sichere Dokumentation** - Präzise Aufzeichnung der Tierpflege
+- ❤️ **100% Vor Ort & Persönlich** - Alle Hunde bekommen individuelle Betreuung
+- ⏱️ **Intelligente Zeitpläne** - Automatische Überwachung von Fütterung und Medikation
+- 🩺 **Gewichts- und gesundheitsbasierte Pflege** - Sichere, personalisierte Behandlungen
+- 📈 **Detaillierte Entwicklungsstatistiken** - Fortschritte erkennen und Verhalten analysieren
+- 🔐 **Sichere Umgebung** - Geschützte Räume und liebevolle Betreuung
+
+### 🤝 Gemeinsame Werte
+- **Dokumentation als Grundlage für Verbesserung**
+- **Individuelle Betreuung basierend auf präzisen Daten**
+- **Verantwortungsvoller Umgang mit Lebewesen**
+- **Kontinuierliche Überwachung für optimale Ergebnisse**
 
 ### 👥 Für wen ist KTP gedacht?
 - **Erwachsene Nutzer (18+)** in medizinischen/therapeutischen Kontexten
@@ -61,7 +114,9 @@ flutter build apk --release
 
 ---
 
-## 📊 PROJEKT STATUS
+## 📊 DUAL-PROJEKT STATUS
+
+### 🏥 KTP (Konsum Tracker Pro) - Technische Entwicklung
 
 | Phase | Status | Dauer | Beschreibung |
 |-------|--------|-------|--------------|
@@ -74,17 +129,40 @@ flutter build apk --release
 | **Phase 7** | ✅ **ABGESCHLOSSEN** | 4-5 Tage | **Calendar & Advanced Features** |
 | **Phase 8** | ✅ **ABGESCHLOSSEN** | 2-3 Tage | **Security & Polish** |
 | **Bugfixes** | ✅ **ABGESCHLOSSEN** | 1 Tag | **Dosisrechner Crash-Fixes & UI-Optimierungen** |
+| **Boxerhof Integration** | 🔄 **IN ARBEIT** | Laufend | **README-Modernisierung & Content-Integration** |
 
-**Aktuelle Version:** 1.0.0+1  
+### 🐕 Boxerhof - Dokumentations- & Unterstützungsprojekt
+
+| Phase | Status | Beschreibung |
+|-------|--------|--------------|
+| **Recherche & Planung** | 🔄 **IN ARBEIT** | Sammlung von Informationen und Grafiken |
+| **Content-Integration** | 🔄 **IN ARBEIT** | Integration in README und Asset-Struktur |
+| **Dokumentation** | 📅 **GEPLANT** | Detaillierte Beschreibung der Boxerhof-Aktivitäten |
+| **Grafik-Integration** | 📅 **GEPLANT** | Einbindung von Bildern und visuellen Inhalten |
+| **Community-Aufbau** | 📅 **GEPLANT** | Verknüpfung mit Unterstützer-Netzwerk |
+
+**Aktuelle KTP Version:** 1.0.0+1  
 **Build Status:** ✅ Läuft stabil auf Samsung Galaxy S24 (Android 14) - APK-Kompilierung vollständig funktionsfähig  
 **APK Installation:** ✅ **Fixed "invalid package" installation errors** - See [APK_INSTALLATION_FIX.md](APK_INSTALLATION_FIX.md)  
-**Letzte Aktualisierung:** 31. Juli 2025 (Android APK Installation Issues Fixed - SDK downgrade, disabled optimization, added signing)
+**Boxerhof Status:** 🔄 **Integration in Arbeit** - README modernisiert, Asset-Struktur vorbereitet  
+**Letzte Aktualisierung:** Januar 2025 (Boxerhof-Integration gestartet, README modernisiert)
 
 ⚠️ **Hinweis zur Teststrategie**: Aufgrund unnötiger GitHub-Actions-Kosten wurden alle automatisierten Analyse- und Testfunktionen dauerhaft entfernt. flutter analyze, flutter test sowie alle CI/CD-Prozesse werden nicht mehr verwendet. Stattdessen wird die App regelmäßig lokal auf PC und realem Gerät manuell getestet. Alle Funktionalitäten werden dabei direkt auf dem Entwicklungsgerät überprüft, wodurch Zwischentests entfallen.
 
 ---
 
 ## 🔄 LETZTE 10 ÄNDERUNGEN
+
+### **📅 Januar 2025**
+
+1. **🐕 Boxerhof Integration & README Modernisierung** (Januar 2025)  
+   - **🎯 Dual-Projekt Setup**: Integration von Boxernothilfe Boxerhof Dokumentation
+   - **📱 README Modernisierung**: Erweiterte Struktur für beide Projekte (KTP + Boxerhof)
+   - **🏗️ Asset-Struktur**: Vorbereitung für Boxerhof-Grafiken und Inhalte
+   - **🔗 Cross-Referenzierung**: Gemeinsame Werte und Prinzipien beider Projekte hervorgehoben
+   - **🌐 Community-Vorbereitung**: Grundlage für Boxerhof-Unterstützung geschaffen
+   - **📋 Dokumentations-Framework**: Struktur für kommende Boxerhof-Inhalte vorbereitet
+   - **🎨 Visual Design Update**: Moderne Badge-Integration und verbessertes Layout
 
 ### **📅 Juli 2025**
 
@@ -643,26 +721,38 @@ Dieses Projekt wird von mehreren Entwickler:innen und KI-Agenten bearbeitet. Fü
 
 ## 🚀 Nächste Entwicklungsschritte
 
-### Kurzfristige Prioritäten (Q3 2025)
+### Kurzfristige Prioritäten (Q1 2025)
+#### 🏥 KTP (Technische Entwicklung)
 - [ ] **Performance Monitoring** - Implementierung von Performance-Metriken für Real-Device Nutzung
 - [ ] **User Experience Enhancement** - Durchführung von Usability-Verbesserungen basierend auf Nutzer-Feedback
 - [ ] **Platform-spezifische Optimierungen** - Fine-tuning für iOS/Android-spezifische Unterschiede
-- [ ] **Accessibility Enhancements** - Screen Reader Support und Voice-over Funktionalität
-- [ ] **Data Export/Import** - Erweiterte Backup- und Restore-Funktionen
 
-### Mittelfristige Ziele (Q4 2025)
+#### 🐕 Boxerhof (Content & Community)
+- [x] **README Modernisierung** - Dual-Projekt-Struktur implementiert
+- [x] **Asset-Vorbereitung** - Ordnerstruktur für Boxerhof-Grafiken erstellt
+- [ ] **Grafik-Integration** - Bilder und Inhalte von boxernothilfe.de integrieren
+- [ ] **Detaillierte Dokumentation** - Ausführliche Beschreibung der Boxerhof-Aktivitäten
+- [ ] **Community-Links** - Verbindungen zu Unterstützer-Netzwerken aufbauen
+- [ ] **Erfolgsgeschichten** - Vermittlungs-Geschichten und Fortschritte dokumentieren
+
+### Mittelfristige Ziele (Q2 2025)
+#### 🏥 KTP 
 - [ ] **Advanced Analytics** - Erweiterte Statistiken und Trend-Analysen
 - [ ] **Multi-Language Support** - Vollständige Internationalisierung (EN, FR, ES)
-- [ ] **Offline Synchronization** - Robuste Offline-Funktionalität mit Cloud-Sync
-- [ ] **Advanced Security** - Erweiterte Verschlüsselung und Sicherheitsfeatures
-- [ ] **Widget Support** - Home-Screen Widgets für Quick-Actions
+- [ ] **Accessibility Enhancements** - Screen Reader Support und Voice-over Funktionalität
 
-### Langfristige Vision (2026)
-- [ ] **AI-Integration** - Intelligente Muster-Erkennung und Empfehlungen
-- [ ] **Wearable Support** - Integration mit Smartwatches und Fitness-Trackern
-- [ ] **Medical Integration** - API-Anbindung für medizinische Systeme (FHIR-kompatibel)
-- [ ] **Research Platform** - Anonymisierte Daten für wissenschaftliche Studien
-- [ ] **Community Features** - Sichere, anonyme Community-Funktionen für Support
+#### 🐕 Boxerhof
+- [ ] **Interactive Content** - Virtuelle Boxerhof-Touren und Interaktive Inhalte
+- [ ] **Adoption Tracking** - System zur Verfolgung vermittelter Hunde
+- [ ] **Volunteer Management** - Plattform für Helfer und Unterstützer
+- [ ] **Funding Integration** - Spendenplattform und Transparenz-Features
+
+### Langfristige Vision (2025-2026)
+#### 🤝 Gemeinsame Ziele
+- [ ] **Unified Platform** - Integration beider Projekte in eine gemeinsame Plattform
+- [ ] **Cross-Community Features** - Verbindung der medizinischen und Tierpflege-Communities
+- [ ] **Educational Content** - Aufklärungs- und Bildungsinhalte für beide Bereiche
+- [ ] **Research Platform** - Datensammlung für Verbesserung in beiden Bereichen
 
 ### Technische Schulden & Wartung
 - [ ] **Dependency Updates** - Regelmäßige Updates aller Flutter/Dart Dependencies
@@ -686,9 +776,9 @@ Bitte trage bei neuen Commits und Features immer eine aussagekräftige Beschreib
 
 ---
 
-**🎯 PROJEKT ERFOLGREICH STABILISIERT & READY FOR NEXT PHASE**
+**🎯 DUAL-PROJEKT ERFOLGREICH GESTARTET**
 
-*Aktueller Status: Stabile Basis mit klarer Architektur*  
-*Nächste Phase: Performance-Optimierung und User Experience Enhancement*
+*Aktueller Status: KTP stabile Basis mit klarer Architektur + Boxerhof Integration eingeleitet*  
+*Nächste Phase: Content-Integration für Boxerhof + Performance-Optimierung für KTP*
 
-*Entwickelt mit ❤️ für verantwortungsvolles Substanz-Monitoring*
+*Entwickelt mit ❤️ für verantwortungsvolles Substanz-Monitoring & liebevolle Tierpflege*
